@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração Completa - WppBot SaaS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tab-button.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .course-card {
+            transition: all 0.3s;
+        }
+        
+        .course-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .ace-editor {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .section-divider {
+            border-top: 2px solid #f0f0f0;
+            margin: 24px 0;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-600 to-indigo-600 min-h-screen p-6">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">⚙️ Configuração Completa do Bot</h1>
+            <p class="text-gray-600">Configure TUDO em um único lugar: persona, cursos, fluxos, scripts e regras de negócio</p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="bg-white rounded-lg shadow-lg p-4 mb-6">
+            <div class="flex gap-2 flex-wrap">
+                <button class="tab-button active px-6 py-3 rounded-lg font-medium transition" onclick="showSection('global')">
+                    🌍 Global
+                </button>
+                <button class="tab-button px-6 py-3 rounded-lg font-medium transition" onclick="showSection('courses')">
+                    📚 Cursos
+                </button>
+                <button class="tab-button px-6 py-3 rounded-lg font-medium transition" onclick="showSection('flows')">
+                    🔄 Fluxos de Atendimento
+                </button>
+                <button class="tab-button px-6 py-3 rounded-lg font-medium transition" onclick="showSection('scripts')">
+                    💬 Scripts e Objeções
+                </button>
+                <button class="tab-button px-6 py-3 rounded-lg font-medium transition" onclick="showSection('business')">
+                    💼 Regras de Negócio
+                </button>
+                <button class="tab-button px-6 py-3 rounded-lg font-medium transition" onclick="showSection('advanced')">
+                    🔧 Avançado
+                </button>
+            </div>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <!-- Section: Global -->
+        <div id="section-global" class="section">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">🎭 Persona do Bot</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Bot</label>
+                        <input type="text" id="bot_name" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Ex: Mia">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Função/Cargo</label>
+                        <input type="text" id="bot_role" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Ex: consultora de carreira">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Empresa</label>
+                        <input type="text" id="bot_company" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Ex: Trajetória Med">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tom de Voz</label>
+                        <textarea id="bot_tone" rows="3" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Profissional, empático, persuasivo e objetivo"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">📝 Menu Principal</h2>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Texto do Menu (quando usuário iniciar ou pedir menu)</label>
+                    <textarea id="menu_text" rows="15" class="w-full px-4 py-2 border rounded-lg font-mono text-sm" placeholder="Digite o menu completo aqui..."></textarea>
+                    <small class="text-gray-500">Este texto será enviado quando o lead disser "Oi", "Olá" ou pedir o menu</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Courses -->
+        <div id="section-courses" class="section hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800">📚 Gerenciar Cursos</h2>
+                    <button onclick="addNewCourse()" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700">
+                        ➕ Adicionar Curso
+                    </button>
+                </div>
+                <div id="courses-list" class="space-y-4"></div>
+            </div>
+        </div>
+
+        <!-- Section: Flows -->
+        <div id="section-flows" class="section hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">🔄 Fluxos de Atendimento por Curso</h2>
+                <p class="text-gray-600 mb-6">Configure o fluxo específico de cada curso (identificação, qualificação, apresentação)</p>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Selecione o Curso</label>
+                    <select id="flow_course_selector" onchange="loadFlowForCourse()" class="w-full px-4 py-2 border rounded-lg">
+                        <option value="">-- Selecione um curso --</option>
+                    </select>
+                </div>
+
+                <div id="flow-editor" class="hidden">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">📋 Instruções de Fluxo</label>
+                        <textarea id="flow_instructions" rows="25" class="w-full px-4 py-2 border rounded-lg font-mono text-sm" placeholder="Digite o fluxo específico do curso...
+
+Estrutura sugerida:
+- Diferencial principal
+- Passo 1: Apresentação
+- Passo 2: Qualificação
+- Passo 3: Argumentação
+- Objeções específicas
+- Instruções de fechamento"></textarea>
+                        <small class="text-gray-500">
+                            ✅ Suporta Markdown | 
+                            ✅ Este fluxo é usado APENAS quando o lead escolhe este curso | 
+                            ✅ Combine com objeções específicas na seção "Scripts por Curso"
+                        </small>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button onclick="saveFlowForCourse()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">
+                            💾 Salvar Fluxo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Scripts -->
+        <div id="section-scripts" class="section hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">💬 Scripts de Objeções Gerais</h2>
+                <p class="text-gray-600 mb-4">Scripts usados em TODOS os cursos</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Objeção: "Está caro"</label>
+                        <textarea id="objection_price" rows="3" class="w-full px-4 py-2 border rounded-lg"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Objeção: "Não tenho tempo"</label>
+                        <textarea id="objection_time" rows="3" class="w-full px-4 py-2 border rounded-lg"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Objeção: "Vou estudar sozinho"</label>
+                        <textarea id="objection_alone" rows="3" class="w-full px-4 py-2 border rounded-lg"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Objeção: "Preciso pensar"</label>
+                        <textarea id="objection_think" rows="3" class="w-full px-4 py-2 border rounded-lg"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Rejeição Final (não quer comprar)</label>
+                        <textarea id="objection_final" rows="2" class="w-full px-4 py-2 border rounded-lg"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">🎯 Scripts por Curso</h2>
+                <p class="text-gray-600 mb-4">Configure scripts específicos para cada curso</p>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Selecione o Curso</label>
+                    <select id="script_course_selector" onchange="loadScriptsForCourse()" class="w-full px-4 py-2 border rounded-lg">
+                        <option value="">-- Selecione um curso --</option>
+                    </select>
+                </div>
+
+                <div id="course-scripts-editor" class="hidden space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Script de Apresentação</label>
+                        <textarea id="course_intro_script" rows="5" class="w-full px-4 py-2 border rounded-lg"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Script de Fechamento</label>
+                        <textarea id="course_closing_script" rows="5" class="w-full px-4 py-2 border rounded-lg"></textarea>
+                    </div>
+                    
+                    <div class="border-t pt-4 mt-4">
+                        <h4 class="text-lg font-bold mb-3">🛡️ Objeções Específicas deste Curso</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Objeção: "Está caro"</label>
+                                <textarea id="course_objection_expensive" rows="3" class="w-full px-4 py-2 border rounded-lg" placeholder="Resposta personalizada para este curso..."></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Objeção: "Não tenho tempo"</label>
+                                <textarea id="course_objection_no_time" rows="3" class="w-full px-4 py-2 border rounded-lg" placeholder="Resposta personalizada para este curso..."></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Objeção: "Vou estudar sozinho"</label>
+                                <textarea id="course_objection_alone" rows="3" class="w-full px-4 py-2 border rounded-lg" placeholder="Resposta personalizada para este curso..."></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Objeção: "Preciso pensar"</label>
+                                <textarea id="course_objection_think" rows="3" class="w-full px-4 py-2 border rounded-lg" placeholder="Resposta personalizada para este curso..."></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Rejeição Final</label>
+                                <textarea id="course_objection_final" rows="2" class="w-full px-4 py-2 border rounded-lg" placeholder="Resposta quando não quer comprar..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button onclick="saveScriptsForCourse()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700">
+                            💾 Salvar Scripts e Objeções
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Business Rules -->
+        <div id="section-business" class="section hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">💼 Regras de Negócio</h2>
+                
+                <div class="space-y-6">
+                    <div class="border-l-4 border-purple-500 pl-4">
+                        <h3 class="text-lg font-semibold mb-2">🔗 Links de Pagamento</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Link Black Friday/Promoção</label>
+                                <input type="url" id="payment_link_promo" class="w-full px-4 py-2 border rounded-lg" placeholder="https://pay.kiwify.com.br/...">
+                                <small class="text-gray-500">Usado durante período promocional</small>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Link Normal</label>
+                                <input type="url" id="payment_link_normal" class="w-full px-4 py-2 border rounded-lg" placeholder="https://pay.kiwify.com.br/...">
+                                <small class="text-gray-500">Usado após promoção</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-l-4 border-blue-500 pl-4">
+                        <h3 class="text-lg font-semibold mb-2">📅 Período Promocional</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Data Limite Black Friday</label>
+                                <input type="date" id="promo_end_date" class="w-full px-4 py-2 border rounded-lg">
+                                <small class="text-gray-500">Até esta data usa link promocional</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-l-4 border-green-500 pl-4">
+                        <h3 class="text-lg font-semibold mb-2">💳 Formas de Pagamento</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="payment_pix" checked class="mr-2">
+                                <span>PIX</span>
+                            </label>
+                            <div class="ml-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Chave PIX</label>
+                                <input type="text" id="pix_key" class="w-full px-4 py-2 border rounded-lg" placeholder="contato@escoladepericiamedica.com.br">
+                            </div>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="payment_card" checked class="mr-2">
+                                <span>Cartão de Crédito</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="payment_subscription" checked class="mr-2">
+                                <span>Assinatura (salvamento de venda)</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="payment_boleto" class="mr-2">
+                                <span>Boleto Bancário</span>
+                            </label>
+                            <small class="text-red-500">⚠️ Não recomendado: Boleto geralmente está desativado</small>
+                        </div>
+                    </div>
+
+                    <div class="border-l-4 border-yellow-500 pl-4">
+                        <h3 class="text-lg font-semibold mb-2">⏰ Liberação de Acesso</h3>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Mensagem de Liberação</label>
+                            <input type="text" id="access_message" class="w-full px-4 py-2 border rounded-lg" placeholder="O material será liberado logo após a confirmação do pagamento">
+                            <small class="text-gray-500">⚠️ NUNCA especifique tempo ("em 24h", etc)</small>
+                        </div>
+                    </div>
+
+                    <div class="border-l-4 border-red-500 pl-4">
+                        <h3 class="text-lg font-semibold mb-2">🚫 Limitações e Proibições</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="limit_no_ex_aluno_question" checked disabled class="mr-2">
+                                <span>NÃO perguntar se é ex-aluno (sistema detecta automaticamente)</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="limit_no_email_link" checked disabled class="mr-2">
+                                <span>NÃO oferecer envio de link por email (apenas WhatsApp)</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="limit_no_hotmart" checked disabled class="mr-2">
+                                <span>NÃO usar links do Hotmart (não existem)</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="limit_no_invented_discounts" checked disabled class="mr-2">
+                                <span>NÃO inventar descontos especiais não listados</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Advanced -->
+        <div id="section-advanced" class="section hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">🔧 Configurações Avançadas</h2>
+                
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">🤖 Comportamento da IA</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Buffer de Mensagens (segundos)</label>
+                                <input type="number" id="message_buffer" value="3" class="w-full px-4 py-2 border rounded-lg">
+                                <small class="text-gray-500">Tempo que a IA aguarda antes de responder mensagens múltiplas</small>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Instruções Adicionais para IA</label>
+                                <textarea id="ai_additional_instructions" rows="8" class="w-full px-4 py-2 border rounded-lg font-mono text-sm" placeholder="Adicione qualquer instrução extra que a IA deve seguir..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-divider"></div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">👥 Vendedores para Notificação</h3>
+                        <div id="vendors-list" class="space-y-4"></div>
+                        <button onclick="addVendor()" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                            ➕ Adicionar Vendedor
+                        </button>
+                    </div>
+
+                    <div class="section-divider"></div>
+
+                    <div>
+                        <h3 class="text-lg font-semibold mb-2">🔐 Sistema de Ex-Alunos</h3>
+                        <label class="flex items-center mb-2">
+                            <input type="checkbox" id="enable_alumni_system" checked class="mr-2">
+                            <span>Ativar sistema de detecção de ex-alunos</span>
+                        </label>
+                        <small class="text-gray-500">Quando ativo, o bot pode oferecer descontos para ex-alunos automaticamente</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">📤 Exportar/Importar Configuração</h2>
+                <div class="space-y-4">
+                    <div>
+                        <button onclick="exportConfig()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                            📥 Exportar Configuração (JSON)
+                        </button>
+                        <small class="block mt-2 text-gray-500">Baixe todas as configurações em formato JSON</small>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Importar Configuração</label>
+                        <input type="file" id="import_file" accept=".json" onchange="importConfig()" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save Button (Fixed Bottom) -->
+        <div class="fixed bottom-6 right-6 z-50">
+            <button onclick="saveAllConfig()" class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-4 rounded-full shadow-2xl hover:shadow-3xl transform hover:scale-105 transition font-bold text-lg">
+                💾 Salvar Tudo
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let coursesData = [];
+        let currentConfig = {};
+
+        // Navigation
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`section-${sectionName}`).classList.remove('hidden');
+            
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Load configuration on page load
+        window.addEventListener('DOMContentLoaded', loadConfiguration);
+
+        async function loadConfiguration() {
+            try {
+                const response = await fetch('/api/bot/config');
+                const data = await response.json();
+                
+                console.log('📥 Dados recebidos do servidor:', data);
+                
+                // O backend retorna { config: {...} }
+                if (data.config && data.config.courses_config) {
+                    currentConfig = typeof data.config.courses_config === 'string' 
+                        ? JSON.parse(data.config.courses_config) 
+                        : data.config.courses_config;
+                    
+                    console.log('✅ Configuração carregada:', currentConfig);
+                    populateFields(currentConfig);
+                } else if (data.config) {
+                    // Se não tem courses_config, criar estrutura inicial
+                    console.log('⚠️ Nenhuma configuração encontrada, criando padrão...');
+                    currentConfig = createDefaultConfig();
+                    populateFields(currentConfig);
+                } else {
+                    console.log('ℹ️ Primeira vez, sem configuração');
+                    currentConfig = createDefaultConfig();
+                    populateFields(currentConfig);
+                }
+            } catch (error) {
+                console.error('❌ Erro ao carregar:', error);
+                showAlert('Erro ao carregar configuração: ' + error.message, 'error');
+            }
+        }
+
+        function createDefaultConfig() {
+            return {
+                bot_persona: {
+                    name: 'Mia',
+                    role: 'consultora de carreira da Trajetória Med',
+                    company: 'Trajetória Med',
+                    tone: 'Profissional, empático, persuasivo e objetivo'
+                },
+                menu_text: `Olá, Dr(a)! 👋
+Sou a Mia, consultora da Trajetória Med!
+Digite o número da opção desejada:
+
+📚 *PÓS-GRADUAÇÕES:*
+1️⃣ Pós em Auditoria em Saúde
+2️⃣ Pós em Medicina do Trabalho
+3️⃣ Pós em Perícia Médica Federal e Judicial
+4️⃣ Combo Perícia + Medicina do Trabalho
+
+🎯 *PREPARATÓRIOS:*
+5️⃣ Prova de Título em Medicina Legal
+6️⃣ Missão Médico Legista (PC/PF)
+7️⃣ SOS Médico Legista (Reta Final)
+8️⃣ CAIXA (Médico do Trabalho)
+9️⃣ TCE MG (Tribunal de Contas)`,
+                courses: [
+                    {
+                        id: 'auditoria',
+                        name: 'Pós em Auditoria em Saúde',
+                        salary: '',
+                        exam_date: '',
+                        registration_deadline: '',
+                        subjects: '',
+                        installment: '12x de R$ 227,22',
+                        cash: 'R$ 2.197,00',
+                        coupon: 'TRAJETORIA40',
+                        payment_link_new: 'https://pay.kiwify.com.br/eQ5bDwh',
+                        payment_link_alumni: 'https://pay.kiwify.com.br/wnX5sKi',
+                        instagram_link: '',
+                        flow_instructions: '',
+                        intro_script: '',
+                        closing_script: '',
+                        objections: {
+                            expensive: '',
+                            no_time: '',
+                            alone: '',
+                            think: '',
+                            final: ''
+                        }
+                    },
+                    {
+                        id: 'medicina',
+                        name: 'Pós em Medicina do Trabalho',
+                        salary: '',
+                        exam_date: '',
+                        registration_deadline: '',
+                        subjects: '',
+                        installment: '12x de R$ 227,22',
+                        cash: 'R$ 2.197,00',
+                        coupon: 'TRAJETORIA40',
+                        payment_link_new: 'https://pay.kiwify.com.br/kQs5dRx',
+                        payment_link_alumni: 'https://pay.kiwify.com.br/0Gu4DGE',
+                        instagram_link: '',
+                        flow_instructions: '',
+                        intro_script: '',
+                        closing_script: '',
+                        objections: { expensive: '', no_time: '', alone: '', think: '', final: '' }
+                    },
+                    {
+                        id: 'pericia',
+                        name: 'Pós em Perícia Médica Federal e Judicial',
+                        salary: '',
+                        exam_date: '',
+                        registration_deadline: '',
+                        subjects: '',
+                        installment: '12x de R$ 227,22',
+                        cash: 'R$ 2.197,00',
+                        coupon: 'TRAJETORIA40',
+                        payment_link_new: 'https://pay.kiwify.com.br/wUWMdZC',
+                        payment_link_alumni: 'https://pay.kiwify.com.br/LjGbxhO',
+                        instagram_link: '',
+                        flow_instructions: '',
+                        intro_script: '',
+                        closing_script: '',
+                        objections: { expensive: '', no_time: '', alone: '', think: '', final: '' }
+                    },
+                    {
+                        id: 'combo',
+                        name: 'Combo (Perícia + Medicina + Auditoria)',
+                        salary: '',
+                        exam_date: '',
+                        registration_deadline: '',
+                        subjects: '',
+                        installment: '12x de R$ 227,22',
+                        cash: 'R$ 2.197,00',
+                        coupon: 'TRAJETORIA40',
+                        payment_link_new: 'https://pay.kiwify.com.br/G8D28l3',
+                        payment_link_alumni: 'https://pay.kiwify.com.br/yv14Nj6',
+                        instagram_link: '',
+                        flow_instructions: '',
+                        intro_script: '',
+                        closing_script: '',
+                        objections: { expensive: '', no_time: '', alone: '', think: '', final: '' }
+                    },
+                    {
+                        id: 'provatitulos',
+                        name: 'Prova de Títulos em Medicina Legal',
+                        salary: '',
+                        exam_date: '',
+                        registration_deadline: '',
+                        subjects: '',
+                        installment: '12x de R$ 227,22',
+                        cash: 'R$ 2.197,00',
+                        coupon: 'TRAJETORIA40',
+                        payment_link_new: 'https://pay.kiwify.com.br/Wkh7JCu',
+                        payment_link_alumni: 'https://pay.kiwify.com.br/lEWsLJm',
+                        instagram_link: '',
+                        flow_instructions: '',
+                        intro_script: '',
+                        closing_script: '',
+                        objections: { expensive: '', no_time: '', alone: '', think: '', final: '' }
+                    },
+                    {
+                        id: 'missao',
+                        name: 'Missão Médico Legista (PC/PF)',
+                        salary: '',
+                        exam_date: '',
+                        registration_deadline: '',
+                        subjects: '',
+                        installment: '12x de R$ 227,22',
+                        cash: 'R$ 2.197,00',
+                        coupon: 'TRAJETORIA40',
+                        payment_link_new: 'https://pay.kiwify.com.br/BgwBX4J',
+                        payment_link_alumni: 'https://pay.kiwify.com.br/Mdi4c4N',
+                        instagram_link: '',
+                        flow_instructions: '',
+                        intro_script: '',
+                        closing_script: '',
+                        objections: { expensive: '', no_time: '', alone: '', think: '', final: '' }
+                    },
+                    {
+                        id: 'sos',
+                        name: 'SOS Médico Legista (Reta Final)',
+                        salary: '',
+                        exam_date: '',
+                        registration_deadline: '',
+                        subjects: '',
+                        installment: '12x de R$ 227,22',
+                        cash: 'R$ 2.197,00',
+                        coupon: 'TRAJETORIA40',
+                        payment_link_new: 'https://pay.kiwify.com.br/XCLSRrI',
+                        payment_link_alumni: 'https://pay.kiwify.com.br/fAl2qrg',
+                        instagram_link: '',
+                        flow_instructions: '',
+                        intro_script: '',
+                        closing_script: '',
+                        objections: { expensive: '', no_time: '', alone: '', think: '', final: '' }
+                    },
+                    {
+                        id: 'caixa',
+                        name: 'CAIXA - Médico do Trabalho',
+                        salary: 'R$ 12.371,00',
+                        exam_date: '01/02/2026',
+                        registration_deadline: 'até 08/12/2025 às 23h',
+                        subjects: 'Medicina do Trabalho e temas relacionados',
+                        qualification_requirements: 'RQE em Medicina do Trabalho ou 2 anos de experiência',
+                        installment: '12x de R$ 227,22',
+                        cash: 'R$ 2.197,00',
+                        coupon: 'TRAJETORIA40',
+                        payment_link_new: 'https://pay.kiwify.com.br/q0TTdIR',
+                        payment_link_alumni: 'https://pay.kiwify.com.br/7aiBZMe',
+                        instagram_link: '',
+                        flow_instructions: '',
+                        intro_script: '',
+                        closing_script: '',
+                        objections: { expensive: '', no_time: '', alone: '', think: '', final: '' }
+                    },
+                    {
+                        id: 'tcemg',
+                        name: 'TCE MG - Tribunal de Contas de Minas Gerais',
+                        salary: 'R$ 15.000,00',
+                        exam_date: '25/01/2026',
+                        registration_deadline: 'até 09/12/2025',
+                        subjects: 'P1: Português, Raciocínio Lógico, Informática, Dir. Constitucional, Dir. Administrativo | P2: Medicina Completa | P3: Discursiva',
+                        qualification_requirements: 'Qualquer especialidade ou sem especialidade',
+                        installment: '12x de R$ 227,22',
+                        cash: 'R$ 2.197,00',
+                        coupon: 'TRAJETORIA40',
+                        payment_link_new: 'https://pay.kiwify.com.br/vxDfWrp',
+                        payment_link_alumni: 'https://pay.kiwify.com.br/Jl2eYDO',
+                        instagram_link: '',
+                        flow_instructions: '',
+                        intro_script: '',
+                        closing_script: '',
+                        objections: { expensive: '', no_time: '', alone: '', think: '', final: '' }
+                    }
+                ],
+                business_rules: {
+                    payment_link_promo: 'https://pay.kiwify.com.br/q0TTdIR',
+                    payment_link_normal: 'https://pay.kiwify.com.br/7aiBZMe',
+                    promo_end_date: '2025-12-05',
+                    pix_key: 'contato@escoladepericiamedica.com.br',
+                    access_message: 'O material será liberado logo após a confirmação do pagamento'
+                },
+                objections: {
+                    price: 'Dr(a), o salário inicial é +12k com benefícios. O valor do curso é menor que um único plantão de 24h. É um investimento para Sair dos plantões, não um custo.',
+                    time: 'Dr(a), o curso foi feito para quem dá plantão. As aulas são curtas, temos mapas mentais e cronograma para 1h a 2h por dia. Você precisa de direção, não de tempo sobrando.',
+                    alone: 'O problema é filtrar o que estudar. Sozinho você perde tempo. A banca tem estilo próprio e nós entregamos tudo mastigado, focado exatamente no que cai.',
+                    think: 'Claro, Dr(a)! Mas lembre-se que as inscrições são até [DATA] e quanto antes começar, mais preparado estará.',
+                    final: 'Então deixamos para uma próxima oportunidade 😊. Aproveite e acesse nosso website: www.trajetoriamed.com.br'
+                },
+                advanced: {
+                    message_buffer: 3,
+                    additional_instructions: ''
+                }
+            };
+        }
+
+        function populateFields(config) {
+            // Global - Persona
+            if (config.bot_persona) {
+                document.getElementById('bot_name').value = config.bot_persona.name || '';
+                document.getElementById('bot_role').value = config.bot_persona.role || '';
+                document.getElementById('bot_company').value = config.bot_persona.company || '';
+                document.getElementById('bot_tone').value = config.bot_persona.tone || '';
+            }
+
+            // Menu
+            if (config.menu_text) {
+                document.getElementById('menu_text').value = config.menu_text;
+            }
+
+            // Business Rules
+            if (config.business_rules) {
+                const br = config.business_rules;
+                document.getElementById('payment_link_promo').value = br.payment_link_promo || '';
+                document.getElementById('payment_link_normal').value = br.payment_link_normal || '';
+                document.getElementById('promo_end_date').value = br.promo_end_date || '';
+                document.getElementById('pix_key').value = br.pix_key || '';
+                document.getElementById('access_message').value = br.access_message || '';
+            }
+
+            // Courses
+            if (config.courses) {
+                coursesData = config.courses;
+                renderCoursesList();
+                populateCourseSelectors();
+            }
+
+            // Scripts
+            if (config.objections) {
+                document.getElementById('objection_price').value = config.objections.price || '';
+                document.getElementById('objection_time').value = config.objections.time || '';
+                document.getElementById('objection_alone').value = config.objections.alone || '';
+                document.getElementById('objection_think').value = config.objections.think || '';
+                document.getElementById('objection_final').value = config.objections.final || '';
+            }
+
+            // Advanced
+            if (config.advanced) {
+                document.getElementById('message_buffer').value = config.advanced.message_buffer || 3;
+                document.getElementById('ai_additional_instructions').value = config.advanced.additional_instructions || '';
+            }
+        }
+
+        function renderCoursesList() {
+            const container = document.getElementById('courses-list');
+            container.innerHTML = coursesData.map((course, index) => `
+                <div class="course-card border rounded-lg p-4 bg-gray-50">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">${course.name || 'Sem nome'}</h3>
+                            <span class="text-sm text-gray-500">ID: ${course.id}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editCourse(${index})" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                                ✏️ Editar
+                            </button>
+                            <button onclick="deleteCourse(${index})" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                                🗑️ Excluir
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                        <div><strong>Salário:</strong> ${course.salary || 'N/A'}</div>
+                        <div><strong>Prova:</strong> ${course.exam_date || 'N/A'}</div>
+                        <div><strong>Parcelamento:</strong> ${course.installment || 'N/A'}</div>
+                        <div><strong>À Vista:</strong> ${course.cash || 'N/A'}</div>
+                        <div><strong>Link New:</strong> ${course.payment_link_new ? '✅' : '❌'}</div>
+                        <div><strong>Link Alumni:</strong> ${course.payment_link_alumni ? '✅' : '❌'}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function populateCourseSelectors() {
+            const flowSelector = document.getElementById('flow_course_selector');
+            const scriptSelector = document.getElementById('script_course_selector');
+            
+            const options = coursesData.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            
+            flowSelector.innerHTML = '<option value="">-- Selecione um curso --</option>' + options;
+            scriptSelector.innerHTML = '<option value="">-- Selecione um curso --</option>' + options;
+        }
+
+        function loadFlowForCourse() {
+            const courseId = document.getElementById('flow_course_selector').value;
+            if (!courseId) {
+                document.getElementById('flow-editor').classList.add('hidden');
+                return;
+            }
+            
+            const course = coursesData.find(c => c.id === courseId);
+            if (course) {
+                document.getElementById('flow-editor').classList.remove('hidden');
+                document.getElementById('flow_instructions').value = course.flow_instructions || '';
+            }
+        }
+
+        function saveFlowForCourse() {
+            const courseId = document.getElementById('flow_course_selector').value;
+            if (!courseId) {
+                showAlert('Selecione um curso primeiro', 'error');
+                return;
+            }
+            
+            const course = coursesData.find(c => c.id === courseId);
+            if (course) {
+                course.flow_instructions = document.getElementById('flow_instructions').value;
+                showAlert('Fluxo salvo com sucesso!', 'success');
+                console.log('✅ Fluxo salvo para', courseId, course.flow_instructions.substring(0, 100) + '...');
+            }
+        }
+
+        function loadScriptsForCourse() {
+            const courseId = document.getElementById('script_course_selector').value;
+            if (!courseId) {
+                document.getElementById('course-scripts-editor').classList.add('hidden');
+                return;
+            }
+            
+            const course = coursesData.find(c => c.id === courseId);
+            if (course) {
+                document.getElementById('course-scripts-editor').classList.remove('hidden');
+                document.getElementById('course_intro_script').value = course.intro_script || '';
+                document.getElementById('course_closing_script').value = course.closing_script || '';
+                
+                // Carregar objeções específicas do curso
+                if (!course.objections) {
+                    course.objections = { expensive: '', no_time: '', alone: '', think: '', final: '' };
+                }
+                document.getElementById('course_objection_expensive').value = course.objections.expensive || '';
+                document.getElementById('course_objection_no_time').value = course.objections.no_time || '';
+                document.getElementById('course_objection_alone').value = course.objections.alone || '';
+                document.getElementById('course_objection_think').value = course.objections.think || '';
+                document.getElementById('course_objection_final').value = course.objections.final || '';
+            }
+        }
+
+        function saveScriptsForCourse() {
+            const courseId = document.getElementById('script_course_selector').value;
+            if (!courseId) {
+                showAlert('Selecione um curso primeiro', 'error');
+                return;
+            }
+            
+            const course = coursesData.find(c => c.id === courseId);
+            if (course) {
+                course.intro_script = document.getElementById('course_intro_script').value;
+                course.closing_script = document.getElementById('course_closing_script').value;
+                
+                // Salvar objeções específicas
+                if (!course.objections) {
+                    course.objections = {};
+                }
+                course.objections.expensive = document.getElementById('course_objection_expensive').value;
+                course.objections.no_time = document.getElementById('course_objection_no_time').value;
+                course.objections.alone = document.getElementById('course_objection_alone').value;
+                course.objections.think = document.getElementById('course_objection_think').value;
+                course.objections.final = document.getElementById('course_objection_final').value;
+                
+                showAlert('Scripts e objeções salvos com sucesso!', 'success');
+                console.log('✅ Scripts e objeções salvos para', courseId, course);
+            }
+        }
+
+        function addNewCourse() {
+            const newCourse = {
+                id: 'curso_' + Date.now(),
+                name: 'Novo Curso',
+                salary: '',
+                exam_date: '',
+                registration_deadline: '',
+                subjects: '',
+                payment_link_new: '',
+                payment_link_alumni: '',
+                flow_instructions: '',
+                intro_script: '',
+                closing_script: ''
+            };
+            
+            coursesData.push(newCourse);
+            renderCoursesList();
+            populateCourseSelectors();
+        }
+
+        function editCourse(index) {
+            const course = coursesData[index];
+            
+            const modal = `
+                <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onclick="closeModal()">
+                    <div class="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+                        <h3 class="text-2xl font-bold mb-4">Editar Curso</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">ID do Curso</label>
+                                <input type="text" id="edit_course_id" value="${course.id}" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Nome</label>
+                                <input type="text" id="edit_course_name" value="${course.name}" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Salário</label>
+                                <input type="text" id="edit_course_salary" value="${course.salary || ''}" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Data da Prova</label>
+                                <input type="text" id="edit_course_exam" value="${course.exam_date || ''}" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Link Novo Aluno</label>
+                                <input type="url" id="edit_course_link_new" value="${course.payment_link_new || ''}" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Link Ex-Aluno</label>
+                                <input type="url" id="edit_course_link_alumni" value="${course.payment_link_alumni || ''}" class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                        </div>
+                        
+                        <div class="border-t pt-4 mt-4">
+                            <h4 class="text-lg font-bold mb-3">📱 Link do Instagram</h4>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Código do Post (ex: DBN-_0xpJ3Z, DBN_0bSpX0K)</label>
+                                    <input type="text" id="edit_course_instagram" value="${course.instagram_link || ''}" class="w-full px-4 py-2 border rounded-lg" placeholder="DBN-_0xpJ3Z, DBN_0bSpX0K">
+                                    <small class="text-gray-500">Separe múltiplos códigos por vírgula. Bot detectará automaticamente quando usuário clicar no link do Instagram.</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t pt-4 mt-4">
+                            <h4 class="text-lg font-bold mb-3">💰 Preços do Curso</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Parcelamento</label>
+                                    <input type="text" id="edit_course_installment" value="${course.installment || ''}" class="w-full px-4 py-2 border rounded-lg" placeholder="12x de R$ 227,22">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">À Vista</label>
+                                    <input type="text" id="edit_course_cash" value="${course.cash || ''}" class="w-full px-4 py-2 border rounded-lg" placeholder="R$ 2.197,00">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Cupom</label>
+                                    <input type="text" id="edit_course_coupon" value="${course.coupon || ''}" class="w-full px-4 py-2 border rounded-lg" placeholder="TRAJETORIA40">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-4 mt-4">
+                            <button onclick="saveCourseEdit(${index})" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                                Salvar
+                            </button>
+                            <button onclick="closeModal()" class="bg-gray-400 text-white px-6 py-2 rounded-lg hover:bg-gray-500">
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modal);
+        }
+
+        function saveCourseEdit(index) {
+            coursesData[index] = {
+                ...coursesData[index],
+                id: document.getElementById('edit_course_id').value,
+                name: document.getElementById('edit_course_name').value,
+                salary: document.getElementById('edit_course_salary').value,
+                exam_date: document.getElementById('edit_course_exam').value,
+                payment_link_new: document.getElementById('edit_course_link_new').value,
+                payment_link_alumni: document.getElementById('edit_course_link_alumni').value,
+                instagram_link: document.getElementById('edit_course_instagram').value,
+                installment: document.getElementById('edit_course_installment').value,
+                cash: document.getElementById('edit_course_cash').value,
+                coupon: document.getElementById('edit_course_coupon').value
+            };
+            
+            renderCoursesList();
+            populateCourseSelectors();
+            closeModal();
+        }
+
+        function deleteCourse(index) {
+            if (confirm('Tem certeza que deseja excluir este curso?')) {
+                coursesData.splice(index, 1);
+                renderCoursesList();
+                populateCourseSelectors();
+            }
+        }
+
+        function closeModal() {
+            document.querySelectorAll('.fixed.inset-0').forEach(modal => modal.remove());
+        }
+
+        async function saveAllConfig() {
+            try {
+                console.log('💾 Iniciando salvamento...');
+                
+                // Save flow instructions for selected course
+                const flowCourseId = document.getElementById('flow_course_selector').value;
+                if (flowCourseId) {
+                    const course = coursesData.find(c => c.id === flowCourseId);
+                    if (course) {
+                        course.flow_instructions = document.getElementById('flow_instructions').value;
+                        console.log(`✅ Flow salvo para curso: ${flowCourseId}`);
+                    }
+                }
+
+                // Save scripts for selected course
+                const scriptCourseId = document.getElementById('script_course_selector').value;
+                if (scriptCourseId) {
+                    const course = coursesData.find(c => c.id === scriptCourseId);
+                    if (course) {
+                        course.intro_script = document.getElementById('course_intro_script').value;
+                        course.closing_script = document.getElementById('course_closing_script').value;
+                        console.log(`✅ Scripts salvos para curso: ${scriptCourseId}`);
+                    }
+                }
+
+                const fullConfig = {
+                    bot_persona: {
+                        name: document.getElementById('bot_name').value,
+                        role: document.getElementById('bot_role').value,
+                        company: document.getElementById('bot_company').value,
+                        tone: document.getElementById('bot_tone').value
+                    },
+                    menu_text: document.getElementById('menu_text').value,
+                    courses: coursesData,
+                    business_rules: {
+                        payment_link_promo: document.getElementById('payment_link_promo').value,
+                        payment_link_normal: document.getElementById('payment_link_normal').value,
+                        promo_end_date: document.getElementById('promo_end_date').value,
+                        pix_key: document.getElementById('pix_key').value,
+                        access_message: document.getElementById('access_message').value
+                    },
+                    objections: {
+                        price: document.getElementById('objection_price').value,
+                        time: document.getElementById('objection_time').value,
+                        alone: document.getElementById('objection_alone').value,
+                        think: document.getElementById('objection_think').value,
+                        final: document.getElementById('objection_final').value
+                    },
+                    advanced: {
+                        message_buffer: document.getElementById('message_buffer').value,
+                        additional_instructions: document.getElementById('ai_additional_instructions').value
+                    }
+                };
+
+                console.log('📤 Configuração a ser salva:', fullConfig);
+                console.log('📊 Total de cursos:', fullConfig.courses.length);
+
+                const response = await fetch('/api/bot/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ courses_config: fullConfig })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('✅ Resposta do servidor:', result);
+                    
+                    // Atualizar currentConfig com o que foi salvo
+                    currentConfig = fullConfig;
+                    
+                    showAlert('✅ Configuração salva com sucesso!', 'success');
+                } else {
+                    const error = await response.json();
+                    console.error('❌ Erro do servidor:', error);
+                    throw new Error(error.error || 'Erro ao salvar configuração');
+                }
+            } catch (error) {
+                console.error('❌ Erro ao salvar:', error);
+                showAlert('❌ Erro ao salvar: ' + error.message, 'error');
+            }
+        }
+
+        function exportConfig() {
+            const dataStr = JSON.stringify(currentConfig, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const exportName = `bot-config-${new Date().toISOString().split('T')[0]}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportName);
+            linkElement.click();
+        }
+
+        function importConfig() {
+            const file = document.getElementById('import_file').files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    currentConfig = imported;
+                    populateFields(imported);
+                    showAlert('✅ Configuração importada com sucesso!', 'success');
+                } catch (error) {
+                    showAlert('❌ Erro ao importar: ' + error.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${type === 'success' ? 'bg-green-100 text-green-800 border-green-300' : 'bg-red-100 text-red-800 border-red-300'} px-6 py-4 rounded-lg mb-4 border`;
+            alertDiv.textContent = message;
+            
+            const container = document.getElementById('alert-container');
+            container.innerHTML = '';
+            container.appendChild(alertDiv);
+            
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+CREATE DATABASE IF NOT EXISTS wppbot_saas CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS 'wppbot'@'localhost' IDENTIFIED BY 'wppbot@2025';
+GRANT ALL PRIVILEGES ON wppbot_saas.* TO 'wppbot'@'localhost';
+FLUSH PRIVILEGES;
+SHOW DATABASES;

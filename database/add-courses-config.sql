@@ -1,0 +1,51 @@
+-- Adicionar configurações de cursos ao bot_configs
+ALTER TABLE bot_configs 
+ADD COLUMN courses_config JSON DEFAULT NULL COMMENT 'Configurações detalhadas dos cursos em formato JSON';
+
+-- Exemplo de estrutura JSON para courses_config:
+-- {
+--   "courses": [
+--     {
+--       "id": "caixa",
+--       "name": "CAIXA - Médico do Trabalho",
+--       "salary": "R$ 12.371,00",
+--       "exam_date": "01/02/2026",
+--       "registration_deadline": "08/12/2025",
+--       "registration_fee": "R$ 150,00",
+--       "subjects": [],
+--       "payment_link_new": "https://pay.kiwify.com.br/q0TTdIR",
+--       "payment_link_alumni": "https://pay.kiwify.com.br/SgP49yW"
+--     },
+--     {
+--       "id": "tcemg",
+--       "name": "TCE MG - Tribunal de Contas",
+--       "salary": "R$ 15.000,00",
+--       "exam_date": "25/01/2026",
+--       "registration_deadline": "09/12/2025",
+--       "registration_fee": "R$ 180,00",
+--       "registration_fee_due": "11/12/2025",
+--       "subjects": [
+--         "P1 - Conhecimentos Gerais: Português, Direito Administrativo, Direito Constitucional, Controle Externo, Direitos Humanos",
+--         "P2 - Conhecimentos Específicos: Medicina (Clínica Médica, cardiovascular, pulmonar, gastrointestinal, renal, endócrina, reumatologia, infectologia, emergências, ética médica e bioética)",
+--         "P3 - Prova Discursiva: Uma questão de conhecimentos gerais e uma de Medicina"
+--       ],
+--       "payment_link_new": "https://pay.kiwify.com.br/MquUu7Y",
+--       "payment_link_alumni": "https://pay.kiwify.com.br/p33EuRI"
+--     }
+--   ],
+--   "pricing": {
+--     "installment": "12x de R$ 227,22",
+--     "cash": "R$ 2.197,00 à vista",
+--     "coupon": "TRAJETORIA40",
+--     "subscription": {
+--       "initial_fee": "R$ 39,90",
+--       "monthly_installment": "12x de R$ 227,22 + taxa do cartão"
+--     }
+--   },
+--   "bot_persona": {
+--     "name": "Mia",
+--     "role": "Consultora de carreira da Trajetória Med",
+--     "tone": "Consultiva e empática",
+--     "greeting": "Olá, Dr(a)! 👋 Sou a {name}, {role}."
+--   }
+-- }

@@ -1,0 +1,7 @@
+node_modules/
+.env
+tokens/
+*.log
+.wwebjs_auth/
+.wppconnect/
+sessions/
