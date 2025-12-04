@@ -230,10 +230,32 @@ class WhatsAppService {
                 console.log(`⚡ Processando com FLUXO (ultra-rápido)`);
                 const startTime = Date.now();
                 
+                // Extrair menu_text da courses_config
+                let flowConfig = {};
+                if (botConfig.courses_config) {
+                    try {
+                        const coursesConfig = typeof botConfig.courses_config === 'string' 
+                            ? JSON.parse(botConfig.courses_config) 
+                            : botConfig.courses_config;
+                        flowConfig.menu_text = coursesConfig.menu_text;
+                        // Adicionar links do Instagram se existirem
+                        if (coursesConfig.courses) {
+                            coursesConfig.courses.forEach(course => {
+                                if (course.instagram_link) {
+                                    flowConfig[`link_${course.id}`] = course.instagram_link;
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        console.log('⚠️ Erro ao parsear courses_config:', e.message);
+                    }
+                }
+                
                 const flowResponse = await chatbotFlowService.processMessage(
                     userId,
                     message.from,
-                    message.body
+                    message.body,
+                    flowConfig
                 );
 
                 const elapsedTime = Date.now() - startTime;
@@ -272,6 +294,17 @@ class WhatsAppService {
                         botConfig,
                         sessionInfo
                     );
+                } else if (typeof flowResponse === 'object' && flowResponse.showMenu) {
+                    // Reset completo - mostrar menu e limpar histórico
+                    console.log('🔄 RESET COMPLETO: Mostrando menu novamente');
+                    
+                    if (flowResponse.clearHistory) {
+                        const historyKey = `${userId}-${message.from}`;
+                        this.conversationHistory.delete(historyKey);
+                        console.log('🧹 [HISTÓRICO LIMPO] Reset completo do atendimento');
+                    }
+                    
+                    aiResponse = flowResponse.message;
                 } else {
                     // Resposta normal do fluxo
                     aiResponse = flowResponse;

@@ -632,9 +632,6 @@ Digite o número da opção desejada:
                     }
                 ],
                 business_rules: {
-                    payment_link_promo: 'https://pay.kiwify.com.br/q0TTdIR',
-                    payment_link_normal: 'https://pay.kiwify.com.br/7aiBZMe',
-                    promo_end_date: '2025-12-05',
                     pix_key: 'contato@escoladepericiamedica.com.br',
                     access_message: 'O material será liberado logo após a confirmação do pagamento'
                 },
@@ -669,9 +666,6 @@ Digite o número da opção desejada:
             // Business Rules
             if (config.business_rules) {
                 const br = config.business_rules;
-                document.getElementById('payment_link_promo').value = br.payment_link_promo || '';
-                document.getElementById('payment_link_normal').value = br.payment_link_normal || '';
-                document.getElementById('promo_end_date').value = br.promo_end_date || '';
                 document.getElementById('pix_key').value = br.pix_key || '';
                 document.getElementById('access_message').value = br.access_message || '';
             }
@@ -985,9 +979,6 @@ Digite o número da opção desejada:
                     menu_text: document.getElementById('menu_text').value,
                     courses: coursesData,
                     business_rules: {
-                        payment_link_promo: document.getElementById('payment_link_promo').value,
-                        payment_link_normal: document.getElementById('payment_link_normal').value,
-                        promo_end_date: document.getElementById('promo_end_date').value,
                         pix_key: document.getElementById('pix_key').value,
                         access_message: document.getElementById('access_message').value
                     },

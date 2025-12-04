@@ -26,6 +26,18 @@ function buildSystemPrompt(coursesConfig, sessionInfo) {
         console.log('💰 [DEBUG] Link ALUMNI:', selectedCourse.payment_link_alumni);
         console.log('💰 [DEBUG] Preço parcelado:', selectedCourse.installment);
         console.log('💰 [DEBUG] Preço à vista:', selectedCourse.cash);
+        
+        // Verificar se tem desconto para ex-aluno
+        const linkAlumni = selectedCourse.payment_link_alumni || '';
+        const linkNew = selectedCourse.payment_link_new || '';
+        const hasAlumniDiscount = linkAlumni.trim() !== '' && linkAlumni !== linkNew;
+        
+        console.log('🎓 [DEBUG] Link Alumni válido?', linkAlumni.trim() !== '');
+        console.log('🎓 [DEBUG] Links diferentes?', linkAlumni !== linkNew);
+        console.log('🎓 [DEBUG] Tem desconto ex-aluno:', hasAlumniDiscount);
+        
+        // Adicionar flag no sessionInfo
+        sessionInfo.hasAlumniDiscount = hasAlumniDiscount;
     } else {
         console.log('❌ [DEBUG] CURSO NÃO ENCONTRADO! produto:', sessionInfo.produto);
     }
@@ -121,8 +133,21 @@ Você é *${bot_persona.name}*, *${bot_persona.role}*. Sua função é EXCLUSIVA
     prompt += `
 2. **IDENTIFICAÇÃO:**
    - Sempre saudar como "Dr(a)"
-   - Coletar nome completo primeiro
-   - Perguntar se é ex-aluno da ${bot_persona.company}
+   - Coletar nome completo primeiro`;
+   
+    // Verificar se deve perguntar sobre ex-aluno
+    console.log('🎓 [VERIFICAÇÃO PROMPT] hasAlumniDiscount =', sessionInfo.hasAlumniDiscount);
+    console.log('🎓 [VERIFICAÇÃO PROMPT] Tipo:', typeof sessionInfo.hasAlumniDiscount);
+    
+    if (sessionInfo.hasAlumniDiscount === true) {
+        prompt += `
+   - Perguntar se é ex-aluno da ${bot_persona.company}`;
+        console.log('✅ [PROMPT] Curso tem desconto ex-aluno - pergunta incluída no prompt');
+    } else {
+        console.log('⏭️ [PROMPT] Curso sem desconto ex-aluno - pergunta NÃO incluída no prompt');
+    }
+    
+    prompt += `
 
 `;
 
@@ -561,27 +586,40 @@ function buildCriticalLinkWarning(selectedCourse, sessionInfo) {
         link = isBlackFriday ? selectedCourse.payment_link_new : selectedCourse.payment_link_alumni;
         console.log(`🔗 [BLOCO 8] CAIXA/TCE - Black Friday: ${isBlackFriday} | Link: ${link}`);
     } else {
-        const isAlumni = sessionInfo.exAluno === true;
-        link = isAlumni ? selectedCourse.payment_link_alumni : selectedCourse.payment_link_new;
-        console.log(`🔗 [BLOCO 8] Ex-Aluno: ${isAlumni} | Link: ${link}`);
+        // Verificar se curso tem desconto ex-aluno
+        const hasDiscount = sessionInfo.hasAlumniDiscount;
+        
+        if (!hasDiscount) {
+            // Sem desconto: sempre usar link NEW
+            link = selectedCourse.payment_link_new;
+            console.log(`🔗 [BLOCO 8] Sem desconto ex-aluno - usando link NEW: ${link}`);
+        } else {
+            // Com desconto: escolher baseado em exAluno
+            const isAlumni = sessionInfo.exAluno === true;
+            link = isAlumni ? selectedCourse.payment_link_alumni : selectedCourse.payment_link_new;
+            console.log(`🔗 [BLOCO 8] Com desconto - Ex-Aluno: ${isAlumni} | Link: ${link}`);
+        }
     }
     
     return `
-8. **🔗 LINK DE PAGAMENTO:**
+8. **🔗 LINK DE PAGAMENTO CORRETO:**
 
-   Link para ${selectedCourse.name}:
-   ${link}
+   ✅ **ESTE É O ÚNICO LINK VÁLIDO:** ${link}
    
-   Use EXATAMENTE este link quando enviar para o cliente.
-   Não use wa.me, encurtadores ou outros links.
+   ⚠️ **INFORMAÇÃO IMPORTANTE:**
+   - Este link foi AUTOMATICAMENTE selecionado baseado no perfil do cliente
+   - Cliente identificado como: ${isCaixaOrTce ? 
+       (new Date() <= new Date('2025-12-05T23:59:59') ? 'BLACK FRIDAY' : 'PREÇO NORMAL') : 
+       (sessionInfo.exAluno === true ? 'EX-ALUNO (com desconto)' : 'NOVO ALUNO')}
+   - Link escolhido: ${link}
    
-   🔴 IMPORTANTE:
-   - Envie APENAS este link: ${link}
-   - NÃO use wa.me (encurtador) - use o link DIRETO do Kiwify
-   - NÃO mostre múltiplas opções
-   - NÃO invente variações
-   
-   🔴 Se você não seguir EXATAMENTE, o cliente não conseguirá comprar!
+   🔴 **REGRAS CRÍTICAS:**
+   - ✅ Use SOMENTE este link: ${link}
+   - ❌ NÃO use links que aparecem em outras partes deste prompt
+   - ❌ NÃO use wa.me, encurtadores ou outros links
+   - ❌ NÃO mostre múltiplas opções
+   - ❌ NÃO invente ou altere o link
+   - ❌ Se você enviar link errado, o cliente terá problema no pagamento!
 
 `;
 }
@@ -618,15 +656,30 @@ function buildPaymentLinkBlock(selectedCourse, sessionInfo, pricing = {}) {
             linkType = 'PREÇO NORMAL';
         }
     } else {
-        // Demais cursos: sistema ex-aluno vs novo aluno
-        const isAlumni = sessionInfo.exAluno === true;
-        link = isAlumni ? selectedCourse.payment_link_alumni : selectedCourse.payment_link_new;
-        linkType = isAlumni ? 'EX-ALUNO' : 'NOVO ALUNO';
-        console.log(`🔗 [LINK SELECIONADO] Tipo: ${linkType} | Ex-Aluno: ${isAlumni} | Link: ${link}`);
+        // Demais cursos: verificar se tem desconto ex-aluno
+        const hasDiscount = sessionInfo.hasAlumniDiscount;
+        
+        if (!hasDiscount) {
+            // Sem desconto: sempre usar link NEW
+            link = selectedCourse.payment_link_new;
+            linkType = 'ÚNICO (sem desconto ex-aluno)';
+            console.log(`🔗 [LINK SELECIONADO] Tipo: ${linkType} | Link: ${link}`);
+        } else {
+            // Com desconto: sistema ex-aluno vs novo aluno
+            const isAlumni = sessionInfo.exAluno === true;
+            link = isAlumni ? selectedCourse.payment_link_alumni : selectedCourse.payment_link_new;
+            linkType = isAlumni ? 'EX-ALUNO' : 'NOVO ALUNO';
+            console.log(`🔗 [LINK SELECIONADO] Tipo: ${linkType} | Ex-Aluno: ${isAlumni} | Link: ${link}`);
+        }
     }
 
     return `
 9. **ENVIO DE LINK DE PAGAMENTO:**
+   
+   🚨 **ATENÇÃO CRÍTICA: O LINK CORRETO JÁ FOI DETERMINADO PELO SISTEMA**
+   
+   ✅ Link que você DEVE usar: ${link}
+   ✅ Tipo de cliente: ${linkType}
    
    🚨 QUANDO USUÁRIO ESCOLHER "CARTÃO" OU "PIX", ENVIE EXATAMENTE ESTA MENSAGEM:
    
@@ -640,8 +693,12 @@ function buildPaymentLinkBlock(selectedCourse, sessionInfo, pricing = {}) {
    Pode pagar no cartão ou PIX. Assim que finalizar, envie o comprovante aqui!
    ---FIM DA MENSAGEM---
    
-   🔴 **REGRAS ABSOLUTAS:**
-   - COPIE o link literal: ${link}
+   🔴 **REGRAS ABSOLUTAS - LEIA COM ATENÇÃO:**
+   - ✅ O link correto é: ${link}
+   - ✅ Este link JÁ foi escolhido baseado em: ${linkType}
+   - ❌ NUNCA substitua ou invente outro link
+   - ❌ NUNCA use links que estão em outras partes do prompt
+   - COPIE EXATAMENTE o link: ${link}
    - ❌ NUNCA diga "link enviado acima" - SEMPRE cole o link completo
    - ❌ NUNCA use "clique aqui" ou outros textos sem o link
    - ✅ O link DEVE aparecer na mensagem como texto visível

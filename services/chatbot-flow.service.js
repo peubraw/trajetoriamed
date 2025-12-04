@@ -70,6 +70,11 @@ class ChatbotFlowService {
         // Saudações
         if (msg.match(/^(oi|olá|ola|hey|opa|bom dia|boa tarde|boa noite|ola\,|oi\,)/)) return 'saudacao';
         
+        // Pedido para ver outros cursos / voltar ao menu
+        if (msg.match(/(outros cursos|outro curso|ver outros|voltar|menu|opções|opcoes|mais cursos|qual|quais cursos|cursos disponiveis|cursos disponíveis)/i)) {
+            return 'ver_outros_cursos';
+        }
+        
         // Menu
         if (msg === '1') return 'produto_auditoria';
         if (msg === '2') return 'produto_medicina';
@@ -133,6 +138,9 @@ class ChatbotFlowService {
             };
             this.sessions.set(sessionKey, session);
         }
+        
+        // SEMPRE atualizar flowConfig com a configuração mais recente
+        session.flowConfig = flowConfig;
 
         // Se bot está pausado, não responder
         if (session.pausado) {
@@ -162,7 +170,7 @@ class ChatbotFlowService {
             case 'inicial':
                 if (intent === 'saudacao' || intent === 'menu_geral' || intent === 'nao_entendido') {
                     session.stage = 'aguardando_interesse';
-                    return this.getMenuPrincipal();
+                    return this.getMenuPrincipal(session.flowConfig);
                 }
                 if (intent.startsWith('produto_')) {
                     session.produto = intent.replace('produto_', '');
@@ -171,7 +179,7 @@ class ChatbotFlowService {
                 }
                 // Qualquer primeira mensagem desconhecida: mostrar menu
                 session.stage = 'aguardando_interesse';
-                return this.getMenuPrincipal();
+                return this.getMenuPrincipal(session.flowConfig);
 
             case 'aguardando_interesse':
                 if (intent.startsWith('produto_')) {
@@ -210,9 +218,26 @@ class ChatbotFlowService {
                     console.log(`✅ [SESSÃO] Novo aluno detectado por negação: ${session.exAluno}`);
                 }
                 
-                // Detectar se usuário está pedindo OUTRO curso
+                // Detectar se usuário está pedindo para VER OUTROS CURSOS (reset completo)
                 let clearHistory = false;
                 let isFirstMessage = false;
+                let showMenu = false;
+                
+                if (intent === 'ver_outros_cursos') {
+                    console.log(`🔄 [RESET COMPLETO] Mostrando menu novamente. Nome preservado: ${session.nome}`);
+                    const nomePreservado = session.nome; // Salvar nome
+                    // Resetar TUDO exceto nome
+                    session.stage = 'aguardando_interesse'; // Stage correto para aguardar escolha
+                    session.produto = null;
+                    session.exAluno = null;
+                    session.cursoAnterior = null;
+                    session.useAI = false;
+                    session.nome = nomePreservado; // Restaurar nome
+                    clearHistory = true;
+                    showMenu = true; // Flag para mostrar menu
+                }
+                
+                // Detectar se usuário está pedindo OUTRO curso
                 if (intent.startsWith('produto_')) {
                     const novoProduto = intent.replace('produto_', '');
                     if (novoProduto !== session.produto) {
@@ -220,11 +245,20 @@ class ChatbotFlowService {
                         session.produto = novoProduto;
                         // Resetar informações relacionadas ao curso anterior
                         session.exAluno = null;
-                        session.nome = null;
-                        session.cursoAnterior = null;
                         clearHistory = true; // Flag para limpar histórico da IA
                         isFirstMessage = true; // Tratar como primeira mensagem do novo curso
                     }
+                }
+                
+                // Se pediu para ver outros cursos, mostrar menu
+                if (showMenu) {
+                    return {
+                        stage: session.stage,
+                        useAI: false,
+                        message: this.getMenuPrincipal(session.flowConfig),
+                        clearHistory: true,
+                        showMenu: true
+                    };
                 }
                 
                 // Toda conversa a partir daqui é controlada pela IA
@@ -288,11 +322,17 @@ class ChatbotFlowService {
                 return "Você gostaria de garantir sua vaga? Por favor, responda sim ou não.";
 
             default:
-                return this.getMenuPrincipal();
+                return this.getMenuPrincipal(session?.flowConfig);
         }
     }
 
-    getMenuPrincipal() {
+    getMenuPrincipal(flowConfig = {}) {
+        // Se existe menu_text na configuração, usar ele
+        if (flowConfig.menu_text && flowConfig.menu_text.trim()) {
+            return flowConfig.menu_text;
+        }
+        
+        // Caso contrário, usar menu padrão
         return `Olá, Dr(a)! 👋
 
 Sou o Assistente da *Trajetória Med*!

@@ -70,21 +70,37 @@ router.post('/config', requireAuth, async (req, res) => {
                  vendor1_name, vendor1_phone, vendor2_name, vendor2_phone, 
                  vendor3_name, vendor3_phone, vendor4_name, vendor4_phone, courses_config) 
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                [userId, bot_name, system_prompt, temperature, max_tokens, is_active,
-                 vendor1_name, vendor1_phone, vendor2_name, vendor2_phone,
-                 vendor3_name, vendor3_phone, vendor4_name, vendor4_phone, coursesConfigJson]
+                [userId, bot_name || null, system_prompt || null, temperature || 0.7, max_tokens || 500, is_active !== undefined ? is_active : 1,
+                 vendor1_name || null, vendor1_phone || null, vendor2_name || null, vendor2_phone || null,
+                 vendor3_name || null, vendor3_phone || null, vendor4_name || null, vendor4_phone || null, coursesConfigJson]
             );
         } else {
-            // Atualizar configuração existente
-            await db.execute(
-                `UPDATE bot_configs SET bot_name = ?, system_prompt = ?, temperature = ?, max_tokens = ?, is_active = ?,
-                 vendor1_name = ?, vendor1_phone = ?, vendor2_name = ?, vendor2_phone = ?,
-                 vendor3_name = ?, vendor3_phone = ?, vendor4_name = ?, vendor4_phone = ?, courses_config = ?
-                 WHERE user_id = ?`,
-                [bot_name, system_prompt, temperature, max_tokens, is_active,
-                 vendor1_name, vendor1_phone, vendor2_name, vendor2_phone,
-                 vendor3_name, vendor3_phone, vendor4_name, vendor4_phone, coursesConfigJson, userId]
-            );
+            // Atualizar configuração existente - apenas campos fornecidos
+            const updates = [];
+            const values = [];
+            
+            if (bot_name !== undefined) { updates.push('bot_name = ?'); values.push(bot_name); }
+            if (system_prompt !== undefined) { updates.push('system_prompt = ?'); values.push(system_prompt); }
+            if (temperature !== undefined) { updates.push('temperature = ?'); values.push(temperature); }
+            if (max_tokens !== undefined) { updates.push('max_tokens = ?'); values.push(max_tokens); }
+            if (is_active !== undefined) { updates.push('is_active = ?'); values.push(is_active); }
+            if (vendor1_name !== undefined) { updates.push('vendor1_name = ?'); values.push(vendor1_name); }
+            if (vendor1_phone !== undefined) { updates.push('vendor1_phone = ?'); values.push(vendor1_phone); }
+            if (vendor2_name !== undefined) { updates.push('vendor2_name = ?'); values.push(vendor2_name); }
+            if (vendor2_phone !== undefined) { updates.push('vendor2_phone = ?'); values.push(vendor2_phone); }
+            if (vendor3_name !== undefined) { updates.push('vendor3_name = ?'); values.push(vendor3_name); }
+            if (vendor3_phone !== undefined) { updates.push('vendor3_phone = ?'); values.push(vendor3_phone); }
+            if (vendor4_name !== undefined) { updates.push('vendor4_name = ?'); values.push(vendor4_name); }
+            if (vendor4_phone !== undefined) { updates.push('vendor4_phone = ?'); values.push(vendor4_phone); }
+            if (coursesConfigJson !== null) { updates.push('courses_config = ?'); values.push(coursesConfigJson); }
+            
+            if (updates.length > 0) {
+                values.push(userId);
+                await db.execute(
+                    `UPDATE bot_configs SET ${updates.join(', ')} WHERE user_id = ?`,
+                    values
+                );
+            }
         }
 
         // Limpar cache de configuração
