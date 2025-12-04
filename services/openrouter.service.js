@@ -4,7 +4,8 @@ class OpenRouterService {
     constructor() {
         this.apiKey = process.env.OPENROUTER_API_KEY;
         this.baseUrl = 'https://openrouter.ai/api/v1';
-        this.model = 'x-ai/grok-4.1-fast:free'; // Grok 4.1 Fast (free)
+        // Usando modelo pago mais barato - Llama 3.1 8B ($0.06/M in, $0.06/M out)
+        this.model = 'meta-llama/llama-3.1-8b-instruct';
     }
 
     async chat(messages, temperature = 0.7, maxTokens = 500) {

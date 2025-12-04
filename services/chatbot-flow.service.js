@@ -102,6 +102,17 @@ class ChatbotFlowService {
         // Curso anterior
         if (msg.match(/(perícia|pericia|auditoria|medicina|tcemg|sos|caixa|webinar|webinário|pós|pos)/)) return 'curso_anterior';
         
+        // Detecção de NOME dos cursos (quando usuário menciona durante conversa)
+        if (msg.includes('auditoria')) return 'produto_auditoria';
+        if (msg.includes('medicina do trabalho') || (msg.includes('medicina') && msg.includes('trabalho'))) return 'produto_medicina';
+        if (msg.includes('perícia') || msg.includes('pericia')) return 'produto_pericia';
+        if (msg.includes('combo')) return 'produto_combo';
+        if (msg.includes('prova') && (msg.includes('título') || msg.includes('titulo'))) return 'produto_provatitulos';
+        if (msg.includes('missao') || msg.includes('missão') || (msg.includes('medico') && msg.includes('legista'))) return 'produto_missao';
+        if (msg.includes('sos')) return 'produto_sos';
+        if (msg.includes('caixa')) return 'produto_caixa';
+        if (msg.includes('tce') || msg.includes('tribunal')) return 'produto_tcemg';
+        
         return 'nao_entendido';
     }
 
@@ -182,11 +193,45 @@ class ChatbotFlowService {
                 return "Por favor, digite o número da opção desejada (1 a 9).";
 
             case 'conversacao_ia':
+                // Detectar ex-aluno ou novo aluno durante conversa com IA
+                if (intent === 'ex_aluno') {
+                    session.exAluno = true;
+                    console.log(`✅ [SESSÃO] Ex-aluno detectado: ${session.exAluno}`);
+                } else if (intent === 'novo_aluno') {
+                    session.exAluno = false;
+                    console.log(`✅ [SESSÃO] Novo aluno detectado: ${session.exAluno}`);
+                } else if (intent === 'confirmar' && session.exAluno === null) {
+                    // Se respondeu "Sim" e ainda não definiu ex-aluno, assumir que é resposta à pergunta sobre ex-aluno
+                    // Verificar histórico: se última mensagem bot continha "ex-aluno" ou "trajetória med"
+                    session.exAluno = true; // Por padrão, "Sim" no contexto de perguntas sobre histórico = ex-aluno
+                    console.log(`✅ [SESSÃO] Ex-aluno detectado por confirmação: ${session.exAluno}`);
+                } else if (intent === 'negar' && session.exAluno === null) {
+                    session.exAluno = false;
+                    console.log(`✅ [SESSÃO] Novo aluno detectado por negação: ${session.exAluno}`);
+                }
+                
+                // Detectar se usuário está pedindo OUTRO curso
+                let clearHistory = false;
+                let isFirstMessage = false;
+                if (intent.startsWith('produto_')) {
+                    const novoProduto = intent.replace('produto_', '');
+                    if (novoProduto !== session.produto) {
+                        console.log(`🔄 [TROCA CURSO] ${session.produto} → ${novoProduto}`);
+                        session.produto = novoProduto;
+                        // Resetar informações relacionadas ao curso anterior
+                        session.exAluno = null;
+                        session.nome = null;
+                        session.cursoAnterior = null;
+                        clearHistory = true; // Flag para limpar histórico da IA
+                        isFirstMessage = true; // Tratar como primeira mensagem do novo curso
+                    }
+                }
+                
                 // Toda conversa a partir daqui é controlada pela IA
-                // NÃO enviar null aqui, deixar a mensagem real passar
                 return {
                     useAI: true,
-                    message: message // Passar mensagem real do usuário
+                    message: isFirstMessage ? null : message, // null = primeira mensagem do curso
+                    clearHistory: clearHistory // Sinalizar para limpar histórico se trocou curso
                 };
 
             case 'perguntou_ex_aluno':

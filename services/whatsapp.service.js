@@ -252,9 +252,18 @@ class WhatsAppService {
                     // Processar com IA a partir daqui
                     const sessionInfo = chatbotFlowService.getSessionInfo(userId, message.from);
                     
-                    // Se flowResponse.message é null (primeira vez), usar flag especial
+                    // Se mudou de curso, limpar histórico da IA
+                    if (flowResponse.clearHistory) {
+                        const historyKey = `${userId}-${message.from}`;
+                        this.conversationHistory.delete(historyKey);
+                        console.log('🧹 [HISTÓRICO LIMPO] Curso alterado - histórico resetado');
+                    }
+                    
+                    // Se flowResponse.message é null (primeira mensagem do curso), usar flag especial
                     // Se flowResponse.message tem conteúdo (conversação), usar mensagem real
-                    const userMessage = flowResponse.message === null ? '_PRIMEIRA_MENSAGEM_' : flowResponse.message;
+                    const userMessage = (flowResponse.message === null || flowResponse.message === undefined) 
+                        ? '_PRIMEIRA_MENSAGEM_' 
+                        : flowResponse.message;
                     
                     aiResponse = await this.processWithAI(
                         userId,
@@ -345,6 +354,9 @@ class WhatsAppService {
             } catch (e) {
                 console.log('⚠️ SessionInfo não disponível (modo IA sem fluxo)');
             }
+            
+            // Log da resposta ANTES da validação
+            console.log('🔍 [ANTES VALIDAÇÃO] Resposta IA:', aiResponse.substring(0, 500));
             
             aiResponse = await this.validateAndFixLinks(aiResponse, sessionInfo, botConfig);
 
@@ -480,9 +492,14 @@ class WhatsAppService {
                     ? JSON.parse(botConfig.courses_config) 
                     : botConfig.courses_config;
 
+                console.log('🔍 [VALIDAÇÃO] Produto da sessão:', sessionInfo?.produto);
+                console.log('🔍 [VALIDAÇÃO] Ex-aluno:', sessionInfo?.exAluno);
+                
                 const selectedCourse = coursesConfig.courses.find(c => c.id === sessionInfo.produto);
 
                 if (selectedCourse) {
+                    console.log('✅ [VALIDAÇÃO] Curso encontrado:', selectedCourse.name, '(ID:', selectedCourse.id + ')');
+                    
                     // Determinar qual link usar
                     const isCaixaOrTce = selectedCourse.id === 'caixa' || selectedCourse.id === 'tcemg';
                     let correctLink;
@@ -492,12 +509,15 @@ class WhatsAppService {
                         const dataLimiteBlack = new Date('2025-12-05T23:59:59');
                         const isBlackFriday = hoje <= dataLimiteBlack;
                         correctLink = isBlackFriday ? selectedCourse.payment_link_new : selectedCourse.payment_link_alumni;
+                        console.log('🎯 [VALIDAÇÃO] Usando lógica CAIXA/TCE - Black Friday:', isBlackFriday);
                     } else {
                         const isAlumni = sessionInfo.exAluno === true;
                         correctLink = isAlumni ? selectedCourse.payment_link_alumni : selectedCourse.payment_link_new;
+                        console.log('🎯 [VALIDAÇÃO] Usando lógica EX-ALUNO - É ex-aluno:', isAlumni);
                     }
 
-                    console.log('✅ [SEGURANÇA] Link correto:', correctLink);
+                    console.log('✅ [SEGURANÇA] Link correto selecionado:', correctLink);
+                    console.log('💰 [SEGURANÇA] Preços do curso:', selectedCourse.installment, '/', selectedCourse.cash);
 
                     // Remover todos os links inválidos e substituir por mensagem correta
                     aiResponse = `Perfeito, Dr(a)! 😊
@@ -597,6 +617,8 @@ Pode pagar no cartão ou PIX. Assim que finalizar, envie o comprovante aqui! �
         console.log(`🤖 [AI] Iniciando processamento para ${phoneNumber}`);
         console.log(`🤖 [AI] Mensagem: "${message}"`);
         console.log(`🤖 [AI] Produto: ${sessionInfo.produto}`);
+        console.log(`🤖 [AI] Ex-Aluno: ${sessionInfo.exAluno}`);
+        console.log(`🤖 [AI] Nome: ${sessionInfo.nome}`);
         
         const openRouterService = require('./openrouter.service');
         

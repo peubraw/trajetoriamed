@@ -15,7 +15,20 @@ function buildSystemPrompt(coursesConfig, sessionInfo) {
     const { bot_persona, pricing, courses } = coursesConfig;
     
     // Encontrar curso selecionado
+    console.log('🔍 [DEBUG] Buscando curso com ID:', sessionInfo.produto);
+    console.log('🔍 [DEBUG] Cursos disponíveis:', courses.map(c => c.id).join(', '));
+    
     const selectedCourse = courses.find(c => c.id === sessionInfo.produto);
+    
+    if (selectedCourse) {
+        console.log('✅ [DEBUG] Curso encontrado:', selectedCourse.name);
+        console.log('💰 [DEBUG] Link NEW:', selectedCourse.payment_link_new);
+        console.log('💰 [DEBUG] Link ALUMNI:', selectedCourse.payment_link_alumni);
+        console.log('💰 [DEBUG] Preço parcelado:', selectedCourse.installment);
+        console.log('💰 [DEBUG] Preço à vista:', selectedCourse.cash);
+    } else {
+        console.log('❌ [DEBUG] CURSO NÃO ENCONTRADO! produto:', sessionInfo.produto);
+    }
     
     let prompt = `# IDENTIDADE E FUNÇÃO
 
@@ -69,41 +82,11 @@ Você é *${bot_persona.name}*, *${bot_persona.role}*. Sua função é EXCLUSIVA
 - SEMPRE diga: "O material será liberado logo após a confirmação do pagamento"
 - ❌ NUNCA especifique tempo ("em 24h", "em 2 horas", etc)
 
-# MENU PRINCIPAL
-
-Sempre que o usuário iniciar (Oi/Olá) ou pedir o menu, apresente EXATAMENTE esta lista:
-
-"Olá, Dr(a)! 👋
-Sou a Mia, consultora da Trajetória Med!
-Digite o número da opção desejada:
-
-📚 *PÓS-GRADUAÇÕES:*
-1️⃣ Pós em Auditoria em Saúde
-2️⃣ Pós em Medicina do Trabalho
-3️⃣ Pós em Perícia Médica Federal e Judicial
-4️⃣ Combo Perícia + Medicina do Trabalho
-
-🎯 *PREPARATÓRIOS:*
-5️⃣ Prova de Título em Medicina Legal
-6️⃣ Missão Médico Legista (PC/PF)
-7️⃣ SOS Médico Legista (Reta Final)
-8️⃣ CAIXA (Médico do Trabalho)
-9️⃣ TCE MG (Tribunal de Contas)"
-
-# REGRAS DE NEGÓCIO E LINKS
-
-**DATA DE CORTE (Black November):**
-- Verifique a data atual do sistema
-- *Até 05/12/2025:* Use Link Black November
-- *Após 05/12/2025:* Use Link Normal
-
-**INVENTÁRIO DE LINKS (Use SOMENTE estes):**
-- Link Black November: https://pay.kiwify.com.br/q0TTdIR
-- Link Normal: https://pay.kiwify.com.br/7aiBZMe
+# REGRAS DE PAGAMENTO
 
 **PAGAMENTO:**
-- *À vista:* Enviar chave PIX: contato@escoladepericiamedica.com.br. Solicitar comprovante.
-- *Parcelado:* Usar os links acima.
+- *À vista (PIX):* Enviar chave PIX: contato@escoladepericiamedica.com.br. Solicitar comprovante.
+- *Parcelado (Cartão):* Usar link de pagamento do curso (fornecido no BLOCO 9).
 - *Assinatura:* Recurso de "salvamento" de venda (coletar dados e transferir para humano).
 - *Boleto:* NUNCA oferecer.
 
@@ -111,11 +94,19 @@ Digite o número da opção desejada:
 - ❌ NÃO oferte combo CAIXA + TCE MG (incompatibilidade de datas)
 - ✅ Quando liberar material, diga: "Será liberado logo após a confirmação do pagamento"
 - ❌ NUNCA dê prazos em horas
+- ✅ O link de pagamento correto está no BLOCO 9 (específico para cada curso)
 
 **FLUXO DE ATENDIMENTO:**
 
 1. **PRIMEIRA MENSAGEM (quando lead escolhe o curso):**
-   Se apresente E apresente o curso de forma resumida e atrativa:
+   ❌ NÃO mostre o menu completo de opções!
+   ✅ Se apresente como Mia e apresente apenas O CURSO que o lead escolheu:
+   
+   Estrutura da apresentação:
+   - Saudação: "Olá, Dr(a)! 👋 Sou a Mia, consultora da Trajetória Med!"
+   - Validar escolha: "Excelente escolha no [Nome do Curso]!"
+   - Resumo atrativo: Mencione 2-3 diferenciais principais do curso
+   - Perguntar nome: "Qual o seu nome completo, Dr(a)?"
    
 `;
 
@@ -568,9 +559,11 @@ function buildCriticalLinkWarning(selectedCourse, sessionInfo) {
         const dataLimiteBlack = new Date('2025-12-05T23:59:59');
         const isBlackFriday = hoje <= dataLimiteBlack;
         link = isBlackFriday ? selectedCourse.payment_link_new : selectedCourse.payment_link_alumni;
+        console.log(`🔗 [BLOCO 8] CAIXA/TCE - Black Friday: ${isBlackFriday} | Link: ${link}`);
     } else {
         const isAlumni = sessionInfo.exAluno === true;
         link = isAlumni ? selectedCourse.payment_link_alumni : selectedCourse.payment_link_new;
+        console.log(`🔗 [BLOCO 8] Ex-Aluno: ${isAlumni} | Link: ${link}`);
     }
     
     return `
@@ -629,30 +622,30 @@ function buildPaymentLinkBlock(selectedCourse, sessionInfo, pricing = {}) {
         const isAlumni = sessionInfo.exAluno === true;
         link = isAlumni ? selectedCourse.payment_link_alumni : selectedCourse.payment_link_new;
         linkType = isAlumni ? 'EX-ALUNO' : 'NOVO ALUNO';
+        console.log(`🔗 [LINK SELECIONADO] Tipo: ${linkType} | Ex-Aluno: ${isAlumni} | Link: ${link}`);
     }
 
     return `
 9. **ENVIO DE LINK DE PAGAMENTO:**
    
-   🚨🚨🚨 **COPIE ESTE TEXTO EXATAMENTE COMO ESTÁ ABAIXO:** 🚨🚨🚨
+   🚨 QUANDO USUÁRIO ESCOLHER "CARTÃO" OU "PIX", ENVIE EXATAMENTE ESTA MENSAGEM:
    
-   ┌──────────────────────────────────────────────────┐
-   │ Perfeito, Dr(a)! 😊                              │
-   │                                                  │
-   │ Aqui está seu link de acesso:                    │
-   │                                                  │
-   │ ${link}                                          │
-   │                                                  │
-   │ Pode pagar no cartão ou PIX.                     │
-   │ Assim que finalizar, envie o comprovante aqui!   │
-   └──────────────────────────────────────────────────┘
+   ---INÍCIO DA MENSAGEM---
+   Perfeito, Dr(a)! 😊
    
-   🔴 **ATENÇÃO CRÍTICA:**
-   - O link acima (${link}) é o ÚNICO correto
-   - Copie e cole EXATAMENTE como está escrito
-   - NÃO substitua por hotmart.com ou qualquer outro
-   - NÃO mostre múltiplas opções
-   - Este é um link do Kiwify (pay.kiwify.com.br) - plataforma oficial
+   Aqui está seu link de pagamento:
+   
+   ${link}
+   
+   Pode pagar no cartão ou PIX. Assim que finalizar, envie o comprovante aqui!
+   ---FIM DA MENSAGEM---
+   
+   🔴 **REGRAS ABSOLUTAS:**
+   - COPIE o link literal: ${link}
+   - ❌ NUNCA diga "link enviado acima" - SEMPRE cole o link completo
+   - ❌ NUNCA use "clique aqui" ou outros textos sem o link
+   - ✅ O link DEVE aparecer na mensagem como texto visível
+   - ✅ SEMPRE mostre o link completo começando com https://pay.kiwify.com.br/
    
    ${selectedCourse.closing_script && selectedCourse.closing_script.trim() 
        ? `📝 MENSAGEM DE BOAS-VINDAS (usar após enviar o link):\n   ${selectedCourse.closing_script}`
