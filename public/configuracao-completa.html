@@ -60,6 +60,39 @@
         body {
             font-family: 'Poppins', sans-serif;
         }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        
+        .gradient-medical {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+        }
+        
+        .gradient-accent {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .tab-button {
+            transition: all 0.3s;
+            color: #6b7280;
+            background: transparent;
+        }
+        
+        .tab-button:hover {
+            background: rgba(14, 165, 233, 0.1);
+            color: #0284c7;
+        }
+        
         .tab-button.active {
             background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
             color: white;
@@ -85,41 +118,99 @@
             border-top: 2px solid #f0f0f0;
             margin: 24px 0;
         }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-primary-500 to-primary-700 min-h-screen p-6">
-    <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2">⚙️ Configuração Completa do Bot - Trajetória Med</h1>
-            <p class="text-gray-600">Configure TUDO em um único lugar: persona, cursos, fluxos, scripts e regras de negócio</p>
-        </div>
+<body class="bg-gray-50">
+    <!-- Dashboard Layout -->
+    <div class="min-h-screen flex">
+        <!-- Sidebar -->
+        <div class="w-72 gradient-medical shadow-2xl flex flex-col">
+            <div class="p-8">
+                <div class="flex items-center space-x-3 mb-8">
+                    <span class="text-4xl">🏥</span>
+                    <div class="flex flex-col">
+                        <span class="text-2xl font-black text-white">Trajetória Med</span>
+                        <span class="text-xs text-blue-200 font-semibold">PAINEL DE CONTROLE</span>
+                    </div>
+                </div>
+                
+                <nav class="space-y-2">
+                    <a href="/" class="flex items-center gap-3 px-4 py-3.5 text-white/80 hover:bg-white/20 rounded-xl transition font-semibold">
+                        <span class="text-xl">📊</span> Visão Geral
+                    </a>
+                    <a href="/" class="flex items-center gap-3 px-4 py-3.5 text-white/80 hover:bg-white/20 rounded-xl transition font-semibold">
+                        <span class="text-xl">📱</span> WhatsApp
+                    </a>
+                    <a href="/configuracao-completa.html" class="flex items-center gap-3 px-4 py-3.5 bg-white/30 backdrop-blur-sm text-white rounded-xl font-bold border-2 border-white/40">
+                        <span class="text-xl">⚙️</span> Configuração Bot
+                    </a>
+                    <a href="/configuracao-completa.html" class="flex items-center gap-3 px-4 py-3.5 text-white/80 hover:bg-white/20 rounded-xl transition font-semibold">
+                        <span class="text-xl">💬</span> Conversas
+                    </a>
+                </nav>
+            </div>
 
-        <!-- Navigation Tabs -->
-        <div class="bg-white rounded-lg shadow-lg p-4 mb-6">
-            <div class="flex gap-2 flex-wrap">
-                <button class="tab-button active px-6 py-3 rounded-lg font-medium transition" onclick="showSection('global')">
-                    🌍 Global
-                </button>
-                <button class="tab-button px-6 py-3 rounded-lg font-medium transition" onclick="showSection('courses')">
-                    📚 Cursos
-                </button>
-                <button class="tab-button px-6 py-3 rounded-lg font-medium transition" onclick="showSection('flows')">
-                    🔄 Fluxos de Atendimento
-                </button>
-                <button class="tab-button px-6 py-3 rounded-lg font-medium transition" onclick="showSection('scripts')">
-                    💬 Scripts e Objeções
-                </button>
-                <button class="tab-button px-6 py-3 rounded-lg font-medium transition" onclick="showSection('business')">
-                    💼 Regras de Negócio
-                </button>
-                <button class="tab-button px-6 py-3 rounded-lg font-medium transition" onclick="showSection('advanced')">
-                    🔧 Avançado
+            <div class="mt-auto p-8">
+                <div class="mb-4 p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
+                    <div class="flex items-center gap-2 mb-1">
+                        <div class="w-2 h-2 bg-medical-300 rounded-full animate-pulse"></div>
+                        <span class="text-xs font-bold text-blue-200">STATUS DO SISTEMA</span>
+                    </div>
+                    <p class="text-sm font-bold text-white">Online</p>
+                </div>
+                <button onclick="window.location.href='/'" class="w-full px-4 py-3.5 gradient-accent rounded-xl font-bold transition hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                    <span>🔙</span> Voltar ao Painel
                 </button>
             </div>
         </div>
 
-        <div id="alert-container"></div>
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto">
+            <!-- Header -->
+            <div class="glass-effect border-b border-gray-200 px-8 py-6 flex justify-between items-center sticky top-0 z-10">
+                <div>
+                    <h1 class="text-4xl font-black text-gradient">Configuração Completa do Bot</h1>
+                    <p class="text-sm text-gray-600 mt-1">Configure persona, cursos, fluxos, scripts e regras de negócio</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="px-8 pt-6 pb-4">
+                <div class="bg-white rounded-xl shadow-lg p-2">
+                    <div class="flex gap-2 flex-wrap">
+                        <button class="tab-button active px-6 py-3 rounded-lg font-medium transition" onclick="showSection('global')">
+                            🌍 Global
+                        </button>
+                        <button class="tab-button px-6 py-3 rounded-lg font-medium transition" onclick="showSection('courses')">
+                            📚 Cursos
+                        </button>
+                        <button class="tab-button px-6 py-3 rounded-lg font-medium transition" onclick="showSection('flows')">
+                            🔄 Fluxos de Atendimento
+                        </button>
+                        <button class="tab-button px-6 py-3 rounded-lg font-medium transition" onclick="showSection('scripts')">
+                            💬 Scripts e Objeções
+                        </button>
+                        <button class="tab-button px-6 py-3 rounded-lg font-medium transition" onclick="showSection('business')">
+                            💼 Regras de Negócio
+                        </button>
+                        <button class="tab-button px-6 py-3 rounded-lg font-medium transition" onclick="showSection('advanced')">
+                            🔧 Avançado
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="alert-container" class="px-8"></div>
+            
+            <div class="p-8 pt-4">
 
         <!-- Section: Global -->
         <div id="section-global" class="section">
@@ -448,12 +539,32 @@ Estrutura sugerida:
 
         // Navigation
         function showSection(sectionName) {
-            document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(`section-${sectionName}`).classList.remove('hidden');
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(s => {
+                s.classList.remove('active');
+                s.style.display = 'none';
+            });
             
+            // Show selected section
+            const targetSection = document.getElementById(`section-${sectionName}`);
+            if (targetSection) {
+                targetSection.classList.add('active');
+                targetSection.style.display = 'block';
+            }
+            
+            // Update tab buttons
             document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
         }
+        
+        // Initialize first section as active
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstSection = document.getElementById('section-global');
+            if (firstSection) {
+                firstSection.classList.add('active');
+                firstSection.style.display = 'block';
+            }
+        });
 
         // Load configuration on page load
         window.addEventListener('DOMContentLoaded', loadConfiguration);
@@ -1118,5 +1229,8 @@ Digite o número da opção desejada:
             setTimeout(() => alertDiv.remove(), 5000);
         }
     </script>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
