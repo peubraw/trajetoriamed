@@ -164,7 +164,7 @@ async function processKiwifyPurchase(payload, webhookLogId) {
             VALUES (?, ?, ?, ?)`,
             [
                 lead.id,
-                'sale_confirmed',
+                'note',
                 `💰 Venda confirmada via Kiwify - Pedido: ${payload.order_id}`,
                 JSON.stringify({ gateway: 'kiwify', order_id: payload.order_id, value: saleValue })
             ]
@@ -294,7 +294,7 @@ async function processHotmartPurchase(payload, webhookLogId) {
             VALUES (?, ?, ?, ?)`,
             [
                 lead.id,
-                'sale_confirmed',
+                'note',
                 `💰 Venda confirmada via Hotmart - Transação: ${purchase.transaction}`,
                 JSON.stringify({ gateway: 'hotmart', transaction: purchase.transaction, value: saleValue })
             ]
