@@ -255,6 +255,87 @@ router.post('/stages/init', requireAuth, async (req, res) => {
     }
 });
 
+/**
+ * POST /api/crm/stages - Criar novo estágio
+ */
+router.post('/stages', requireAuth, async (req, res) => {
+    try {
+        const { name, color, position } = req.body;
+        const userId = req.session.userId;
+
+        if (!name) {
+            return res.status(400).json({ success: false, message: 'Nome do estágio é obrigatório' });
+        }
+
+        const stage = await crmService.createStage(userId, { name, color, position });
+        res.json({ success: true, message: 'Estágio criado com sucesso', stage });
+    } catch (error) {
+        console.error('❌ Erro ao criar estágio:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+/**
+ * PUT /api/crm/stages/:id - Atualizar estágio
+ */
+router.put('/stages/:id', requireAuth, async (req, res) => {
+    try {
+        const stageId = req.params.id;
+        const userId = req.session.userId;
+        const updates = req.body;
+
+        await crmService.updateStage(userId, stageId, updates);
+        res.json({ success: true, message: 'Estágio atualizado com sucesso' });
+    } catch (error) {
+        console.error('❌ Erro ao atualizar estágio:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+/**
+ * DELETE /api/crm/stages/:id - Deletar estágio
+ */
+router.delete('/stages/:id', requireAuth, async (req, res) => {
+    try {
+        const stageId = req.params.id;
+        const userId = req.session.userId;
+        const { moveLeadsToStageId } = req.query;
+
+        if (!moveLeadsToStageId) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Informe o ID do estágio para onde mover os leads' 
+            });
+        }
+
+        await crmService.deleteStage(userId, stageId, moveLeadsToStageId);
+        res.json({ success: true, message: 'Estágio deletado com sucesso' });
+    } catch (error) {
+        console.error('❌ Erro ao deletar estágio:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+/**
+ * PUT /api/crm/stages/reorder - Reordenar estágios
+ */
+router.put('/stages/reorder', requireAuth, async (req, res) => {
+    try {
+        const { stageIds } = req.body; // Array com IDs na ordem desejada
+        const userId = req.session.userId;
+
+        if (!Array.isArray(stageIds)) {
+            return res.status(400).json({ success: false, message: 'stageIds deve ser um array' });
+        }
+
+        await crmService.reorderStages(userId, stageIds);
+        res.json({ success: true, message: 'Estágios reordenados com sucesso' });
+    } catch (error) {
+        console.error('❌ Erro ao reordenar estágios:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // ===================================
 // DASHBOARD E RELATÓRIOS
 // ===================================

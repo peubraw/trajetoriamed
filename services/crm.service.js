@@ -648,6 +648,115 @@ class CRMService {
     async notifySLABreach(userId, leadId) {
         this.emitCRMEvent(userId, 'sla-breach', { leadId });
     }
+
+    // ===================================
+    // GERENCIAMENTO DE ESTÁGIOS
+    // ===================================
+
+    async createStage(userId, { name, color = '#6366F1', position }) {
+        // Se não informou posição, colocar no final
+        if (!position) {
+            const [stages] = await db.query(
+                'SELECT MAX(position) as maxPos FROM crm_stages WHERE user_id = ?',
+                [userId]
+            );
+            position = (stages[0].maxPos || 0) + 1;
+        }
+
+        const [result] = await db.query(`
+            INSERT INTO crm_stages 
+            (user_id, name, position, color, bot_enabled, conversion_probability) 
+            VALUES (?, ?, ?, ?, ?, ?)
+        `, [userId, name, position, color, false, 50]);
+
+        return { id: result.insertId, name, color, position };
+    }
+
+    async updateStage(userId, stageId, updates) {
+        const allowedFields = ['name', 'color', 'bot_enabled', 'conversion_probability', 'is_success', 'is_lost'];
+        const fields = [];
+        const values = [];
+
+        for (const [key, value] of Object.entries(updates)) {
+            if (allowedFields.includes(key)) {
+                fields.push(`${key} = ?`);
+                values.push(value);
+            }
+        }
+
+        if (fields.length === 0) {
+            throw new Error('Nenhum campo válido para atualizar');
+        }
+
+        values.push(userId, stageId);
+
+        await db.query(`
+            UPDATE crm_stages 
+            SET ${fields.join(', ')}
+            WHERE user_id = ? AND id = ?
+        `, values);
+
+        console.log(`✅ Estágio ${stageId} atualizado`);
+    }
+
+    async deleteStage(userId, stageId, moveLeadsToStageId) {
+        // Verificar se o estágio existe e pertence ao usuário
+        const [stages] = await db.query(
+            'SELECT id FROM crm_stages WHERE id = ? AND user_id = ?',
+            [stageId, userId]
+        );
+
+        if (stages.length === 0) {
+            throw new Error('Estágio não encontrado');
+        }
+
+        // Verificar se o estágio de destino existe
+        const [targetStages] = await db.query(
+            'SELECT id FROM crm_stages WHERE id = ? AND user_id = ?',
+            [moveLeadsToStageId, userId]
+        );
+
+        if (targetStages.length === 0) {
+            throw new Error('Estágio de destino não encontrado');
+        }
+
+        // Mover todos os leads para o novo estágio
+        await db.query(`
+            UPDATE crm_leads 
+            SET stage_id = ? 
+            WHERE stage_id = ? AND user_id = ?
+        `, [moveLeadsToStageId, stageId, userId]);
+
+        // Deletar o estágio
+        await db.query(
+            'DELETE FROM crm_stages WHERE id = ? AND user_id = ?',
+            [stageId, userId]
+        );
+
+        // Reordenar posições
+        await db.query(`
+            SET @pos = 0;
+            UPDATE crm_stages 
+            SET position = (@pos := @pos + 1) 
+            WHERE user_id = ? 
+            ORDER BY position
+        `, [userId]);
+
+        console.log(`✅ Estágio ${stageId} deletado, leads movidos para ${moveLeadsToStageId}`);
+    }
+
+    async reorderStages(userId, stageIds) {
+        // Atualizar posição de cada estágio
+        for (let i = 0; i < stageIds.length; i++) {
+            await db.query(`
+                UPDATE crm_stages 
+                SET position = ? 
+                WHERE id = ? AND user_id = ?
+            `, [i + 1, stageIds[i], userId]);
+        }
+
+        console.log(`✅ ${stageIds.length} estágios reordenados`);
+    }
 }
 
 module.exports = new CRMService();

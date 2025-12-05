@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Estágios do Kanban - CRM</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f7fa; }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .actions-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #f0f4ff;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .stages-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .stage-item {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.2s;
+            cursor: move;
+        }
+
+        .stage-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .stage-item.dragging {
+            opacity: 0.5;
+        }
+
+        .drag-handle {
+            font-size: 24px;
+            color: #adb5bd;
+            cursor: grab;
+            user-select: none;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .stage-color {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            cursor: pointer;
+        }
+
+        .stage-info {
+            flex: 1;
+        }
+
+        .stage-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .stage-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .stage-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .icon-btn.edit {
+            color: #3b82f6;
+        }
+
+        .icon-btn.edit:hover {
+            background: #dbeafe;
+        }
+
+        .icon-btn.delete {
+            color: #ef4444;
+        }
+
+        .icon-btn.delete:hover {
+            background: #fee2e2;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            margin-bottom: 25px;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .color-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .color-option {
+            width: 100%;
+            height: 50px;
+            border-radius: 8px;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: #333;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px #333;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 25px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ Gerenciar Estágios do Kanban</h1>
+            <p>Crie, edite, reordene e delete as colunas do seu funil de vendas</p>
+        </div>
+
+        <div class="actions-bar">
+            <button class="btn btn-primary" onclick="openCreateModal()">
+                ➕ Novo Estágio
+            </button>
+            <button class="btn btn-secondary" onclick="saveOrder()">
+                💾 Salvar Ordem
+            </button>
+            <a href="/" class="btn btn-secondary">
+                ← Voltar ao Dashboard
+            </a>
+        </div>
+
+        <div class="stages-container">
+            <div id="stages-list">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <h3>Carregando estágios...</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Criar/Editar -->
+    <div class="modal" id="stageModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Novo Estágio</h2>
+            </div>
+
+            <form id="stageForm" onsubmit="saveStage(event)">
+                <input type="hidden" id="stage-id">
+
+                <div class="form-group">
+                    <label for="stage-name">Nome do Estágio *</label>
+                    <input type="text" id="stage-name" class="form-control" placeholder="Ex: Negociação Avançada" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Cor do Estágio</label>
+                    <div class="color-picker-grid">
+                        <div class="color-option" style="background: #6366F1" data-color="#6366F1"></div>
+                        <div class="color-option" style="background: #3B82F6" data-color="#3B82F6"></div>
+                        <div class="color-option" style="background: #10B981" data-color="#10B981"></div>
+                        <div class="color-option" style="background: #F59E0B" data-color="#F59E0B"></div>
+                        <div class="color-option" style="background: #EF4444" data-color="#EF4444"></div>
+                        <div class="color-option" style="background: #8B5CF6" data-color="#8B5CF6"></div>
+                        <div class="color-option" style="background: #EC4899" data-color="#EC4899"></div>
+                        <div class="color-option" style="background: #6B7280" data-color="#6B7280"></div>
+                    </div>
+                    <input type="hidden" id="stage-color" value="#6366F1">
+                </div>
+
+                <div class="form-group">
+                    <label for="stage-probability">Probabilidade de Conversão (%)</label>
+                    <input type="number" id="stage-probability" class="form-control" min="0" max="100" value="50">
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="stage-bot-enabled">
+                        <label for="stage-bot-enabled" style="margin: 0;">Bot ativo neste estágio</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="stage-is-success">
+                        <label for="stage-is-success" style="margin: 0;">Marcar como "Venda Ganha"</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="stage-is-lost">
+                        <label for="stage-is-lost" style="margin: 0;">Marcar como "Venda Perdida"</label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Deletar -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🗑️ Deletar Estágio</h2>
+            </div>
+
+            <p style="margin-bottom: 20px; color: #6c757d;">
+                Este estágio possui <strong id="delete-lead-count">0</strong> lead(s). 
+                Para onde deseja movê-los antes de deletar?
+            </p>
+
+            <div class="form-group">
+                <label for="move-to-stage">Mover leads para:</label>
+                <select id="move-to-stage" class="form-control" required>
+                    <option value="">Selecione um estágio...</option>
+                </select>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="confirmDelete()">Deletar Estágio</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let stages = [];
+        let editingStageId = null;
+        let deletingStageId = null;
+
+        // Carregar estágios
+        async function loadStages() {
+            try {
+                const response = await fetch('/api/crm/stages');
+                const data = await response.json();
+
+                if (data.success) {
+                    stages = data.stages;
+                    renderStages();
+                }
+            } catch (error) {
+                console.error('Erro ao carregar estágios:', error);
+                alert('Erro ao carregar estágios');
+            }
+        }
+
+        // Renderizar lista de estágios
+        function renderStages() {
+            const list = document.getElementById('stages-list');
+
+            if (stages.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <h3>Nenhum estágio criado</h3>
+                        <p>Clique em "Novo Estágio" para começar</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = stages.map(stage => `
+                <div class="stage-item" draggable="true" data-id="${stage.id}" 
+                     ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event)" ondragend="dragEnd(event)">
+                    <div class="drag-handle">⋮⋮</div>
+                    <div class="stage-color" style="background: ${stage.color}" onclick="openEditModal(${stage.id})"></div>
+                    <div class="stage-info">
+                        <div class="stage-name">${stage.name}</div>
+                        <div class="stage-meta">
+                            <span>📊 ${stage.conversion_probability}% conversão</span>
+                            <span>👥 ${stage.lead_count || 0} leads</span>
+                            ${stage.bot_enabled ? '<span class="badge badge-info">🤖 Bot Ativo</span>' : ''}
+                            ${stage.is_success ? '<span class="badge badge-success">✅ Venda Ganha</span>' : ''}
+                            ${stage.is_lost ? '<span class="badge badge-danger">❌ Perdido</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="stage-actions">
+                        <button class="icon-btn edit" onclick="openEditModal(${stage.id})" title="Editar">✏️</button>
+                        <button class="icon-btn delete" onclick="openDeleteModal(${stage.id})" title="Deletar">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Drag and Drop
+        let draggedElement = null;
+
+        function dragStart(e) {
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            if (e.target.classList.contains('stage-item') || e.target.closest('.stage-item')) {
+                const dropTarget = e.target.classList.contains('stage-item') ? e.target : e.target.closest('.stage-item');
+                const list = document.getElementById('stages-list');
+                
+                if (draggedElement !== dropTarget) {
+                    const allItems = [...list.querySelectorAll('.stage-item')];
+                    const draggedIndex = allItems.indexOf(draggedElement);
+                    const dropIndex = allItems.indexOf(dropTarget);
+                    
+                    if (draggedIndex < dropIndex) {
+                        dropTarget.after(draggedElement);
+                    } else {
+                        dropTarget.before(draggedElement);
+                    }
+                }
+            }
+        }
+
+        function dragEnd(e) {
+            e.target.classList.remove('dragging');
+            draggedElement = null;
+        }
+
+        // Salvar ordem
+        async function saveOrder() {
+            const stageElements = document.querySelectorAll('.stage-item');
+            const stageIds = Array.from(stageElements).map(el => parseInt(el.dataset.id));
+
+            try {
+                const response = await fetch('/api/crm/stages/reorder', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stageIds })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Ordem salva com sucesso!');
+                    loadStages();
+                } else {
+                    alert('❌ Erro: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Erro ao salvar ordem:', error);
+                alert('Erro ao salvar ordem');
+            }
+        }
+
+        // Modal Criar
+        function openCreateModal() {
+            editingStageId = null;
+            document.getElementById('modal-title').textContent = 'Novo Estágio';
+            document.getElementById('stageForm').reset();
+            document.getElementById('stage-id').value = '';
+            document.getElementById('stage-color').value = '#6366F1';
+            selectColor('#6366F1');
+            document.getElementById('stageModal').classList.add('active');
+        }
+
+        // Modal Editar
+        function openEditModal(stageId) {
+            const stage = stages.find(s => s.id === stageId);
+            if (!stage) return;
+
+            editingStageId = stageId;
+            document.getElementById('modal-title').textContent = 'Editar Estágio';
+            document.getElementById('stage-id').value = stage.id;
+            document.getElementById('stage-name').value = stage.name;
+            document.getElementById('stage-color').value = stage.color;
+            document.getElementById('stage-probability').value = stage.conversion_probability;
+            document.getElementById('stage-bot-enabled').checked = stage.bot_enabled;
+            document.getElementById('stage-is-success').checked = stage.is_success;
+            document.getElementById('stage-is-lost').checked = stage.is_lost;
+            selectColor(stage.color);
+            document.getElementById('stageModal').classList.add('active');
+        }
+
+        // Fechar modal
+        function closeModal() {
+            document.getElementById('stageModal').classList.remove('active');
+        }
+
+        // Salvar estágio
+        async function saveStage(e) {
+            e.preventDefault();
+
+            const stageId = document.getElementById('stage-id').value;
+            const data = {
+                name: document.getElementById('stage-name').value,
+                color: document.getElementById('stage-color').value,
+                conversion_probability: parseInt(document.getElementById('stage-probability').value),
+                bot_enabled: document.getElementById('stage-bot-enabled').checked,
+                is_success: document.getElementById('stage-is-success').checked,
+                is_lost: document.getElementById('stage-is-lost').checked
+            };
+
+            try {
+                const url = stageId ? `/api/crm/stages/${stageId}` : '/api/crm/stages';
+                const method = stageId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ ' + result.message);
+                    closeModal();
+                    loadStages();
+                } else {
+                    alert('❌ Erro: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Erro ao salvar estágio:', error);
+                alert('Erro ao salvar estágio');
+            }
+        }
+
+        // Modal Deletar
+        function openDeleteModal(stageId) {
+            const stage = stages.find(s => s.id === stageId);
+            if (!stage) return;
+
+            deletingStageId = stageId;
+            document.getElementById('delete-lead-count').textContent = stage.lead_count || 0;
+
+            // Preencher select com outros estágios
+            const select = document.getElementById('move-to-stage');
+            select.innerHTML = '<option value="">Selecione um estágio...</option>' +
+                stages.filter(s => s.id !== stageId)
+                      .map(s => `<option value="${s.id}">${s.name}</option>`)
+                      .join('');
+
+            document.getElementById('deleteModal').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+            deletingStageId = null;
+        }
+
+        // Confirmar delete
+        async function confirmDelete() {
+            const moveToStageId = document.getElementById('move-to-stage').value;
+            
+            if (!moveToStageId) {
+                alert('Selecione um estágio para mover os leads');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/crm/stages/${deletingStageId}?moveLeadsToStageId=${moveToStageId}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    closeDeleteModal();
+                    loadStages();
+                } else {
+                    alert('❌ Erro: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Erro ao deletar estágio:', error);
+                alert('Erro ao deletar estágio');
+            }
+        }
+
+        // Seletor de cores
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const color = this.dataset.color;
+                selectColor(color);
+            });
+        });
+
+        function selectColor(color) {
+            document.getElementById('stage-color').value = color;
+            document.querySelectorAll('.color-option').forEach(opt => {
+                opt.classList.toggle('selected', opt.dataset.color === color);
+            });
+        }
+
+        // Inicializar
+        loadStages();
+    </script>
+</body>
+</html>
