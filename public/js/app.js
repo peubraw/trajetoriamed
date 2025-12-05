@@ -1122,6 +1122,11 @@ window.loadCRMAnalytics = async function() {
         const pipelineStages = pipelineData.stages || [];
         const sellers = rankingData.ranking || [];
         
+        console.log('Dados extraídos:');
+        console.log('- Stats:', stats);
+        console.log('- Pipeline stages:', pipelineStages);
+        console.log('- Sellers:', sellers);
+        
         // Atualizar KPIs
         document.getElementById('kpi-revenue').textContent = formatCurrency(stats.revenue_realized || 0);
         document.getElementById('kpi-pipeline').textContent = formatCurrency(stats.pipeline_weighted || 0);
@@ -1129,10 +1134,14 @@ window.loadCRMAnalytics = async function() {
         document.getElementById('kpi-lost').textContent = formatCurrency(stats.money_lost || 0);
         
         // Renderizar gráficos
+        console.log('Renderizando pipeline chart com', pipelineStages.length, 'stages');
         renderPipelineChart(pipelineStages);
+        
+        console.log('Renderizando lost reasons chart com', (stats.lost_reasons || []).length, 'motivos');
         renderLostReasonsChart(stats.lost_reasons || []);
         
         // Renderizar ranking
+        console.log('Renderizando ranking com', sellers.length, 'vendedores');
         renderSellerRanking(sellers);
     } catch (error) {
         console.error('Erro ao carregar analytics:', error);
@@ -1148,63 +1157,107 @@ function formatCurrency(value) {
 
 function renderPipelineChart(stages) {
     const ctx = document.getElementById('pipelineChart');
-    if (!ctx) return;
+    if (!ctx) {
+        console.warn('Elemento pipelineChart não encontrado');
+        return;
+    }
     
-    if (pipelineChart) pipelineChart.destroy();
+    if (!Array.isArray(stages)) {
+        console.error('Stages não é um array:', stages);
+        return;
+    }
     
-    pipelineChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: stages.map(s => s.name),
-            datasets: [{
-                label: 'Valor Total (R$)',
-                data: stages.map(s => parseFloat(s.total_value || 0)),
-                backgroundColor: stages.map(s => s.color || '#3b82f6'),
-                borderRadius: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: (value) => 'R$ ' + value.toFixed(0)
+    if (stages.length === 0) {
+        console.warn('Nenhuma stage para renderizar');
+        return;
+    }
+    
+    console.log('Renderizando chart com stages:', stages);
+    
+    if (pipelineChart) {
+        pipelineChart.destroy();
+    }
+    
+    try {
+        pipelineChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: stages.map(s => s.name),
+                datasets: [{
+                    label: 'Valor Total (R$)',
+                    data: stages.map(s => parseFloat(s.total_value || 0)),
+                    backgroundColor: stages.map(s => s.color || '#3b82f6'),
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (value) => 'R$ ' + value.toFixed(0)
+                        }
                     }
                 }
             }
-        }
-    });
+        });
+        console.log('Pipeline chart renderizado com sucesso');
+    } catch (error) {
+        console.error('Erro ao renderizar pipeline chart:', error);
+    }
 }
 
 function renderLostReasonsChart(reasons) {
     const ctx = document.getElementById('lostReasonsChart');
-    if (!ctx) return;
+    if (!ctx) {
+        console.warn('Elemento lostReasonsChart não encontrado');
+        return;
+    }
     
-    if (lostReasonsChart) lostReasonsChart.destroy();
+    if (!Array.isArray(reasons)) {
+        console.error('Reasons não é um array:', reasons);
+        return;
+    }
     
-    const labels = reasons.map(r => r.reason || 'Não informado');
-    const data = reasons.map(r => r.count);
+    if (reasons.length === 0) {
+        console.warn('Nenhum motivo de perda para renderizar');
+        // Mostrar mensagem "Sem dados"
+        ctx.parentElement.innerHTML = '<div style="text-align: center; padding: 40px; color: #9ca3af;">Nenhum lead perdido ainda</div>';
+        return;
+    }
     
-    lostReasonsChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: data,
-                backgroundColor: ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#10b981']
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom' }
+    if (lostReasonsChart) {
+        lostReasonsChart.destroy();
+    }
+    
+    try {
+        const labels = reasons.map(r => r.reason || 'Não informado');
+        const data = reasons.map(r => r.count);
+        
+        lostReasonsChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#10b981']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
             }
-        }
-    });
+        });
+        console.log('Lost reasons chart renderizado com sucesso');
+    } catch (error) {
+        console.error('Erro ao renderizar lost reasons chart:', error);
+    }
 }
 
 function renderSellerRanking(sellers) {
