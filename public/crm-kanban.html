@@ -402,6 +402,25 @@
             position: relative;
         }
 
+        /* Drag & Drop Enhanced Visual Feedback */
+        .kanban-column.drag-over {
+            background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
+            border: 2px dashed #667eea;
+            transform: scale(1.02);
+        }
+
+        .kanban-column.drag-over .column-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .lead-card.dragging {
+            opacity: 0.4;
+            transform: rotate(3deg);
+            cursor: grabbing;
+        }
+
         /* Modal */
         .modal {
             display: none;
@@ -932,36 +951,118 @@
             return `${diffDays}d atrás`;
         }
 
-        // Drag and Drop
+        // Drag and Drop - Enhanced com Bot Integration
         function drag(e) {
             e.dataTransfer.setData('leadId', e.target.dataset.leadId);
             e.target.classList.add('dragging');
+            
+            // Visual feedback
+            e.dataTransfer.effectAllowed = 'move';
         }
 
         function allowDrop(e) {
             e.preventDefault();
+            
+            // Visual feedback durante hover
+            const column = e.target.closest('.kanban-column');
+            if (column && !column.classList.contains('drag-over')) {
+                column.classList.add('drag-over');
+                
+                // Remove feedback de outras colunas
+                document.querySelectorAll('.kanban-column.drag-over').forEach(col => {
+                    if (col !== column) col.classList.remove('drag-over');
+                });
+            }
         }
 
         async function drop(e) {
             e.preventDefault();
-            const leadId = e.dataTransfer.getData('leadId');
-            const newStageId = e.target.closest('.kanban-column').dataset.stageId;
+            
+            // Remove visual feedback
+            document.querySelectorAll('.kanban-column.drag-over').forEach(col => {
+                col.classList.remove('drag-over');
+            });
+            document.querySelectorAll('.lead-card.dragging').forEach(card => {
+                card.classList.remove('dragging');
+            });
+            
+            const leadId = parseInt(e.dataTransfer.getData('leadId'));
+            const column = e.target.closest('.kanban-column');
+            if (!column) return;
+            
+            const newStageId = parseInt(column.dataset.stageId);
+            const lead = allLeads.find(l => l.id === leadId);
+            const newStage = allStages.find(s => s.id === newStageId);
+            
+            if (!lead || !newStage) return;
 
             try {
-                const res = await fetch(`/api/crm/leads/${leadId}/move`, {
+                // 1. Mover lead para novo stage
+                const moveRes = await fetch(`/api/crm/leads/${leadId}/move`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
                     body: JSON.stringify({ stageId: newStageId })
                 });
 
-                if (res.ok) {
-                    await loadKanbanBoard();
-                } else {
-                    alert('Erro ao mover lead');
+                if (!moveRes.ok) {
+                    alert('❌ Erro ao mover lead');
+                    return;
                 }
+
+                // 2. Lógica de pausar/retomar bot baseado em stage
+                const needsHuman = ['Negociação', 'Aguardando Pagamento'].includes(newStage.name);
+                const needsBot = ['Triagem', 'Nutrição'].includes(newStage.name);
+                
+                if (needsHuman && lead.bot_active) {
+                    // Pausar bot automaticamente
+                    await fetch('/api/whatsapp/bot-control', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            leadId: leadId,
+                            action: 'pause',
+                            reason: `Moved to ${newStage.name} - requires human attention`
+                        })
+                    });
+                    console.log(`🤖 Bot pausado automaticamente para ${lead.name} (stage: ${newStage.name})`);
+                    
+                } else if (needsBot && !lead.bot_active && lead.bot_paused_at) {
+                    // Retomar bot automaticamente
+                    await fetch('/api/whatsapp/bot-control', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            leadId: leadId,
+                            action: 'resume',
+                            reason: `Moved to ${newStage.name} - bot can handle`
+                        })
+                    });
+                    console.log(`🤖 Bot retomado automaticamente para ${lead.name} (stage: ${newStage.name})`);
+                }
+
+                // 3. Registrar atividade no histórico
+                await fetch('/api/crm/activity', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        leadId: leadId,
+                        type: 'stage_change',
+                        description: `Moved to ${newStage.name}`,
+                        metadata: {
+                            from_stage: lead.stage_id,
+                            to_stage: newStageId,
+                            bot_action: needsHuman ? 'paused' : (needsBot ? 'resumed' : 'unchanged')
+                        }
+                    })
+                });
+
+                // 4. Recarregar board
+                await loadKanbanBoard();
+                
             } catch (error) {
-                console.error('Erro ao mover:', error);
+                console.error('Erro ao mover lead:', error);
+                alert('❌ Erro ao processar movimentação');
             }
         }
 
