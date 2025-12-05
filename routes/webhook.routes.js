@@ -160,11 +160,12 @@ async function processKiwifyPurchase(payload, webhookLogId) {
         // 2. Registrar atividade
         await db.execute(
             `INSERT INTO crm_activities 
-            (lead_id, activity_type, description, metadata) 
-            VALUES (?, ?, ?, ?)`,
+            (lead_id, user_id, activity_type, description, metadata) 
+            VALUES (?, ?, ?, ?, ?)`,
             [
                 lead.id,
-                'note',
+                lead.assigned_to || 1,
+                'payment_received',
                 `💰 Venda confirmada via Kiwify - Pedido: ${payload.order_id}`,
                 JSON.stringify({ gateway: 'kiwify', order_id: payload.order_id, value: saleValue })
             ]
@@ -290,11 +291,12 @@ async function processHotmartPurchase(payload, webhookLogId) {
         // Registrar atividade
         await db.execute(
             `INSERT INTO crm_activities 
-            (lead_id, activity_type, description, metadata) 
-            VALUES (?, ?, ?, ?)`,
+            (lead_id, user_id, activity_type, description, metadata) 
+            VALUES (?, ?, ?, ?, ?)`,
             [
                 lead.id,
-                'note',
+                lead.assigned_to || 1,
+                'payment_received',
                 `💰 Venda confirmada via Hotmart - Transação: ${purchase.transaction}`,
                 JSON.stringify({ gateway: 'hotmart', transaction: purchase.transaction, value: saleValue })
             ]
