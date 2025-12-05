@@ -433,6 +433,11 @@ class CRMService {
         `, [leadId, userId, activityType, description, metadata ? JSON.stringify(metadata) : null]);
     }
 
+    // Alias para logActivity (para compatibilidade com routes)
+    async addActivity(leadId, userId, activityType, description, metadata = null) {
+        return this.logActivity(leadId, userId, activityType, description, metadata);
+    }
+
     async getActivities(leadId, limit = 50) {
         const [activities] = await db.query(`
             SELECT a.*, u.name as user_name

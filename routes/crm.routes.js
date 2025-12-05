@@ -162,6 +162,54 @@ router.post('/leads/:id/bot-toggle', requireAuth, async (req, res) => {
 });
 
 /**
+ * POST /api/crm/leads/:id/send-message - Enviar mensagem manual (pausa bot automaticamente)
+ */
+router.post('/leads/:id/send-message', requireAuth, async (req, res) => {
+    try {
+        const leadId = req.params.id;
+        const { message, phone } = req.body;
+        const userId = req.session.userId;
+
+        if (!message || !phone) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Mensagem e telefone são obrigatórios' 
+            });
+        }
+
+        // Pausar bot automaticamente quando vendedor envia mensagem
+        const botControlService = require('../services/bot-control.service');
+        await botControlService.autoPauseOnHumanMessage(leadId, userId);
+
+        // Enviar mensagem via WhatsApp
+        const whatsappService = require('../services/whatsapp.service');
+        const client = whatsappService.getClient(userId);
+        
+        if (!client) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'WhatsApp não está conectado' 
+            });
+        }
+
+        await client.sendText(phone, message);
+
+        // Registrar atividade
+        await crmService.addActivity(leadId, userId, 'message_sent', `Mensagem manual enviada`, {
+            message: message.substring(0, 100)
+        });
+
+        res.json({ 
+            success: true, 
+            message: 'Mensagem enviada e bot pausado automaticamente' 
+        });
+    } catch (error) {
+        console.error('❌ Erro ao enviar mensagem:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+/**
  * POST /api/crm/leads/:id/shark-grab - Pegar lead do Shark Tank
  */
 router.post('/leads/:id/shark-grab', requireAuth, async (req, res) => {

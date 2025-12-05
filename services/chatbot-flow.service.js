@@ -122,7 +122,7 @@ class ChatbotFlowService {
     }
 
     // Processar mensagem
-    async processMessage(userId, phoneNumber, message, flowConfig = {}) {
+    async processMessage(userId, phoneNumber, message, flowConfig = {}, leadId = null) {
         const sessionKey = `${userId}-${phoneNumber}`;
         let session = this.sessions.get(sessionKey);
         
@@ -142,7 +142,24 @@ class ChatbotFlowService {
         // SEMPRE atualizar flowConfig com a configuração mais recente
         session.flowConfig = flowConfig;
 
-        // Se bot está pausado, não responder
+        // VERIFICAR STATUS DO BOT NO BANCO (se leadId foi fornecido)
+        if (leadId) {
+            try {
+                const botControlService = require('./bot-control.service');
+                const botStatus = await botControlService.checkBotStatus(leadId);
+                
+                // Se bot está pausado, não processar mensagem
+                if (!botStatus.isActive) {
+                    console.log(`🤖 Bot pausado para lead ${leadId} - ignorando mensagem`);
+                    return null;
+                }
+            } catch (error) {
+                console.error('⚠️ Erro ao verificar status do bot:', error);
+                // Em caso de erro, continua processamento (fail-safe)
+            }
+        }
+
+        // Se bot está pausado na sessão, não responder
         if (session.pausado) {
             return null;
         }
