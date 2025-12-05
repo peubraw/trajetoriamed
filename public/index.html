@@ -622,9 +622,14 @@
                         <span class="font-bold">Visão Geral</span>
                     </a>
                     
-                    <a href="#" onclick="showDashboardSection('crm', event)" class="flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-white/10 transition nav-item-dashboard">
-                        <span class="text-2xl">🎯</span>
-                        <span class="font-bold">CRM & Vendas</span>
+                    <a href="/crm-kanban.html" class="flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-white/10 transition nav-item-dashboard">
+                        <span class="text-2xl">📋</span>
+                        <span class="font-bold">CRM Kanban</span>
+                    </a>
+                    
+                    <a href="/crm-dashboard.html" class="flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-white/10 transition nav-item-dashboard">
+                        <span class="text-2xl">📊</span>
+                        <span class="font-bold">Dashboard Analytics</span>
                     </a>
                     
                     <a href="/stages-config.html" target="_blank" class="flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-white/10 transition nav-item-dashboard">
@@ -1057,112 +1062,11 @@
                     </div>
                 </div>
 
-                <!-- CRM & Vendas -->
-                <div id="section-crm" class="dashboard-section-tailwind hidden">
-                    <div class="glass-effect border-b border-gray-200 px-8 py-6 sticky top-0 z-10">
-                        <div class="flex justify-between items-center mb-4">
-                            <div>
-                                <h1 class="text-4xl font-black text-gradient">CRM & Pipeline de Vendas</h1>
-                                <p class="text-sm text-gray-600 mt-1">Gestão completa de leads e análise de conversão</p>
-                            </div>
-                            <button onclick="exportCRMLeads()" class="px-6 py-3 bg-green-500 text-white font-bold rounded-xl hover:shadow-xl transform hover:-translate-y-0.5 transition flex items-center gap-2">
-                                <span>📥</span> Exportar CSV
-                            </button>
-                        </div>
-                        
-                        <div class="crm-tabs">
-                            <button class="crm-tab active" onclick="switchCRMTab('kanban', event)">🎯 Kanban Pipeline</button>
-                            <button class="crm-tab" onclick="switchCRMTab('analytics', event)">📈 Dashboard Analytics</button>
-                        </div>
-                    </div>
-
-                    <div class="p-8">
-                        <!-- Tab: Kanban -->
-                        <div id="crm-tab-kanban" class="crm-tab-content active">
-                            <div class="bg-white rounded-xl p-4 mb-4 shadow">
-                                <div class="flex gap-3 flex-wrap">
-                                    <input type="text" id="kanbanSearchInput" placeholder="🔍 Buscar lead..." 
-                                           class="px-4 py-2 border border-gray-300 rounded-lg flex-1 min-w-[200px]" 
-                                           onkeyup="filterKanbanLeads()">
-                                    <select id="kanbanTempFilter" class="px-4 py-2 border border-gray-300 rounded-lg" onchange="filterKanbanLeads()">
-                                        <option value="">Todas Temperaturas</option>
-                                        <option value="hot">🔥 Quente</option>
-                                        <option value="warm">🌤️ Morna</option>
-                                        <option value="cold">❄️ Fria</option>
-                                    </select>
-                                    <button onclick="refreshKanban()" class="px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600">
-                                        🔄 Atualizar
-                                    </button>
-                                </div>
-                            </div>
-                            <div id="kanban-board" class="kanban-board"></div>
-                        </div>
-
-                        <!-- Tab: Analytics -->
-                        <div id="crm-tab-analytics" class="crm-tab-content">
-                            <!-- KPI Cards -->
-                            <div class="kpi-grid">
-                                <div class="kpi-card revenue">
-                                    <div class="kpi-label">💰 Receita Realizada</div>
-                                    <div class="kpi-value" id="kpi-revenue">R$ 0,00</div>
-                                    <div class="kpi-sublabel">Vendas confirmadas no período</div>
-                                </div>
-                                <div class="kpi-card pipeline">
-                                    <div class="kpi-label">📊 Pipeline Ponderado</div>
-                                    <div class="kpi-value" id="kpi-pipeline">R$ 0,00</div>
-                                    <div class="kpi-sublabel">Receita potencial em negociação</div>
-                                </div>
-                                <div class="kpi-card waiting">
-                                    <div class="kpi-label">⏳ Aguardando Pagamento</div>
-                                    <div class="kpi-value" id="kpi-waiting">R$ 0,00</div>
-                                    <div class="kpi-sublabel">Vendas pendentes de confirmação</div>
-                                </div>
-                                <div class="kpi-card lost">
-                                    <div class="kpi-label">❌ Dinheiro Perdido</div>
-                                    <div class="kpi-value" id="kpi-lost">R$ 0,00</div>
-                                    <div class="kpi-sublabel">Valor de leads perdidos</div>
-                                </div>
-                            </div>
-
-                            <!-- Charts -->
-                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                                <div class="chart-container">
-                                    <div class="chart-title">📊 Pipeline por Estágio</div>
-                                    <div style="height: 300px; position: relative;">
-                                        <canvas id="pipelineChart"></canvas>
-                                    </div>
-                                </div>
-                                <div class="chart-container">
-                                    <div class="chart-title">❌ Motivos de Perda</div>
-                                    <div style="height: 300px; position: relative;">
-                                        <canvas id="lostReasonsChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Ranking Vendedores -->
-                            <div class="chart-container">
-                                <div class="chart-title">🏆 Ranking de Vendedores</div>
-                                <div class="overflow-x-auto">
-                                    <table class="w-full" style="border-collapse: collapse;">
-                                        <thead>
-                                            <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
-                                                <th style="padding: 12px; text-align: left; font-size: 12px; color: #6b7280; font-weight: 700;">POS</th>
-                                                <th style="padding: 12px; text-align: left; font-size: 12px; color: #6b7280; font-weight: 700;">VENDEDOR</th>
-                                                <th style="padding: 12px; text-align: left; font-size: 12px; color: #6b7280; font-weight: 700;">LEADS</th>
-                                                <th style="padding: 12px; text-align: left; font-size: 12px; color: #6b7280; font-weight: 700;">CONVERSÃO</th>
-                                                <th style="padding: 12px; text-align: left; font-size: 12px; color: #6b7280; font-weight: 700;">RECEITA</th>
-                                                <th style="padding: 12px; text-align: left; font-size: 12px; color: #6b7280; font-weight: 700;">COMISSÃO (10%)</th>
-                                                <th style="padding: 12px; text-align: left; font-size: 12px; color: #6b7280; font-weight: 700;">BADGES</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="ranking-table-body"></tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- CRM Redirect (removed - now using dedicated pages) -->
+                <!-- Old embedded CRM section removed. Access via:
+                     - /crm-kanban.html for Kanban Pipeline
+                     - /crm-dashboard.html for Analytics Dashboard
+                -->
 
                 <!-- Mensagens -->
                 <div id="section-messages" class="dashboard-section-tailwind hidden">
