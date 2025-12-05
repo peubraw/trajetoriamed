@@ -533,11 +533,23 @@ class CRMService {
             WHERE l.user_id = ? AND s.is_lost = TRUE
         `, [userId]);
 
+        // Motivos de perda
+        const [lostReasons] = await db.query(`
+            SELECT lost_reason as reason, COUNT(*) as count, 
+                   SUM(potential_value) as total_value
+            FROM crm_leads l
+            INNER JOIN crm_stages s ON l.stage_id = s.id
+            WHERE l.user_id = ? AND s.is_lost = TRUE AND lost_reason IS NOT NULL
+            GROUP BY lost_reason
+            ORDER BY count DESC
+        `, [userId]);
+
         return {
             revenue_realized: parseFloat(revenue[0].total || 0),
             pipeline_weighted: parseFloat(pipeline[0].weighted || 0),
             awaiting_payment: parseFloat(waiting[0].total || 0),
-            money_lost: parseFloat(lost[0].total || 0)
+            money_lost: parseFloat(lost[0].total || 0),
+            lost_reasons: lostReasons
         };
     }
 

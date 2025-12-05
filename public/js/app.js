@@ -1110,22 +1110,30 @@ window.loadCRMAnalytics = async function() {
             fetch('/api/crm/dashboard/ranking', { credentials: 'include' })
         ]);
         
-        const stats = await statsRes.json();
-        const pipeline = await pipelineRes.json();
-        const ranking = await rankingRes.json();
+        const statsData = await statsRes.json();
+        const pipelineData = await pipelineRes.json();
+        const rankingData = await rankingRes.json();
+        
+        console.log('Stats recebidas:', statsData);
+        console.log('Pipeline recebido:', pipelineData);
+        console.log('Ranking recebido:', rankingData);
+        
+        const stats = statsData.stats || {};
+        const pipelineStages = pipelineData.stages || [];
+        const sellers = rankingData.ranking || [];
         
         // Atualizar KPIs
-        document.getElementById('kpi-revenue').textContent = formatCurrency(stats.revenue || 0);
-        document.getElementById('kpi-pipeline').textContent = formatCurrency(stats.pipeline || 0);
-        document.getElementById('kpi-waiting').textContent = formatCurrency(stats.waiting || 0);
-        document.getElementById('kpi-lost').textContent = formatCurrency(stats.lost || 0);
+        document.getElementById('kpi-revenue').textContent = formatCurrency(stats.revenue_realized || 0);
+        document.getElementById('kpi-pipeline').textContent = formatCurrency(stats.pipeline_weighted || 0);
+        document.getElementById('kpi-waiting').textContent = formatCurrency(stats.awaiting_payment || 0);
+        document.getElementById('kpi-lost').textContent = formatCurrency(stats.money_lost || 0);
         
         // Renderizar gráficos
-        renderPipelineChart(pipeline.stages || []);
-        renderLostReasonsChart(stats.lostReasons || []);
+        renderPipelineChart(pipelineStages);
+        renderLostReasonsChart(stats.lost_reasons || []);
         
         // Renderizar ranking
-        renderSellerRanking(ranking.sellers || []);
+        renderSellerRanking(sellers);
     } catch (error) {
         console.error('Erro ao carregar analytics:', error);
     }

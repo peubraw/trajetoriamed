@@ -379,6 +379,32 @@ router.get('/dashboard/sellers', requireAuth, async (req, res) => {
     }
 });
 
+/**
+ * GET /api/crm/dashboard/pipeline - Pipeline por estágio
+ */
+router.get('/dashboard/pipeline', requireAuth, async (req, res) => {
+    try {
+        const stages = await crmService.getStages(req.session.userId);
+        res.json({ success: true, stages });
+    } catch (error) {
+        console.error('❌ Erro ao buscar pipeline:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+/**
+ * GET /api/crm/dashboard/ranking - Ranking de vendedores
+ */
+router.get('/dashboard/ranking', requireAuth, async (req, res) => {
+    try {
+        const ranking = await crmService.getSellerRanking(req.session.userId);
+        res.json({ success: true, ranking });
+    } catch (error) {
+        console.error('❌ Erro ao buscar ranking:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // ===================================
 // EXPORTAÇÃO
 // ===================================
