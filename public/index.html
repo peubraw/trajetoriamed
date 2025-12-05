@@ -622,14 +622,9 @@
                         <span class="font-bold">Visão Geral</span>
                     </a>
                     
-                    <a href="/crm-kanban.html" class="flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-white/10 transition nav-item-dashboard">
-                        <span class="text-2xl">📋</span>
-                        <span class="font-bold">CRM Kanban</span>
-                    </a>
-                    
-                    <a href="/crm-dashboard.html" class="flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-white/10 transition nav-item-dashboard">
-                        <span class="text-2xl">📊</span>
-                        <span class="font-bold">Dashboard Analytics</span>
+                    <a href="#" onclick="showDashboardSection('crm', event)" class="flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-white/10 transition nav-item-dashboard">
+                        <span class="text-2xl">🎯</span>
+                        <span class="font-bold">CRM & Vendas</span>
                     </a>
                     
                     <a href="/stages-config.html" target="_blank" class="flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-white/10 transition nav-item-dashboard">
@@ -1062,11 +1057,13 @@
                     </div>
                 </div>
 
-                <!-- CRM Redirect (removed - now using dedicated pages) -->
-                <!-- Old embedded CRM section removed. Access via:
-                     - /crm-kanban.html for Kanban Pipeline
-                     - /crm-dashboard.html for Analytics Dashboard
-                -->
+                <!-- CRM & Vendas -->
+                <div id="section-crm" class="dashboard-section-tailwind hidden">
+                    <iframe src="/crm-kanban.html" 
+                            style="width: 100%; height: calc(100vh - 80px); border: none; display: block;"
+                            id="crm-iframe"
+                            title="CRM Kanban"></iframe>
+                </div>
 
                 <!-- Mensagens -->
                 <div id="section-messages" class="dashboard-section-tailwind hidden">
