@@ -1192,7 +1192,7 @@ function renderPipelineChart(stages) {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
+                maintainAspectRatio: true,
                 plugins: { legend: { display: false } },
                 scales: {
                     y: {
@@ -1248,7 +1248,7 @@ function renderLostReasonsChart(reasons) {
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
+                maintainAspectRatio: true,
                 plugins: {
                     legend: { position: 'bottom' }
                 }
