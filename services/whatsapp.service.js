@@ -393,7 +393,7 @@ class WhatsAppService {
             
             aiResponse = await this.validateAndFixLinks(aiResponse, sessionInfo, botConfig);
 
-            // Enviar resposta
+            // Enviar resposta (a IA já envia no formato correto do WhatsApp)
             await client.sendText(message.from, aiResponse);
 
             // Salvar no banco de dados (não aguardar - async)
@@ -576,6 +576,42 @@ Pode pagar no cartão ou PIX. Assim que finalizar, envie o comprovante aqui! �
         } catch (error) {
             console.error('❌ Erro na validação de links:', error);
             return aiResponse; // Retornar resposta original em caso de erro
+        }
+    }
+
+    formatWhatsAppMessage(text) {
+        if (!text) return text;
+        
+        try {
+            // Converter formatação Markdown para WhatsApp
+            let formatted = text;
+            
+            // Negrito: **texto** ou __texto__ -> *texto*
+            formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '*$1*');
+            formatted = formatted.replace(/__([^_]+)__/g, '*$1*');
+            
+            // Itálico: *texto* (quando não for negrito) ou _texto_ -> _texto_
+            // Já está no formato correto do WhatsApp
+            
+            // Tachado: ~~texto~~ -> ~texto~
+            formatted = formatted.replace(/~~([^~]+)~~/g, '~$1~');
+            
+            // Monospace: `texto` já está correto
+            
+            // Remover formatação de código em bloco ```
+            formatted = formatted.replace(/```[\s\S]*?```/g, (match) => {
+                return match.replace(/```\w*\n?/g, '').replace(/```/g, '');
+            });
+            
+            // Garantir que emojis e símbolos especiais estejam preservados
+            // Links devem permanecer intactos
+            
+            console.log('✍️ [FORMATAÇÃO] Mensagem formatada para WhatsApp');
+            return formatted;
+            
+        } catch (error) {
+            console.error('❌ Erro ao formatar mensagem:', error);
+            return text; // Retornar texto original em caso de erro
         }
     }
 

@@ -174,8 +174,14 @@ class ChatbotFlowService {
                 }
                 if (intent.startsWith('produto_')) {
                     session.produto = intent.replace('produto_', '');
-                    session.stage = 'apresentou_produto';
-                    return this.getApresentacaoProduto(session.produto);
+                    session.stage = 'conversacao_ia';
+                    session.useAI = true;
+                    console.log(`✅ [FLUXO] Produto detectado: ${session.produto} - passando para IA`);
+                    // Passar imediatamente para IA (primeira mensagem do curso)
+                    return {
+                        useAI: true,
+                        message: null // IA vai se apresentar e apresentar o produto
+                    };
                 }
                 // Qualquer primeira mensagem desconhecida: mostrar menu
                 session.stage = 'aguardando_interesse';
