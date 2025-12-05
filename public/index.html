@@ -1059,10 +1059,31 @@
 
                 <!-- CRM & Vendas -->
                 <div id="section-crm" class="dashboard-section-tailwind hidden">
+                    <div class="bg-white rounded-t-2xl shadow-lg overflow-hidden" style="margin: -20px -20px 0 -20px;">
+                        <div class="flex border-b border-gray-200">
+                            <button onclick="switchCRMView('kanban')" 
+                                    id="crm-tab-kanban" 
+                                    class="flex-1 px-6 py-4 font-bold text-base transition-all border-b-4 border-blue-600 bg-blue-50 text-blue-600">
+                                📋 Kanban Pipeline
+                            </button>
+                            <button onclick="switchCRMView('dashboard')" 
+                                    id="crm-tab-dashboard" 
+                                    class="flex-1 px-6 py-4 font-bold text-base transition-all border-b-4 border-transparent hover:bg-gray-50 text-gray-600">
+                                📊 Dashboard Analytics
+                            </button>
+                        </div>
+                    </div>
+                    
                     <iframe src="/crm-kanban-embed.html" 
-                            style="width: 100%; height: calc(100vh - 80px); border: none; display: block; background: transparent;"
-                            id="crm-iframe"
+                            style="width: 100%; height: calc(100vh - 160px); border: none; display: block; background: transparent;"
+                            id="crm-iframe-kanban"
                             title="CRM Kanban"
+                            frameborder="0"></iframe>
+                    
+                    <iframe src="/crm-dashboard-embed.html" 
+                            style="width: 100%; height: calc(100vh - 160px); border: none; display: none; background: transparent;"
+                            id="crm-iframe-dashboard"
+                            title="CRM Dashboard"
                             frameborder="0"></iframe>
                 </div>
 
@@ -1086,5 +1107,35 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        // Function to switch between CRM Kanban and Dashboard views
+        function switchCRMView(view) {
+            const kanbanIframe = document.getElementById('crm-iframe-kanban');
+            const dashboardIframe = document.getElementById('crm-iframe-dashboard');
+            const kanbanTab = document.getElementById('crm-tab-kanban');
+            const dashboardTab = document.getElementById('crm-tab-dashboard');
+            
+            if (view === 'kanban') {
+                kanbanIframe.style.display = 'block';
+                dashboardIframe.style.display = 'none';
+                
+                kanbanTab.classList.add('border-blue-600', 'bg-blue-50', 'text-blue-600');
+                kanbanTab.classList.remove('border-transparent', 'text-gray-600');
+                
+                dashboardTab.classList.remove('border-blue-600', 'bg-blue-50', 'text-blue-600');
+                dashboardTab.classList.add('border-transparent', 'text-gray-600');
+            } else {
+                kanbanIframe.style.display = 'none';
+                dashboardIframe.style.display = 'block';
+                
+                dashboardTab.classList.add('border-blue-600', 'bg-blue-50', 'text-blue-600');
+                dashboardTab.classList.remove('border-transparent', 'text-gray-600');
+                
+                kanbanTab.classList.remove('border-blue-600', 'bg-blue-50', 'text-blue-600');
+                kanbanTab.classList.add('border-transparent', 'text-gray-600');
+            }
+        }
+    </script>
 </body>
 </html>
