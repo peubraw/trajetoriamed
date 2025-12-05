@@ -180,11 +180,14 @@
         .lead-card {
             background: white;
             border-radius: 10px;
-            padding: 16px;
+            padding: 14px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             cursor: grab;
             transition: all 0.2s;
             border-left: 4px solid #667eea;
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
         }
 
         .lead-card:hover {
@@ -246,9 +249,10 @@
         .card-details {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            font-size: 13px;
+            gap: 6px;
+            font-size: 12px;
             color: #6b7280;
+            margin: 12px 0;
         }
 
         .card-detail-row {
@@ -878,7 +882,7 @@
                     ${lead.assigned_name ? 
                         `<div class="card-detail-row">
                             <span class="detail-icon">👨‍💼</span> 
-                            <strong>${lead.assigned_name}</strong>
+                            <strong style="color: #3b82f6;">${lead.assigned_name}</strong>
                         </div>` : 
                         `<div class="card-detail-row" style="color: #ef4444;">
                             <span class="detail-icon">⚠️</span> 
@@ -889,18 +893,39 @@
                     ${lead.interested_course ? 
                         `<div class="card-detail-row">
                             <span class="detail-icon">📚</span> 
-                            ${lead.interested_course}
+                            <strong>${lead.interested_course}</strong>
+                        </div>` : ''
+                    }
+                    
+                    ${lead.rqe ? 
+                        `<div class="card-detail-row">
+                            <span class="detail-icon">🏥</span> 
+                            RQE: ${lead.rqe}
+                        </div>` : ''
+                    }
+                    
+                    ${lead.specialty ? 
+                        `<div class="card-detail-row">
+                            <span class="detail-icon">🩺</span> 
+                            ${lead.specialty}
+                        </div>` : ''
+                    }
+                    
+                    ${lead.state ? 
+                        `<div class="card-detail-row">
+                            <span class="detail-icon">📍</span> 
+                            ${lead.state}
                         </div>` : ''
                     }
                     
                     <div class="card-detail-row">
                         <span class="detail-icon">📞</span> 
-                        ${lead.phone || 'Sem telefone'}
+                        <span style="font-family: monospace; font-size: 11px;">${lead.phone || 'Sem telefone'}</span>
                     </div>
                     
                     <div class="card-detail-row" style="font-size: 11px; color: #6b7280;">
                         <span class="detail-icon">⏱️</span> 
-                        Última msg: ${lastInteraction}
+                        ${lastInteraction}
                     </div>
                 </div>
 
