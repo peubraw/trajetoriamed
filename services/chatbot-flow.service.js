@@ -724,27 +724,42 @@ Estamos com poucas vagas nesse lote!`;
         }
 
         // Analisar histórico da conversa para extrair dados adicionais
+        // Filtrar apenas mensagens do USUÁRIO (role: 'user'), não da IA
+        const userMessages = conversationHistory
+            .filter(msg => msg.role === 'user' || !msg.role) // Pegar apenas mensagens do usuário
+            .map(msg => msg.content || msg)
+            .join(' ');
+        
         const fullConversation = conversationHistory.map(msg => msg.content || msg).join(' ');
         
         // Extrair nome (procurar por "me chamo", "meu nome é", ou frases similares)
+        // IMPORTANTE: Usar apenas userMessages para evitar capturar "Sou a Mia" da IA
         if (!extractedData.name) {
+            // Blacklist de nomes a ignorar (atendentes IA, etc)
+            const nameBlacklist = ['mia', 'assistente', 'atendente', 'bot', 'ia'];
+            
             const namePatterns = [
                 // Padrão explícito: "me chamo X" ou "meu nome é X"
                 /(?:me chamo|meu nome (?:é|e))\s+([A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+(?:\s+[A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+)*)/i,
-                // Padrão "sou o/a X"
+                // Padrão "sou o/a X" - APENAS de mensagens do usuário
                 /(?:sou o|sou a|sou)\s+([A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+(?:\s+[A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+)*)/i,
                 // Padrão de nome completo (múltiplas palavras capitalizadas)
-                /\b([A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+(?:\s+[A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+)+)\b/,
-                // Padrão single name (apenas nome próprio capitalizado, min 3 caracteres)
-                /\b([A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]{2,})\b/
+                /\b([A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+(?:\s+[A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+)+)\b/
             ];
             
             for (const pattern of namePatterns) {
-                const match = fullConversation.match(pattern);
+                const match = userMessages.match(pattern); // Usar userMessages, não fullConversation
                 if (match && match[1]) {
                     const name = match[1].trim();
-                    // Aceitar nomes com 2+ palavras OU nomes únicos com 3+ caracteres
-                    if (name.split(' ').length >= 2 || name.length >= 3) {
+                    const nameLower = name.toLowerCase();
+                    
+                    // Ignorar se estiver na blacklist
+                    if (nameBlacklist.some(blocked => nameLower.includes(blocked))) {
+                        continue;
+                    }
+                    
+                    // Aceitar nomes com 2+ palavras OU nomes únicos com 4+ caracteres
+                    if (name.split(' ').length >= 2 || name.length >= 4) {
                         extractedData.name = name;
                         break;
                     }
