@@ -195,27 +195,10 @@ class WhatsAppService {
             if (!client) return;
 
             // ===================================
-            // 🎯 INTEGRAÇÃO CRM: Criar/Atualizar Lead
-            // ===================================
-            try {
-                const crmService = require('./crm.service');
-                const sessionInfo = chatbotFlowService.getSessionInfo(userId, message.from);
-                
-                await crmService.upsertLead({
-                    userId: userId,
-                    phone: message.from.replace('@c.us', ''),
-                    name: sessionInfo?.name || null,
-                    rqe: sessionInfo?.rqe || null,
-                    specialty: sessionInfo?.specialty || null,
-                    interestedCourse: sessionInfo?.selectedCourse || null,
-                    isFormerStudent: sessionInfo?.isFormerStudent || false,
-                    channel: 'whatsapp',
-                    source: 'chatbot'
-                });
-                console.log('✅ Lead atualizado no CRM');
-            } catch (crmError) {
-                console.error('⚠️ Erro ao atualizar CRM (não bloqueante):', crmError.message);
-            }
+            // 🎯 CRM INTEGRATION: Handled by syncSessionToCRM in chatbot-flow
+            // This old integration was removed to prevent duplicates
+            // The new integration extracts data from IA conversation
+            // and creates leads with proper name extraction
             // ===================================
 
             // Buscar lista de vendedores do banco

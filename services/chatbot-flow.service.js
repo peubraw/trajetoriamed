@@ -729,16 +729,25 @@ Estamos com poucas vagas nesse lote!`;
         // Extrair nome (procurar por "me chamo", "meu nome é", ou frases similares)
         if (!extractedData.name) {
             const namePatterns = [
+                // Padrão explícito: "me chamo X" ou "meu nome é X"
                 /(?:me chamo|meu nome (?:é|e))\s+([A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+(?:\s+[A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+)*)/i,
-                /^([A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+(?:\s+[A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+)+)$/m,
-                /(?:sou o|sou a|sou)\s+([A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+(?:\s+[A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+)*)/i
+                // Padrão "sou o/a X"
+                /(?:sou o|sou a|sou)\s+([A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+(?:\s+[A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+)*)/i,
+                // Padrão de nome completo (múltiplas palavras capitalizadas)
+                /\b([A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+(?:\s+[A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+)+)\b/,
+                // Padrão single name (apenas nome próprio capitalizado, min 3 caracteres)
+                /\b([A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]{2,})\b/
             ];
             
             for (const pattern of namePatterns) {
                 const match = fullConversation.match(pattern);
-                if (match && match[1] && match[1].split(' ').length >= 2) {
-                    extractedData.name = match[1];
-                    break;
+                if (match && match[1]) {
+                    const name = match[1].trim();
+                    // Aceitar nomes com 2+ palavras OU nomes únicos com 3+ caracteres
+                    if (name.split(' ').length >= 2 || name.length >= 3) {
+                        extractedData.name = name;
+                        break;
+                    }
                 }
             }
         }
