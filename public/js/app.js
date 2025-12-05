@@ -962,8 +962,10 @@ window.loadKanbanBoard = async function() {
             fetch('/api/crm/leads', { credentials: 'include' })
         ]);
         
-        allCRMStages = await stagesRes.json();
+        const stagesData = await stagesRes.json();
         const leadsData = await leadsRes.json();
+        
+        allCRMStages = stagesData.stages || [];
         allCRMLeads = leadsData.leads || [];
         
         renderKanbanBoard();
