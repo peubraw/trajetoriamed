@@ -910,14 +910,16 @@ window.switchCRMTab = function(tabName, event) {
     document.querySelectorAll('.crm-tab-content').forEach(content => content.classList.remove('active'));
     
     // Ativar tab clicada
-    event.target.classList.add('active');
+    if (event && event.target) {
+        event.target.classList.add('active');
+    }
     document.getElementById(`crm-tab-${tabName}`).classList.add('active');
     
     // Carregar dados da tab
     if (tabName === 'kanban') {
-        loadKanbanBoard();
+        window.loadKanbanBoard();
     } else if (tabName === 'analytics') {
-        loadCRMAnalytics();
+        window.loadCRMAnalytics();
     }
 }
 
@@ -937,23 +939,23 @@ function connectCRMSocket() {
         
         crmSocket.on('new-lead', () => {
             console.log('Novo lead recebido');
-            loadKanbanBoard();
+            window.loadKanbanBoard();
         });
         
         crmSocket.on('lead-moved', () => {
             console.log('Lead movido');
-            loadKanbanBoard();
+            window.loadKanbanBoard();
         });
         
         crmSocket.on('bot-toggled', () => {
             console.log('Bot alternado');
-            loadKanbanBoard();
+            window.loadKanbanBoard();
         });
     }
 }
 
 // Carregar Kanban
-async function loadKanbanBoard() {
+window.loadKanbanBoard = async function() {
     try {
         const [stagesRes, leadsRes] = await Promise.all([
             fetch('/api/crm/stages', { credentials: 'include' }),
@@ -1063,7 +1065,7 @@ async function dropLead(e) {
         });
         
         if (res.ok) {
-            await loadKanbanBoard();
+            await window.loadKanbanBoard();
         } else {
             alert('Erro ao mover lead');
         }
@@ -1094,11 +1096,11 @@ function filterKanbanLeads() {
 }
 
 window.refreshKanban = function() {
-    loadKanbanBoard();
+    window.loadKanbanBoard();
 }
 
 // Carregar Analytics
-async function loadCRMAnalytics() {
+window.loadCRMAnalytics = async function() {
     try {
         const [statsRes, pipelineRes, rankingRes] = await Promise.all([
             fetch('/api/crm/dashboard/stats', { credentials: 'include' }),
@@ -1249,6 +1251,6 @@ window.showDashboardSection = function(section, event) {
     
     if (section === 'crm') {
         connectCRMSocket();
-        loadKanbanBoard();
+        window.loadKanbanBoard();
     }
 }
