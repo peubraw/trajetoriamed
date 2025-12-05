@@ -113,6 +113,33 @@ class WhatsAppService {
                 this.messageTimers.set(bufferKey, timer);
             });
 
+            // ===================================
+            // 🎯 LISTENER DE MENSAGENS ENVIADAS (Vendedor manual)
+            // Detectar quando vendedor responde manualmente e pausar bot
+            // ===================================
+            client.onAck(async (ack) => {
+                try {
+                    // Verificar se é mensagem enviada (não broadcast, não status)
+                    if (ack && ack.to && !ack.to.includes('status@broadcast') && !ack.isGroupMsg) {
+                        const recipientPhone = ack.to.replace('@c.us', '');
+                        
+                        // Buscar se destinatário é um lead no CRM
+                        const crmService = require('./crm.service');
+                        const lead = await crmService.getLeadByPhone(recipientPhone, userId);
+                        
+                        if (lead && lead.bot_active) {
+                            // Vendedor enviou mensagem manual - pausar bot automaticamente
+                            console.log(`👤 Vendedor respondeu ${recipientPhone} - Pausando bot automaticamente`);
+                            await crmService.toggleBot(lead.id, false, userId);
+                            await crmService.logActivity(lead.id, userId, 'bot_paused', 
+                                'Bot pausado automaticamente - vendedor assumiu conversa');
+                        }
+                    }
+                } catch (error) {
+                    console.error('⚠️ Erro ao processar ACK (não bloqueante):', error.message);
+                }
+            });
+
             // Atualizar status para conectado
             const phoneNumber = await client.getHostDevice();
             const phoneNumberStr = phoneNumber?.id?.user || phoneNumber?._serialized || null;
@@ -166,6 +193,30 @@ class WhatsAppService {
 
             const client = this.clients.get(userId);
             if (!client) return;
+
+            // ===================================
+            // 🎯 INTEGRAÇÃO CRM: Criar/Atualizar Lead
+            // ===================================
+            try {
+                const crmService = require('./crm.service');
+                const sessionInfo = chatbotFlowService.getSessionInfo(userId, message.from);
+                
+                await crmService.upsertLead({
+                    userId: userId,
+                    phone: message.from.replace('@c.us', ''),
+                    name: sessionInfo?.name || null,
+                    rqe: sessionInfo?.rqe || null,
+                    specialty: sessionInfo?.specialty || null,
+                    interestedCourse: sessionInfo?.selectedCourse || null,
+                    isFormerStudent: sessionInfo?.isFormerStudent || false,
+                    channel: 'whatsapp',
+                    source: 'chatbot'
+                });
+                console.log('✅ Lead atualizado no CRM');
+            } catch (crmError) {
+                console.error('⚠️ Erro ao atualizar CRM (não bloqueante):', crmError.message);
+            }
+            // ===================================
 
             // Buscar lista de vendedores do banco
             const [configs] = await db.execute(

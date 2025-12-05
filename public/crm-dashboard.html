@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard CRM - Análise de Vendas</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header h1 {
+            color: #1f2937;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #667eea;
+            color: white;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+        }
+
+        .kpi-card.revenue::before { background: linear-gradient(90deg, #10b981, #059669); }
+        .kpi-card.pipeline::before { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+        .kpi-card.waiting::before { background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
+        .kpi-card.lost::before { background: linear-gradient(90deg, #ef4444, #dc2626); }
+
+        .kpi-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-value {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .kpi-card.revenue .kpi-value { color: #10b981; }
+        .kpi-card.pipeline .kpi-value { color: #3b82f6; }
+        .kpi-card.waiting .kpi-value { color: #8b5cf6; }
+        .kpi-card.lost .kpi-value { color: #ef4444; }
+
+        .kpi-description {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .kpi-icon {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 48px;
+            opacity: 0.1;
+        }
+
+        /* Charts Section */
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .chart-card h3 {
+            font-size: 18px;
+            color: #1f2937;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* Ranking de Vendedores */
+        .ranking-section {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+        }
+
+        .ranking-section h3 {
+            font-size: 20px;
+            color: #1f2937;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .ranking-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .ranking-table th {
+            background: #f9fafb;
+            padding: 12px;
+            text-align: left;
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .ranking-table td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+            color: #374151;
+        }
+
+        .ranking-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .ranking-position {
+            font-size: 20px;
+            font-weight: 800;
+            width: 40px;
+        }
+
+        .ranking-position.first { color: #f59e0b; }
+        .ranking-position.second { color: #94a3b8; }
+        .ranking-position.third { color: #d97706; }
+
+        .seller-name {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-alpha {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-sniper {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .metric-value {
+            font-weight: 700;
+        }
+
+        .metric-value.positive { color: #10b981; }
+        .metric-value.negative { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>
+            <span>📊</span>
+            Dashboard CRM - Análise de Vendas
+        </h1>
+        <button class="btn" onclick="window.location.href='crm-kanban.html'">
+            🎯 Voltar ao Kanban
+        </button>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card revenue">
+            <div class="kpi-icon">💰</div>
+            <div class="kpi-label">Faturamento Realizado</div>
+            <div class="kpi-value" id="kpiRevenue">R$ 0,00</div>
+            <div class="kpi-description">Vendas confirmadas (mês atual)</div>
+        </div>
+
+        <div class="kpi-card pipeline">
+            <div class="kpi-icon">📈</div>
+            <div class="kpi-label">Pipeline Ponderado</div>
+            <div class="kpi-value" id="kpiPipeline">R$ 0,00</div>
+            <div class="kpi-description">Previsão de fechamento</div>
+        </div>
+
+        <div class="kpi-card waiting">
+            <div class="kpi-icon">⏳</div>
+            <div class="kpi-label">Aguardando Pagamento</div>
+            <div class="kpi-value" id="kpiWaiting">R$ 0,00</div>
+            <div class="kpi-description">Checkouts iniciados</div>
+        </div>
+
+        <div class="kpi-card lost">
+            <div class="kpi-icon">💸</div>
+            <div class="kpi-label">Dinheiro na Mesa</div>
+            <div class="kpi-value" id="kpiLost">R$ 0,00</div>
+            <div class="kpi-description">Leads perdidos</div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-section">
+        <div class="chart-card">
+            <h3>📉 Motivos de Perda</h3>
+            <div class="chart-container">
+                <canvas id="lostReasonsChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h3>🎯 Pipeline por Etapa</h3>
+            <div class="chart-container">
+                <canvas id="pipelineChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ranking de Vendedores -->
+    <div class="ranking-section">
+        <h3>🏆 Ranking de Vendedores</h3>
+        <table class="ranking-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Vendedor</th>
+                    <th>Leads</th>
+                    <th>Conversão</th>
+                    <th>Faturamento</th>
+                    <th>Comissão (10%)</th>
+                    <th>Badge</th>
+                </tr>
+            </thead>
+            <tbody id="rankingTable">
+                <tr>
+                    <td colspan="7" style="text-align: center; color: #9ca3af;">
+                        Carregando dados...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let lostReasonsChart, pipelineChart;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+        });
+
+        async function loadDashboard() {
+            try {
+                // KPIs
+                const statsRes = await fetch('/api/crm/dashboard/stats', { 
+                    credentials: 'include' 
+                });
+                const statsData = await statsRes.json();
+                
+                if (statsData.success) {
+                    const stats = statsData.stats;
+                    document.getElementById('kpiRevenue').textContent = 
+                        formatCurrency(stats.revenue_realized);
+                    document.getElementById('kpiPipeline').textContent = 
+                        formatCurrency(stats.pipeline_weighted);
+                    document.getElementById('kpiWaiting').textContent = 
+                        formatCurrency(stats.awaiting_payment);
+                    document.getElementById('kpiLost').textContent = 
+                        formatCurrency(stats.money_lost);
+                }
+
+                // Motivos de Perda
+                const lostRes = await fetch('/api/crm/dashboard/lost-reasons', { 
+                    credentials: 'include' 
+                });
+                const lostData = await lostRes.json();
+                
+                if (lostData.success && lostData.reasons.length > 0) {
+                    renderLostReasonsChart(lostData.reasons);
+                }
+
+                // Ranking de Vendedores
+                const sellersRes = await fetch('/api/crm/dashboard/sellers', { 
+                    credentials: 'include' 
+                });
+                const sellersData = await sellersRes.json();
+                
+                if (sellersData.success) {
+                    renderSellerRanking(sellersData.ranking);
+                }
+
+                // Pipeline por Estágio
+                const stagesRes = await fetch('/api/crm/stages', { 
+                    credentials: 'include' 
+                });
+                const stagesData = await stagesRes.json();
+                
+                if (stagesData.success) {
+                    renderPipelineChart(stagesData.stages);
+                }
+
+            } catch (error) {
+                console.error('Erro ao carregar dashboard:', error);
+            }
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value);
+        }
+
+        function renderLostReasonsChart(reasons) {
+            const ctx = document.getElementById('lostReasonsChart').getContext('2d');
+            
+            const labels = reasons.map(r => r.reason || 'Sem motivo');
+            const data = reasons.map(r => r.count);
+            
+            const colors = [
+                '#ef4444', '#f59e0b', '#eab308', '#84cc16', '#22c55e',
+                '#14b8a6', '#06b6d4', '#3b82f6', '#6366f1', '#8b5cf6'
+            ];
+
+            if (lostReasonsChart) lostReasonsChart.destroy();
+
+            lostReasonsChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 12,
+                                font: { size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderPipelineChart(stages) {
+            const ctx = document.getElementById('pipelineChart').getContext('2d');
+            
+            const labels = stages.map(s => s.name);
+            const data = stages.map(s => parseFloat(s.total_value || 0));
+            const colors = stages.map(s => s.color);
+
+            if (pipelineChart) pipelineChart.destroy();
+
+            pipelineChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Valor Total (R$)',
+                        data: data,
+                        backgroundColor: colors,
+                        borderRadius: 8,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toFixed(0);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderSellerRanking(ranking) {
+            const tbody = document.getElementById('rankingTable');
+            
+            if (ranking.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: #9ca3af;">
+                            Nenhum dado disponível
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Identificar badges
+            const maxRevenue = Math.max(...ranking.map(r => parseFloat(r.total_revenue || 0)));
+            const maxConversion = Math.max(...ranking.map(r => parseFloat(r.conversion_rate || 0)));
+
+            tbody.innerHTML = ranking.map((seller, index) => {
+                const position = index + 1;
+                const positionClass = position === 1 ? 'first' : position === 2 ? 'second' : position === 3 ? 'third' : '';
+                
+                let badge = '';
+                if (parseFloat(seller.total_revenue) === maxRevenue && maxRevenue > 0) {
+                    badge = '<span class="badge badge-alpha">👑 Alpha</span>';
+                }
+                if (parseFloat(seller.conversion_rate) === maxConversion && maxConversion > 0) {
+                    badge += ' <span class="badge badge-sniper">🎯 Sniper</span>';
+                }
+
+                return `
+                    <tr>
+                        <td class="ranking-position ${positionClass}">${position}°</td>
+                        <td class="seller-name">${seller.name}</td>
+                        <td>${seller.total_leads} leads</td>
+                        <td class="metric-value ${seller.conversion_rate > 50 ? 'positive' : ''}">
+                            ${parseFloat(seller.conversion_rate || 0).toFixed(1)}%
+                        </td>
+                        <td class="metric-value positive">
+                            ${formatCurrency(seller.total_revenue)}
+                        </td>
+                        <td class="metric-value">
+                            ${formatCurrency(parseFloat(seller.total_revenue || 0) * 0.1)}
+                        </td>
+                        <td>${badge}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    </script>
+</body>
+</html>

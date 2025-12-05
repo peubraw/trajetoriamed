@@ -3,10 +3,22 @@ const session = require('express-session');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
+const http = require('http');
+const { Server } = require('socket.io');
 require('dotenv').config();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: '*',
+        methods: ['GET', 'POST']
+    }
+});
 const PORT = process.env.PORT || 3000;
+
+// Exportar io para uso em outros módulos
+global.io = io;
 
 // Middlewares
 app.use((req, res, next) => {
@@ -46,17 +58,33 @@ app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/whatsapp', require('./routes/whatsapp.routes'));
 app.use('/api/bot', require('./routes/bot.routes'));
 app.use('/api/dashboard', require('./routes/dashboard.routes'));
+app.use('/api/crm', require('./routes/crm.routes')); // CRM Kanban
 
 // Rota principal
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Socket.IO - Conexões em tempo real
+io.on('connection', (socket) => {
+    console.log('🔌 Cliente conectado ao Socket.IO:', socket.id);
+
+    socket.on('join-crm', (userId) => {
+        socket.join(`crm-${userId}`);
+        console.log(`👤 Usuário ${userId} entrou na sala CRM`);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('🔌 Cliente desconectado:', socket.id);
+    });
+});
+
 // Iniciar servidor
-app.listen(PORT, '0.0.0.0', async () => {
+server.listen(PORT, '0.0.0.0', async () => {
     console.log(`🚀 Servidor rodando na porta ${PORT}`);
     console.log(`📱 Acesse local: http://localhost:${PORT}`);
     console.log(`🌐 Acesse rede: http://192.168.1.x:${PORT}`);
+    console.log(`🔌 Socket.IO pronto para conexões em tempo real`);
     
     // Reconectar sessões existentes
     const whatsappService = require('./services/whatsapp.service');
