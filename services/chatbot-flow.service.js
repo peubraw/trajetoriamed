@@ -767,9 +767,16 @@ Estamos com poucas vagas nesse lote!`;
             }
         }
         
-        // Extrair RQE (formato: números)
-        const rqeMatch = fullConversation.match(/\b\d{4,6}\b/);
-        if (rqeMatch) extractedData.rqe = rqeMatch[0];
+        // Extrair RQE (formato: 4-6 dígitos, mas NÃO anos 2020-2099)
+        const rqeMatches = fullConversation.match(/\b\d{4,6}\b/g);
+        if (rqeMatches) {
+            // Filtrar anos (2020-2099) e números muito comuns
+            const validRqe = rqeMatches.find(num => {
+                const n = parseInt(num);
+                return n < 2000 || n > 2099; // Ignorar anos
+            });
+            if (validRqe) extractedData.rqe = validRqe;
+        }
 
         // Extrair especialidades comuns
         const specialties = ['cardiologia', 'pediatria', 'ortopedia', 'dermatologia', 'neurologia', 
@@ -817,16 +824,25 @@ Estamos com poucas vagas nesse lote!`;
             console.log(`🔍 [CRM SYNC] Extracted:`, JSON.stringify(leadData, null, 2));
             console.log(`🔍 [CRM SYNC] History length: ${conversationHistory?.length || 0}`);
             
-            // Validar dados mínimos
-            if (!leadData.name && !leadData.interestedCourse) {
-                console.log(`⚠️ [CRM SYNC] Skipped - insufficient data (no name/course)`);
+            // Validar dados mínimos - EXIGE NOME obrigatoriamente
+            if (!leadData.name) {
+                console.log(`⚠️ [CRM SYNC] Skipped - nome não capturado ainda`);
+                return null;
+            }
+            
+            // Validação adicional: nome deve ter pelo menos 3 caracteres
+            if (leadData.name.length < 3) {
+                console.log(`⚠️ [CRM SYNC] Skipped - nome muito curto: "${leadData.name}"`);
                 return null;
             }
             
             // Criar ou atualizar lead no CRM (etapa Triagem)
+            // Limpar telefone: remover @c.us e @lid (grupos)
+            const cleanPhone = phoneNumber.replace('@c.us', '').replace('@lid', '');
+            
             const leadId = await crmService.upsertLead({
                 userId: userId,
-                phone: phoneNumber.replace('@c.us', ''),
+                phone: cleanPhone,
                 name: leadData.name,
                 email: leadData.email,
                 state: leadData.state,
