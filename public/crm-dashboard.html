@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard CRM - Análise de Vendas</title>
+    <script src="/js/menu.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -17,6 +18,11 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+        }
+        
+        #main-content {
+            margin-left: 288px;
+            transition: margin-left 0.3s;
         }
 
         .header {
@@ -237,6 +243,7 @@
     </style>
 </head>
 <body>
+    <div id="main-content">
     <div class="header">
         <h1>
             <span>📊</span>
@@ -520,5 +527,6 @@
             }).join('');
         }
     </script>
+    </div>
 </body>
 </html>

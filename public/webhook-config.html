@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configuração de Webhooks - CRM</title>
+    <script src="/js/menu.js"></script>
     <link rel="stylesheet" href="/css/style.css">
     <style>
+        #main-content { margin-left: 288px; transition: margin-left 0.3s; }
         .config-container {
             max-width: 900px;
             margin: 40px auto;
@@ -173,6 +175,7 @@
     </style>
 </head>
 <body>
+    <div id="main-content">
     <a href="/" class="back-btn">← Voltar ao Dashboard</a>
     
     <div class="config-container">
@@ -374,5 +377,6 @@
         // Recarregar logs a cada 30 segundos
         setInterval(loadLogs, 30000);
     </script>
+    </div>
 </body>
 </html>

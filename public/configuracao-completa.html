@@ -6,6 +6,7 @@
     <title>Configuração Completa - Trajetória Med</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="/js/menu.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -129,24 +130,11 @@
     </style>
 </head>
 <body class="bg-gray-50">
+    <div id="main-content">
     <!-- Dashboard Layout -->
     <div class="min-h-screen flex">
-        <!-- Sidebar -->
-        <div class="w-72 gradient-medical shadow-2xl flex flex-col">
-            <div class="p-8">
-                <div class="flex items-center space-x-3 mb-8">
-                    <span class="text-4xl">🏥</span>
-                    <div class="flex flex-col">
-                        <span class="text-2xl font-black text-white">Trajetória Med</span>
-                        <span class="text-xs text-blue-200 font-semibold">PAINEL DE CONTROLE</span>
-                    </div>
-                </div>
-                
-                <nav class="space-y-2">
-                    <a href="/" class="flex items-center gap-3 px-4 py-3.5 text-white/80 hover:bg-white/20 rounded-xl transition font-semibold">
-                        <span class="text-xl">📊</span> Visão Geral
-                    </a>
-                    <a href="/" class="flex items-center gap-3 px-4 py-3.5 text-white/80 hover:bg-white/20 rounded-xl transition font-semibold">
+        <!-- Sidebar removido - usando menu unificado -->
+        <div style="display: none;">
                         <span class="text-xl">📱</span> WhatsApp
                     </a>
                     <a href="/configuracao-completa.html" class="flex items-center gap-3 px-4 py-3.5 bg-white/30 backdrop-blur-sm text-white rounded-xl font-bold border-2 border-white/40">
@@ -1243,6 +1231,7 @@ Digite o número da opção desejada:
     </script>
             </div>
         </div>
+    </div>
     </div>
 </body>
 </html>
