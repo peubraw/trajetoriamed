@@ -501,14 +501,12 @@ class CRMService {
     // ===================================
 
     async getDashboardStats(userId) {
-        // Faturamento realizado (mês atual)
+        // Faturamento realizado (total de vendas ganhas)
         const [revenue] = await db.query(`
-            SELECT COALESCE(SUM(l.final_value), 0) as total
+            SELECT COALESCE(SUM(l.potential_value), 0) as total
             FROM crm_leads l
             INNER JOIN crm_stages s ON l.stage_id = s.id
             WHERE l.user_id = ? AND s.is_success = TRUE
-            AND MONTH(l.converted_at) = MONTH(CURRENT_DATE)
-            AND YEAR(l.converted_at) = YEAR(CURRENT_DATE)
         `, [userId]);
 
         // Pipeline ponderado
@@ -562,7 +560,7 @@ class CRMService {
                 u.id, u.name,
                 COUNT(DISTINCT l.id) as total_leads,
                 COUNT(DISTINCT CASE WHEN s.is_success THEN l.id END) as won_leads,
-                COALESCE(SUM(CASE WHEN s.is_success THEN l.final_value END), 0) as total_revenue,
+                COALESCE(SUM(CASE WHEN s.is_success THEN l.potential_value END), 0) as total_revenue,
                 ROUND(COUNT(CASE WHEN s.is_success THEN 1 END) * 100.0 / NULLIF(COUNT(l.id), 0), 2) as conversion_rate
             FROM users u
             LEFT JOIN crm_leads l ON l.assigned_to = u.id AND l.user_id = ?
