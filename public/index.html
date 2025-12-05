@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WPPBot - Chatbot WhatsApp com IA</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    <title>Trajetória Med - Painel de Controle CRM & Chatbot</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="/js/app.js" defer></script>
     <script>
@@ -12,17 +12,41 @@
             theme: {
                 extend: {
                     colors: {
-                        whatsapp: {
-                            50: '#E7F7EE',
-                            100: '#C2EBD6',
-                            200: '#9DDFBE',
-                            300: '#78D3A6',
-                            400: '#53C78E',
-                            500: '#25D366',
-                            600: '#1DA851',
-                            700: '#128C7E',
-                            800: '#075E54',
-                            900: '#054940',
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        accent: {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            200: '#fecaca',
+                            300: '#fca5a5',
+                            400: '#f87171',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                            800: '#991b1b',
+                            900: '#7f1d1d',
+                        },
+                        medical: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            200: '#a7f3d0',
+                            300: '#6ee7b7',
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b',
                         }
                     }
                 }
@@ -30,74 +54,261 @@
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-        * { font-family: 'Inter', sans-serif; }
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+        * { font-family: 'Poppins', sans-serif; }
+        
+        .gradient-medical {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 50%, #075985 100%);
         }
+        
+        .gradient-accent {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        }
+        
         .glass-effect {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(135deg, #0284c7 0%, #dc2626 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hover-lift {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
     </style>
 </head>
 <body class="bg-gray-50">
     <!-- Landing Page -->
     <div id="landing-page">
-        <!-- Navbar Premium -->
-        <nav class="fixed w-full bg-white/90 backdrop-blur-md shadow-lg z-50">
+        <!-- Navbar Trajetória Med -->
+        <nav class="fixed w-full glass-effect shadow-xl z-50 border-b border-gray-200">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center h-16">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-3xl">🤖</span>
-                        <span class="text-2xl font-bold bg-gradient-to-r from-whatsapp-600 to-whatsapp-800 bg-clip-text text-transparent">WPPBot</span>
+                <div class="flex justify-between items-center h-20">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-4xl">🏥</span>
+                        <div class="flex flex-col">
+                            <span class="text-2xl font-black text-gradient">Trajetória Med</span>
+                            <span class="text-xs text-gray-600 font-semibold">PAINEL DE CONTROLE</span>
+                        </div>
                     </div>
-                    <div class="hidden md:flex items-center space-x-8">
-                        <a href="#features" class="text-gray-700 hover:text-whatsapp-600 transition font-medium">Recursos</a>
-                        <a href="#pricing" class="text-gray-700 hover:text-whatsapp-600 transition font-medium">Preços</a>
-                        <button onclick="showLogin()" class="px-6 py-2 text-whatsapp-600 font-semibold hover:bg-whatsapp-50 rounded-lg transition">Entrar</button>
-                        <button onclick="showRegister()" class="px-6 py-2 bg-gradient-to-r from-whatsapp-600 to-whatsapp-700 text-white font-semibold rounded-lg hover:shadow-xl transform hover:-translate-y-0.5 transition">Teste Grátis</button>
+                    <div class="hidden md:flex items-center space-x-6">
+                        <a href="#features" class="text-gray-700 hover:text-primary-600 transition font-semibold">Recursos</a>
+                        <a href="#benefits" class="text-gray-700 hover:text-primary-600 transition font-semibold">Benefícios</a>
+                        <button onclick="showLogin()" class="px-6 py-2.5 text-primary-600 font-bold hover:bg-primary-50 rounded-lg transition">
+                            Entrar
+                        </button>
+                        <button onclick="showRegister()" class="px-6 py-2.5 gradient-medical text-white font-bold rounded-lg hover:shadow-xl transform hover:-translate-y-0.5 transition">
+                            Começar Agora
+                        </button>
                     </div>
                 </div>
             </div>
         </nav>
 
-        <!-- Hero Section Premium -->
-        <section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-whatsapp-800 via-whatsapp-700 to-whatsapp-900 text-white relative overflow-hidden">
+        <!-- Hero Section Trajetória Med -->
+        <section class="pt-32 pb-24 px-4 sm:px-6 lg:px-8 gradient-medical text-white relative overflow-hidden">
             <div class="absolute inset-0 opacity-10">
-                <div class="absolute top-20 left-10 w-72 h-72 bg-white rounded-full filter blur-3xl"></div>
-                <div class="absolute bottom-20 right-10 w-96 h-96 bg-white rounded-full filter blur-3xl"></div>
+                <div class="absolute top-20 left-10 w-96 h-96 bg-white rounded-full filter blur-3xl"></div>
+                <div class="absolute bottom-20 right-10 w-96 h-96 bg-accent-500 rounded-full filter blur-3xl"></div>
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-medical-500 rounded-full filter blur-3xl"></div>
             </div>
             <div class="max-w-7xl mx-auto relative z-10">
-                <div class="text-center space-y-8">
-                    <div class="inline-block px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold mb-4">
-                        ✨ Powered by Grok AI
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div class="space-y-8">
+                        <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-bold">
+                            <span class="w-2 h-2 bg-medical-400 rounded-full animate-pulse"></span>
+                            SISTEMA CRM & CHATBOT INTELIGENTE
+                        </div>
+                        <h1 class="text-5xl md:text-6xl font-black leading-tight">
+                            Transforme seu<br/>
+                            <span class="text-medical-300">Atendimento Médico</span>
+                        </h1>
+                        <p class="text-xl md:text-2xl text-blue-100 leading-relaxed">
+                            Painel completo de controle com CRM integrado, chatbot WhatsApp inteligente e gestão de leads para sua instituição médica
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                            <button onclick="showRegister()" class="px-8 py-4 bg-white text-primary-700 font-bold rounded-xl hover:shadow-2xl transform hover:scale-105 transition text-lg flex items-center justify-center gap-2">
+                                <span>🚀</span> Acessar Painel Agora
+                            </button>
+                            <button class="px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-bold rounded-xl hover:bg-white/20 transition text-lg flex items-center justify-center gap-2 border-2 border-white/30">
+                                <span>📊</span> Ver Demonstração
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-3 gap-6 pt-4">
+                            <div class="text-center">
+                                <div class="text-3xl font-black text-medical-300">2.500+</div>
+                                <div class="text-sm text-blue-200">Alunos Atendidos</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-black text-medical-300">98%</div>
+                                <div class="text-sm text-blue-200">Satisfação</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-black text-medical-300">24/7</div>
+                                <div class="text-sm text-blue-200">Atendimento</div>
+                            </div>
+                        </div>
                     </div>
-                    <h1 class="text-5xl md:text-7xl font-black leading-tight">
-                        Chatbot WhatsApp com<br/>
-                        <span class="bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent">Inteligência Artificial</span>
-                    </h1>
-                    <p class="text-xl md:text-2xl text-whatsapp-100 max-w-3xl mx-auto">
-                        Atenda seus clientes 24/7 de forma inteligente e automatizada
+                    <div class="hidden md:block">
+                        <div class="relative">
+                            <div class="absolute inset-0 bg-gradient-to-r from-medical-400 to-primary-400 rounded-3xl transform rotate-6 opacity-20"></div>
+                            <div class="relative glass-effect rounded-3xl p-8 space-y-4">
+                                <div class="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                    <div class="w-12 h-12 rounded-full gradient-medical flex items-center justify-center text-2xl">💬</div>
+                                    <div class="flex-1">
+                                        <div class="h-3 bg-white/30 rounded w-3/4 mb-2"></div>
+                                        <div class="h-2 bg-white/20 rounded w-1/2"></div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                    <div class="w-12 h-12 rounded-full gradient-accent flex items-center justify-center text-2xl">📊</div>
+                                    <div class="flex-1">
+                                        <div class="h-3 bg-white/30 rounded w-2/3 mb-2"></div>
+                                        <div class="h-2 bg-white/20 rounded w-full"></div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4">
+                                    <div class="w-12 h-12 rounded-full bg-medical-500 flex items-center justify-center text-2xl">🎯</div>
+                                    <div class="flex-1">
+                                        <div class="h-3 bg-white/30 rounded w-5/6 mb-2"></div>
+                                        <div class="h-2 bg-white/20 rounded w-2/3"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section Trajetória Med -->
+        <section id="features" class="py-24 px-4 sm:px-6 lg:px-8 bg-gray-50">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <div class="inline-block px-4 py-2 bg-primary-100 text-primary-700 rounded-full text-sm font-bold mb-4">
+                        RECURSOS DO SISTEMA
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-4">
+                        Tudo que você precisa em<br/>
+                        <span class="text-gradient">um único painel</span>
+                    </h2>
+                    <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                        Sistema completo de gerenciamento para instituições médicas com tecnologia de ponta
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-                        <button onclick="showRegister()" class="px-8 py-4 bg-white text-whatsapp-800 font-bold rounded-xl hover:shadow-2xl transform hover:scale-105 transition text-lg">
-                            🚀 Começar Teste Grátis de 1 Dia
-                        </button>
-                        <button class="px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-bold rounded-xl hover:bg-white/20 transition text-lg">
-                            📹 Ver Demonstração
-                        </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Feature Card 1 -->
+                    <div class="group bg-white p-8 rounded-2xl shadow-lg hover-lift border border-gray-100">
+                        <div class="w-16 h-16 gradient-medical rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition">
+                            🤖
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">Chatbot Inteligente</h3>
+                        <p class="text-gray-600 leading-relaxed">IA avançada para atendimento automatizado 24/7 com respostas contextualizadas e personalizadas</p>
                     </div>
-                    <div class="flex justify-center items-center space-x-8 pt-8 text-sm">
-                        <div class="flex items-center space-x-2">
-                            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                            <span>Sem compromisso</span>
+
+                    <!-- Feature Card 2 -->
+                    <div class="group bg-white p-8 rounded-2xl shadow-lg hover-lift border border-gray-100">
+                        <div class="w-16 h-16 gradient-accent rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition">
+                            📊
                         </div>
-                        <div class="flex items-center space-x-2">
-                            <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                            <span>Configuração em 5 minutos</span>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">CRM Completo</h3>
+                        <p class="text-gray-600 leading-relaxed">Gerencie leads, acompanhe conversas e analise métricas em tempo real</p>
+                    </div>
+
+                    <!-- Feature Card 3 -->
+                    <div class="group bg-white p-8 rounded-2xl shadow-lg hover-lift border border-gray-100">
+                        <div class="w-16 h-16 bg-gradient-to-br from-medical-500 to-medical-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition">
+                            📱
                         </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">WhatsApp Integrado</h3>
+                        <p class="text-gray-600 leading-relaxed">Conexão direta com WhatsApp via QR Code, sem complicação ou mensalidades extras</p>
+                    </div>
+
+                    <!-- Feature Card 4 -->
+                    <div class="group bg-white p-8 rounded-2xl shadow-lg hover-lift border border-gray-100">
+                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition">
+                            🎯
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">Fluxos Personalizados</h3>
+                        <p class="text-gray-600 leading-relaxed">Configure fluxos de atendimento específicos para cada curso e produto</p>
+                    </div>
+
+                    <!-- Feature Card 5 -->
+                    <div class="group bg-white p-8 rounded-2xl shadow-lg hover-lift border border-gray-100">
+                        <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition">
+                            📈
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">Analytics Avançado</h3>
+                        <p class="text-gray-600 leading-relaxed">Dashboards com métricas de conversão, engajamento e performance de vendas</p>
+                    </div>
+
+                    <!-- Feature Card 6 -->
+                    <div class="group bg-white p-8 rounded-2xl shadow-lg hover-lift border border-gray-100">
+                        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition">
+                            👥
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-3">Equipe de Vendas</h3>
+                        <p class="text-gray-600 leading-relaxed">Notificações automáticas para vendedores e sistema de distribuição de leads</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Benefits Section -->
+        <section id="benefits" class="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <div class="inline-block px-4 py-2 bg-medical-100 text-medical-700 rounded-full text-sm font-bold mb-4">
+                        POR QUE ESCOLHER
+                    </div>
+                    <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-4">
+                        Diferenciais do<br/>
+                        <span class="text-gradient">Sistema Trajetória Med</span>
+                    </h2>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                    <div class="flex gap-4 items-start p-6 rounded-2xl hover:bg-gray-50 transition">
+                        <div class="w-12 h-12 gradient-medical rounded-xl flex items-center justify-center text-2xl flex-shrink-0">✓</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Reconhecido pelo MEC</h3>
+                            <p class="text-gray-600">Sistema desenvolvido especificamente para instituições de ensino médico certificadas</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-start p-6 rounded-2xl hover:bg-gray-50 transition">
+                        <div class="w-12 h-12 gradient-accent rounded-xl flex items-center justify-center text-2xl flex-shrink-0">✓</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Configuração Simplificada</h3>
+                            <p class="text-gray-600">Interface intuitiva que não requer conhecimentos técnicos avançados</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-start p-6 rounded-2xl hover:bg-gray-50 transition">
+                        <div class="w-12 h-12 bg-medical-500 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">✓</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Suporte Especializado</h3>
+                            <p class="text-gray-600">Equipe dedicada para auxiliar na configuração e otimização do sistema</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-start p-6 rounded-2xl hover:bg-gray-50 transition">
+                        <div class="w-12 h-12 bg-primary-500 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">✓</div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Atualizações Constantes</h3>
+                            <p class="text-gray-600">Novas funcionalidades e melhorias implementadas regularmente</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
                         <div class="flex items-center space-x-2">
                             <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                             <span>Suporte incluído</span>
@@ -173,159 +384,231 @@
         </section>
     </div>
 
-    <!-- Modal de Login Premium -->
-    <div id="login-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 transform transition-all">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-900">Entrar</h2>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
-            </div>
-            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+    <!-- Modal de Login Trajetória Med -->
+    <div id="login-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-10 transform transition-all border-2 border-primary-100">
+            <div class="flex justify-between items-center mb-8">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-3xl">🏥</span>
+                        <h2 class="text-3xl font-black text-gradient">Entrar</h2>
+                    </div>
+                    <p class="text-sm text-gray-600">Acesse seu painel de controle</p>
+                </div>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-3xl font-light">&times;</button>
+            </div>
+            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Email</label>
                     <input type="email" id="login-email" required
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-whatsapp-500 focus:outline-none transition">
+                           class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:outline-none transition text-gray-800">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Senha</label>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Senha</label>
                     <input type="password" id="login-password" required
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-whatsapp-500 focus:outline-none transition">
+                           class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:outline-none transition text-gray-800">
                 </div>
                 <button type="submit" 
-                        class="w-full py-3 bg-gradient-to-r from-whatsapp-600 to-whatsapp-700 text-white font-bold rounded-xl hover:shadow-xl transform hover:-translate-y-0.5 transition">
-                    Entrar
+                        class="w-full py-4 gradient-medical text-white font-bold rounded-xl hover:shadow-2xl transform hover:-translate-y-1 transition text-lg">
+                    Acessar Painel →
                 </button>
             </form>
-            <p class="text-center mt-6 text-gray-600">
+            <p class="text-center mt-8 text-gray-600">
                 Não tem conta? 
-                <a href="#" onclick="showRegister()" class="text-whatsapp-600 font-semibold hover:text-whatsapp-700">Cadastre-se grátis</a>
+                <a href="#" onclick="showRegister()" class="text-primary-600 font-bold hover:text-primary-700 underline">Cadastre-se aqui</a>
             </p>
         </div>
     </div>
 
-    <!-- Modal de Registro Premium -->
-    <div id="register-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 transform transition-all">
-            <div class="flex justify-between items-center mb-6">
+    <!-- Modal de Registro Trajetória Med -->
+    <div id="register-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-10 transform transition-all border-2 border-medical-100">
+            <div class="flex justify-between items-center mb-8">
                 <div>
-                    <h2 class="text-3xl font-bold text-gray-900">Criar Conta</h2>
-                    <p class="text-sm text-whatsapp-600 font-semibold mt-1">🎉 Teste Grátis por 1 Dia</p>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-3xl">🏥</span>
+                        <h2 class="text-3xl font-black text-gradient">Criar Conta</h2>
+                    </div>
+                    <p class="text-sm gradient-medical text-white px-3 py-1 rounded-full font-bold inline-block">🎉 Acesso Imediato</p>
                 </div>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">&times;</button>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-3xl font-light">&times;</button>
             </div>
             <form id="register-form" onsubmit="handleRegister(event)" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nome Completo</label>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Nome Completo</label>
                     <input type="text" id="register-name" required
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-whatsapp-500 focus:outline-none transition">
+                           class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:border-medical-500 focus:outline-none transition text-gray-800">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Email Institucional</label>
                     <input type="email" id="register-email" required
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-whatsapp-500 focus:outline-none transition">
+                           class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:border-medical-500 focus:outline-none transition text-gray-800">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Telefone (opcional)</label>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Telefone (opcional)</label>
                     <input type="tel" id="register-phone"
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-whatsapp-500 focus:outline-none transition">
+                           class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:border-medical-500 focus:outline-none transition text-gray-800"
+                           placeholder="(00) 00000-0000">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Senha (mínimo 6 caracteres)</label>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Senha (mínimo 6 caracteres)</label>
                     <input type="password" id="register-password" required minlength="6"
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-whatsapp-500 focus:outline-none transition">
+                           class="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:border-medical-500 focus:outline-none transition text-gray-800">
                 </div>
                 <button type="submit" 
-                        class="w-full py-3 bg-gradient-to-r from-whatsapp-600 to-whatsapp-700 text-white font-bold rounded-xl hover:shadow-xl transform hover:-translate-y-0.5 transition">
-                    🚀 Começar Teste Grátis
+                        class="w-full py-4 gradient-medical text-white font-bold rounded-xl hover:shadow-2xl transform hover:-translate-y-1 transition text-lg">
+                    🚀 Criar Conta e Acessar
                 </button>
             </form>
             <p class="text-center mt-6 text-gray-600">
                 Já tem conta? 
-                <a href="#" onclick="showLogin()" class="text-whatsapp-600 font-semibold hover:text-whatsapp-700">Faça login</a>
+                <a href="#" onclick="showLogin()" class="text-primary-600 font-bold hover:text-primary-700 underline">Faça login</a>
             </p>
         </div>
     </div>
 
-    <!-- Dashboard Premium (oculto inicialmente) -->
+    <!-- Dashboard Trajetória Med (oculto inicialmente) -->
     <div id="dashboard" class="hidden">
         <div class="flex h-screen bg-gray-50">
-            <!-- Sidebar Premium -->
-            <div class="w-64 bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col shadow-2xl">
-                <div class="p-6 border-b border-gray-700">
-                    <div class="text-2xl font-bold flex items-center gap-2">
-                        🤖 <span class="bg-gradient-to-r from-whatsapp-400 to-whatsapp-600 bg-clip-text text-transparent">WPPBot</span>
+            <!-- Sidebar Trajetória Med -->
+            <div class="w-72 gradient-medical text-white flex flex-col shadow-2xl">
+                <div class="p-6 border-b border-white/20">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="text-4xl">🏥</span>
+                        <div class="flex flex-col">
+                            <span class="text-2xl font-black">Trajetória Med</span>
+                            <span class="text-xs text-blue-200 font-semibold">PAINEL DE CONTROLE</span>
+                        </div>
                     </div>
                 </div>
-                <nav class="flex-1 p-4 space-y-2">
-                    <a href="#" onclick="showDashboardSection('overview', event)" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-whatsapp-600 hover:bg-whatsapp-700 transition nav-item-dashboard active">
-                        <span class="text-xl">📊</span>
-                        <span class="font-semibold">Visão Geral</span>
+                <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+                    <a href="#" onclick="showDashboardSection('overview', event)" class="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-white/20 backdrop-blur-sm hover:bg-white/30 transition nav-item-dashboard active border border-white/30">
+                        <span class="text-2xl">📊</span>
+                        <span class="font-bold">Visão Geral</span>
                     </a>
-                    <a href="#" onclick="showDashboardSection('whatsapp', event)" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-700 transition nav-item-dashboard">
-                        <span class="text-xl">📱</span>
-                        <span class="font-semibold">WhatsApp</span>
+                    <a href="#" onclick="showDashboardSection('whatsapp', event)" class="flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-white/10 transition nav-item-dashboard">
+                        <span class="text-2xl">📱</span>
+                        <span class="font-bold">WhatsApp</span>
                     </a>
-                    <a href="#" onclick="showDashboardSection('config-completa', event)" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-700 transition nav-item-dashboard">
-                        <span class="text-xl">🎯</span>
-                        <span class="font-semibold">Configuração Completa</span>
+                    <a href="#" onclick="showDashboardSection('config-completa', event)" class="flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-white/10 transition nav-item-dashboard">
+                        <span class="text-2xl">🎯</span>
+                        <span class="font-bold">Configuração Bot</span>
                     </a>
-                    <a href="#" onclick="showDashboardSection('config', event)" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-700 transition nav-item-dashboard">
-                        <span class="text-xl">⚙️</span>
-                        <span class="font-semibold">Configurar Bot (Antigo)</span>
+                    <a href="#" onclick="showDashboardSection('messages', event)" class="flex items-center gap-3 px-4 py-3.5 rounded-xl hover:bg-white/10 transition nav-item-dashboard">
+                        <span class="text-2xl">💬</span>
+                        <span class="font-bold">Conversas</span>
                     </a>
-                    <a href="#" onclick="showDashboardSection('advanced-config', event)" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-700 transition nav-item-dashboard">
-                        <span class="text-xl">🔧</span>
-                        <span class="font-semibold">Config. Avançada (Antigo)</span>
-                    </a>
-                    <a href="#" onclick="showDashboardSection('messages', event)" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-700 transition nav-item-dashboard">
-                        <span class="text-xl">💬</span>
-                        <span class="font-semibold">Mensagens</span>
-                    </a>
+                    
+                    <div class="pt-4 mt-4 border-t border-white/20">
+                        <p class="text-xs text-blue-200 font-bold px-4 mb-2">CONFIGURAÇÕES ANTIGAS</p>
+                        <a href="#" onclick="showDashboardSection('config', event)" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition nav-item-dashboard text-sm">
+                            <span class="text-xl">⚙️</span>
+                            <span class="font-semibold">Config. Bot (Antiga)</span>
+                        </a>
+                        <a href="#" onclick="showDashboardSection('advanced-config', event)" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition nav-item-dashboard text-sm">
+                            <span class="text-xl">🔧</span>
+                            <span class="font-semibold">Config. Avançada</span>
+                        </a>
+                    </div>
                 </nav>
-                <div class="p-4 border-t border-gray-700">
-                    <button onclick="handleLogout()" class="w-full px-4 py-3 bg-red-600 hover:bg-red-700 rounded-xl font-semibold transition">
-                        🚪 Sair
+                <div class="p-4 border-t border-white/20">
+                    <div class="mb-4 p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
+                        <div class="flex items-center gap-2 mb-1">
+                            <div class="w-2 h-2 bg-medical-300 rounded-full animate-pulse"></div>
+                            <span class="text-xs font-bold text-blue-200">STATUS DO SISTEMA</span>
+                        </div>
+                        <p class="text-sm font-bold">Online</p>
+                    </div>
+                    <button onclick="handleLogout()" class="w-full px-4 py-3.5 gradient-accent rounded-xl font-bold transition hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2">
+                        <span>🚪</span> Sair do Painel
                     </button>
                 </div>
             </div>
 
-            <!-- Content Area Premium -->
+            <!-- Content Area Trajetória Med -->
             <div class="flex-1 overflow-y-auto">
                 <!-- Visão Geral -->
                 <div id="section-overview" class="dashboard-section-tailwind">
-                    <div class="bg-white border-b border-gray-200 px-8 py-6 flex justify-between items-center">
-                        <h1 class="text-3xl font-bold text-gray-900">Visão Geral</h1>
+                    <div class="glass-effect border-b border-gray-200 px-8 py-6 flex justify-between items-center sticky top-0 z-10">
+                        <div>
+                            <h1 class="text-4xl font-black text-gradient">Visão Geral</h1>
+                            <p class="text-sm text-gray-600 mt-1">Dashboard de métricas e performance</p>
+                        </div>
                         <div class="flex items-center gap-4">
                             <button onclick="restartServer()" 
-                                    class="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-bold rounded-xl hover:shadow-xl transform hover:-translate-y-0.5 transition flex items-center gap-2">
-                                🔄 Reiniciar Servidor
+                                    class="px-6 py-3 gradient-accent text-white font-bold rounded-xl hover:shadow-xl transform hover:-translate-y-0.5 transition flex items-center gap-2">
+                                <span>🔄</span> Reiniciar Servidor
                             </button>
-                            <div id="trial-info" class="px-4 py-2 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold rounded-xl shadow-lg"></div>
+                            <div id="trial-info" class="px-5 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold rounded-xl shadow-lg"></div>
                         </div>
                     </div>
 
                     <div class="p-8">
+                        <!-- Cards de Métricas -->
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-xl transform hover:scale-105 transition">
-                                <h3 class="text-sm font-semibold opacity-90 mb-2">Mensagens Hoje</h3>
-                                <p id="today-messages" class="text-4xl font-bold">0</p>
+                            <div class="group bg-white rounded-2xl p-6 shadow-xl border-2 border-primary-100 hover-lift">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="w-14 h-14 gradient-medical rounded-xl flex items-center justify-center text-2xl">
+                                        📨
+                                    </div>
+                                    <span class="text-xs font-bold text-primary-600 bg-primary-50 px-2 py-1 rounded-full">HOJE</span>
+                                </div>
+                                <h3 class="text-sm font-bold text-gray-600 mb-2">Mensagens Hoje</h3>
+                                <p id="today-messages" class="text-4xl font-black text-primary-700">0</p>
                             </div>
-                            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white shadow-xl transform hover:scale-105 transition">
-                                <h3 class="text-sm font-semibold opacity-90 mb-2">Total de Mensagens</h3>
-                                <p id="total-messages" class="text-4xl font-bold">0</p>
+                            
+                            <div class="group bg-white rounded-2xl p-6 shadow-xl border-2 border-purple-100 hover-lift">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center text-2xl">
+                                        💬
+                                    </div>
+                                    <span class="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded-full">TOTAL</span>
+                                </div>
+                                <h3 class="text-sm font-bold text-gray-600 mb-2">Total de Mensagens</h3>
+                                <p id="total-messages" class="text-4xl font-black text-purple-700">0</p>
                             </div>
-                            <div class="bg-gradient-to-br from-whatsapp-500 to-whatsapp-600 rounded-2xl p-6 text-white shadow-xl transform hover:scale-105 transition">
-                                <h3 class="text-sm font-semibold opacity-90 mb-2">Status WhatsApp</h3>
-                                <p id="whatsapp-status" class="text-lg font-bold">Desconectado</p>
+                            
+                            <div class="group bg-white rounded-2xl p-6 shadow-xl border-2 border-medical-100 hover-lift">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="w-14 h-14 bg-gradient-to-br from-medical-500 to-medical-600 rounded-xl flex items-center justify-center text-2xl">
+                                        📱
+                                    </div>
+                                    <span class="text-xs font-bold text-medical-600 bg-medical-50 px-2 py-1 rounded-full">STATUS</span>
+                                </div>
+                                <h3 class="text-sm font-bold text-gray-600 mb-2">WhatsApp</h3>
+                                <p id="whatsapp-status" class="text-lg font-black text-medical-700">Desconectado</p>
                             </div>
-                            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-6 text-white shadow-xl transform hover:scale-105 transition">
-                                <h3 class="text-sm font-semibold opacity-90 mb-2">Status do Bot</h3>
-                                <p id="bot-status" class="text-lg font-bold">Inativo</p>
+                            
+                            <div class="group bg-white rounded-2xl p-6 shadow-xl border-2 border-accent-100 hover-lift">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="w-14 h-14 gradient-accent rounded-xl flex items-center justify-center text-2xl">
+                                        🤖
+                                    </div>
+                                    <span class="text-xs font-bold text-accent-600 bg-accent-50 px-2 py-1 rounded-full">BOT</span>
+                                </div>
+                                <h3 class="text-sm font-bold text-gray-600 mb-2">Status do Bot</h3>
+                                <p id="bot-status" class="text-lg font-black text-accent-700">Inativo</p>
                             </div>
                         </div>
 
-                        <div class="bg-white rounded-2xl shadow-lg p-8">
-                            <h3 class="text-xl font-bold text-gray-900 mb-6">Mensagens dos Últimos 7 Dias</h3>
+                        <!-- Gráfico de Mensagens -->
+                        <div class="bg-white rounded-2xl shadow-xl p-8 border-2 border-gray-100">
+                            <div class="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 class="text-2xl font-black text-gray-900">Mensagens dos Últimos 7 Dias</h3>
+                                    <p class="text-sm text-gray-600 mt-1">Análise de volume de atendimentos</p>
+                                </div>
+                                <div class="flex gap-4">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 gradient-medical rounded-full"></div>
+                                        <span class="text-sm font-semibold text-gray-600">Recebidas</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 gradient-accent rounded-full"></div>
+                                        <span class="text-sm font-semibold text-gray-600">Enviadas</span>
+                                    </div>
+                                </div>
+                            </div>
                             <canvas id="messages-chart"></canvas>
                         </div>
                     </div>
