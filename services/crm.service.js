@@ -517,12 +517,12 @@ class CRMService {
             WHERE l.user_id = ? AND s.is_lost = FALSE AND s.is_success = FALSE
         `, [userId]);
 
-        // Aguardando pagamento
+        // Aguardando pagamento (busca por nome que contenha "Aguardando")
         const [waiting] = await db.query(`
             SELECT COALESCE(SUM(l.potential_value), 0) as total
             FROM crm_leads l
             INNER JOIN crm_stages s ON l.stage_id = s.id
-            WHERE l.user_id = ? AND s.name = 'Aguardando Pagamento'
+            WHERE l.user_id = ? AND s.name LIKE '%Aguardando%'
         `, [userId]);
 
         // Dinheiro na mesa (perdido)
