@@ -345,6 +345,18 @@ class WhatsAppService {
                         botConfig,
                         sessionInfo
                     );
+
+                    // ===================================
+                    // 🎯 SINCRONIZAR DADOS COM CRM
+                    // ===================================
+                    try {
+                        const historyKey = `${userId}-${message.from}`;
+                        const conversationHistory = this.conversationHistory.get(historyKey) || [];
+                        await chatbotFlowService.syncSessionToCRM(userId, message.from, conversationHistory);
+                    } catch (syncError) {
+                        console.error('⚠️ Erro ao sincronizar CRM (não bloqueante):', syncError.message);
+                    }
+                    // ===================================
                 } else if (typeof flowResponse === 'object' && flowResponse.showMenu) {
                     // Reset completo - mostrar menu e limpar histórico
                     console.log('🔄 RESET COMPLETO: Mostrando menu novamente');
@@ -425,6 +437,16 @@ class WhatsAppService {
 
                 const elapsedTime = Date.now() - startTime;
                 console.log(`🤖 Tempo de resposta IA: ${elapsedTime}ms`);
+
+                // ===================================
+                // 🎯 SINCRONIZAR DADOS COM CRM (Modo IA direto)
+                // ===================================
+                try {
+                    await chatbotFlowService.syncSessionToCRM(userId, message.from, history);
+                } catch (syncError) {
+                    console.error('⚠️ Erro ao sincronizar CRM (não bloqueante):', syncError.message);
+                }
+                // ===================================
 
                 // Detectar link de pagamento (modo IA)
                 await this.checkPaymentLinkAndPause(client, message, aiResponse, userId);

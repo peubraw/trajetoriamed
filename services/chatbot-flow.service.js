@@ -699,6 +699,89 @@ Estamos com poucas vagas nesse lote!`;
         const sessionKey = `${userId}-${phoneNumber}`;
         return this.sessions.get(sessionKey);
     }
+
+    /**
+     * Extrair dados estruturados da conversa IA para CRM
+     * Analisa as mensagens da conversa e extrai: nome, RQE, especialidade, estado, etc
+     */
+    async extractLeadDataFromConversation(userId, phoneNumber, conversationHistory) {
+        const session = this.getSessionInfo(userId, phoneNumber);
+        const extractedData = {
+            name: session?.nome || null,
+            interestedCourse: session?.produto || null,
+            isFormerStudent: session?.exAluno === 'sim' ? true : (session?.exAluno === 'nao' ? false : null),
+            previousCourse: session?.cursoAnterior || null,
+            rqe: null,
+            specialty: null,
+            state: null,
+            email: null
+        };
+
+        // Se não há histórico de conversa, retornar dados da sessão
+        if (!conversationHistory || conversationHistory.length === 0) {
+            return extractedData;
+        }
+
+        // Analisar histórico da conversa para extrair dados adicionais
+        const fullConversation = conversationHistory.map(msg => msg.content || msg).join(' ');
+        
+        // Extrair RQE (formato: números)
+        const rqeMatch = fullConversation.match(/\b\d{4,6}\b/);
+        if (rqeMatch) extractedData.rqe = rqeMatch[0];
+
+        // Extrair especialidades comuns
+        const specialties = ['cardiologia', 'pediatria', 'ortopedia', 'dermatologia', 'neurologia', 
+                            'psiquiatria', 'oftalmologia', 'ginecologia', 'cirurgia', 'clínica geral',
+                            'radiologia', 'anestesiologia', 'urologia', 'medicina do trabalho'];
+        for (const spec of specialties) {
+            if (fullConversation.toLowerCase().includes(spec)) {
+                extractedData.specialty = spec.charAt(0).toUpperCase() + spec.slice(1);
+                break;
+            }
+        }
+
+        // Extrair estado (siglas)
+        const stateMatch = fullConversation.match(/\b([A-Z]{2})\b/);
+        if (stateMatch) extractedData.state = stateMatch[1];
+
+        // Extrair email
+        const emailMatch = fullConversation.match(/[\w.-]+@[\w.-]+\.\w+/);
+        if (emailMatch) extractedData.email = emailMatch[0];
+
+        return extractedData;
+    }
+
+    /**
+     * Sincronizar dados da sessão com CRM
+     * Chama automaticamente após cada mensagem significativa
+     */
+    async syncSessionToCRM(userId, phoneNumber, conversationHistory = []) {
+        try {
+            const crmService = require('./crm.service');
+            const leadData = await this.extractLeadDataFromConversation(userId, phoneNumber, conversationHistory);
+            
+            // Criar ou atualizar lead no CRM (etapa Triagem)
+            const leadId = await crmService.upsertLead({
+                userId: userId,
+                phone: phoneNumber.replace('@c.us', ''),
+                name: leadData.name,
+                email: leadData.email,
+                state: leadData.state,
+                rqe: leadData.rqe,
+                specialty: leadData.specialty,
+                interestedCourse: leadData.interestedCourse,
+                isFormerStudent: leadData.isFormerStudent,
+                channel: 'whatsapp',
+                source: 'chatbot_ia'
+            });
+
+            console.log(`✅ [CRM SYNC] Lead ${leadId} atualizado com dados da conversa`);
+            return leadId;
+        } catch (error) {
+            console.error('❌ Erro ao sincronizar sessão com CRM:', error);
+            return null;
+        }
+    }
 }
 
 module.exports = new ChatbotFlowService();
