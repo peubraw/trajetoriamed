@@ -59,6 +59,7 @@ app.use('/api/whatsapp', require('./routes/whatsapp.routes'));
 app.use('/api/bot', require('./routes/bot.routes'));
 app.use('/api/dashboard', require('./routes/dashboard.routes'));
 app.use('/api/crm', require('./routes/crm.routes')); // CRM Kanban
+app.use('/api/webhooks', require('./routes/webhook.routes')); // Webhooks pagamento
 
 // Rota principal
 app.get('/', (req, res) => {

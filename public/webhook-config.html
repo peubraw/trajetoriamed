@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração de Webhooks - CRM</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .config-container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .config-header {
+            border-bottom: 2px solid #1976d2;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        .config-header h1 {
+            margin: 0;
+            color: #333;
+            font-size: 24px;
+        }
+        .config-header p {
+            margin: 8px 0 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .webhook-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        .webhook-section h2 {
+            margin: 0 0 20px;
+            color: #1976d2;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .webhook-section h2::before {
+            content: '🔗';
+            font-size: 24px;
+        }
+        .url-box {
+            background: white;
+            border: 2px dashed #1976d2;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            word-break: break-all;
+            position: relative;
+        }
+        .url-box strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .copy-btn:hover {
+            background: #1565c0;
+        }
+        .instructions {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .instructions h3 {
+            margin: 0 0 10px;
+            color: #856404;
+            font-size: 16px;
+        }
+        .instructions ol {
+            margin: 10px 0 0 20px;
+            color: #856404;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        .logs-section {
+            margin-top: 40px;
+        }
+        .logs-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .log-table th {
+            background: #1976d2;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .log-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        .log-table tr:hover {
+            background: #f8f9fa;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-processed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .back-btn {
+            display: inline-block;
+            background: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+        .back-btn:hover {
+            background: #5a6268;
+        }
+        .test-webhook-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .test-webhook-btn:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-btn">← Voltar ao Dashboard</a>
+    
+    <div class="config-container">
+        <div class="config-header">
+            <h1>Configuração de Webhooks de Pagamento</h1>
+            <p>Configure os webhooks de Kiwify e Hotmart para automação de vendas no CRM</p>
+        </div>
+
+        <!-- KIWIFY -->
+        <div class="webhook-section">
+            <h2>Kiwify</h2>
+            
+            <div class="url-box">
+                <strong>URL do Webhook:</strong>
+                <span id="kiwify-url">http://165.22.158.58/api/webhooks/kiwify</span>
+                <button class="copy-btn" onclick="copyToClipboard('kiwify-url')">📋 Copiar</button>
+            </div>
+
+            <div class="instructions">
+                <h3>📝 Como configurar na Kiwify:</h3>
+                <ol>
+                    <li>Acesse seu painel Kiwify → <strong>Configurações</strong></li>
+                    <li>Vá em <strong>Integrações</strong> → <strong>Webhooks</strong></li>
+                    <li>Clique em <strong>Adicionar Webhook</strong></li>
+                    <li>Cole a URL acima no campo <strong>URL do Webhook</strong></li>
+                    <li>Selecione o evento: <strong>Pagamento Aprovado (paid)</strong></li>
+                    <li>Salve a configuração</li>
+                </ol>
+            </div>
+
+            <button class="test-webhook-btn" onclick="testWebhook('kiwify')">🧪 Testar Webhook Kiwify</button>
+        </div>
+
+        <!-- HOTMART -->
+        <div class="webhook-section">
+            <h2>Hotmart</h2>
+            
+            <div class="url-box">
+                <strong>URL do Webhook:</strong>
+                <span id="hotmart-url">http://165.22.158.58/api/webhooks/hotmart</span>
+                <button class="copy-btn" onclick="copyToClipboard('hotmart-url')">📋 Copiar</button>
+            </div>
+
+            <div class="instructions">
+                <h3>📝 Como configurar na Hotmart:</h3>
+                <ol>
+                    <li>Acesse seu painel Hotmart → <strong>Ferramentas</strong></li>
+                    <li>Clique em <strong>Webhooks</strong></li>
+                    <li>Clique em <strong>Adicionar URL</strong></li>
+                    <li>Cole a URL acima</li>
+                    <li>Selecione os eventos: <strong>PURCHASE_COMPLETE</strong> e <strong>PURCHASE_APPROVED</strong></li>
+                    <li>Ative o webhook</li>
+                </ol>
+            </div>
+
+            <button class="test-webhook-btn" onclick="testWebhook('hotmart')">🧪 Testar Webhook Hotmart</button>
+        </div>
+
+        <!-- LOGS -->
+        <div class="logs-section">
+            <h2>📊 Histórico de Webhooks Recebidos (últimos 50)</h2>
+            <table class="log-table" id="logs-table">
+                <thead>
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Gateway</th>
+                        <th>Evento</th>
+                        <th>Lead</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="logs-tbody">
+                    <tr>
+                        <td colspan="6" style="text-align:center; color:#999;">Carregando logs...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Copiar URL para clipboard
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ URL copiada para área de transferência!');
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+            });
+        }
+
+        // Testar webhook com payload simulado
+        async function testWebhook(gateway) {
+            if (!confirm(`Deseja enviar um webhook de teste para ${gateway.toUpperCase()}?`)) {
+                return;
+            }
+
+            const testPayloads = {
+                kiwify: {
+                    order_id: 'TEST-' + Date.now(),
+                    order_status: 'paid',
+                    customer_email: 'teste@example.com',
+                    customer_phone: '5511999999999',
+                    product_name: 'Teste de Webhook',
+                    product_value: '100.00',
+                    seller_email: 'vendedor@example.com',
+                    created_at: new Date().toISOString()
+                },
+                hotmart: {
+                    id: 'TEST-' + Date.now(),
+                    event: 'PURCHASE_COMPLETE',
+                    data: {
+                        buyer: {
+                            email: 'teste@example.com',
+                            phone: '5511999999999'
+                        },
+                        purchase: {
+                            transaction: 'HOT-TEST-' + Date.now(),
+                            status: 'approved',
+                            price: {
+                                value: 100.00
+                            }
+                        },
+                        product: {
+                            name: 'Teste de Webhook'
+                        }
+                    }
+                }
+            };
+
+            try {
+                const response = await fetch(`/api/webhooks/${gateway}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testPayloads[gateway])
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('✅ Webhook de teste enviado com sucesso!');
+                    loadLogs(); // Recarregar logs
+                } else {
+                    alert('❌ Erro: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Erro ao testar webhook:', error);
+                alert('❌ Erro ao enviar webhook de teste');
+            }
+        }
+
+        // Carregar logs de webhooks
+        async function loadLogs() {
+            try {
+                const response = await fetch('/api/webhooks/logs');
+                const data = await response.json();
+
+                if (data.success) {
+                    const tbody = document.getElementById('logs-tbody');
+                    
+                    if (data.logs.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#999;">Nenhum webhook recebido ainda</td></tr>';
+                        return;
+                    }
+
+                    tbody.innerHTML = data.logs.slice(0, 50).map(log => {
+                        const date = new Date(log.created_at);
+                        const dateStr = date.toLocaleString('pt-BR');
+                        const statusClass = 'status-' + log.processing_status;
+                        
+                        return `
+                            <tr>
+                                <td>${dateStr}</td>
+                                <td><strong>${log.gateway.toUpperCase()}</strong></td>
+                                <td>${log.event_type}</td>
+                                <td>${log.lead_name || '-'}<br><small>${log.lead_phone || ''}</small></td>
+                                <td><span class="status-badge ${statusClass}">${log.processing_status}</span></td>
+                                <td><button onclick="viewPayload(${log.id})">👁️ Ver</button></td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar logs:', error);
+            }
+        }
+
+        // Ver payload do webhook
+        function viewPayload(logId) {
+            alert('Funcionalidade de visualização de payload será implementada');
+        }
+
+        // Carregar logs ao iniciar
+        loadLogs();
+        
+        // Recarregar logs a cada 30 segundos
+        setInterval(loadLogs, 30000);
+    </script>
+</body>
+</html>
