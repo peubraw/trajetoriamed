@@ -186,14 +186,14 @@ class WhatsAppService {
 
     async handleIncomingMessage(userId, message) {
         try {
-            // Ignorar mensagens enviadas pelo próprio bot, grupos e status
-            if (message.isGroupMsg || 
-                message.from === 'status@broadcast' || 
-                message.from.includes('@g.us') || 
-                message.from.includes('@lid')) {
-                console.log(`⚠️ Mensagem ignorada - Grupo/Status: ${message.from}`);
+            // Ignorar apenas status broadcast
+            if (message.from === 'status@broadcast') {
+                console.log(`⚠️ Mensagem ignorada - Status: ${message.from}`);
                 return;
             }
+            
+            // Log para debug
+            console.log(`📱 Mensagem recebida - From: ${message.from}, isGroup: ${message.isGroupMsg}, hasAuthor: ${!!message.author}`);
 
             const client = this.clients.get(userId);
             if (!client) return;
@@ -337,9 +337,13 @@ class WhatsAppService {
                     // 🎯 SINCRONIZAR DADOS COM CRM
                     // ===================================
                     try {
+                        // Se for grupo, usar message.author (quem enviou), senão usar message.from
+                        const contactPhone = message.author || message.from;
                         const historyKey = `${userId}-${message.from}`;
                         const conversationHistory = this.conversationHistory.get(historyKey) || [];
-                        await chatbotFlowService.syncSessionToCRM(userId, message.from, conversationHistory);
+                        
+                        console.log(`🔄 Sync CRM - Contact: ${contactPhone}, isGroup: ${message.isGroupMsg}`);
+                        await chatbotFlowService.syncSessionToCRM(userId, contactPhone, conversationHistory);
                     } catch (syncError) {
                         console.error('⚠️ Erro ao sincronizar CRM (não bloqueante):', syncError.message);
                     }
