@@ -2,6 +2,7 @@
 class ChatbotFlowService {
     constructor() {
         this.sessions = new Map(); // Armazena estado da conversa por usuário
+        this.lastCRMSync = new Map(); // Controle de última sincronização CRM (evita duplicatas)
     }
 
     // Detectar intent da mensagem
@@ -725,6 +726,23 @@ Estamos com poucas vagas nesse lote!`;
         // Analisar histórico da conversa para extrair dados adicionais
         const fullConversation = conversationHistory.map(msg => msg.content || msg).join(' ');
         
+        // Extrair nome (procurar por "me chamo", "meu nome é", ou frases similares)
+        if (!extractedData.name) {
+            const namePatterns = [
+                /(?:me chamo|meu nome (?:é|e))\s+([A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+(?:\s+[A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+)*)/i,
+                /^([A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+(?:\s+[A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+)+)$/m,
+                /(?:sou o|sou a|sou)\s+([A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+(?:\s+[A-ZÀÁÂÃÄÅÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ][a-zàáâãäåçèéêëìíîïñòóôõöùúûüý]+)*)/i
+            ];
+            
+            for (const pattern of namePatterns) {
+                const match = fullConversation.match(pattern);
+                if (match && match[1] && match[1].split(' ').length >= 2) {
+                    extractedData.name = match[1];
+                    break;
+                }
+            }
+        }
+        
         // Extrair RQE (formato: números)
         const rqeMatch = fullConversation.match(/\b\d{4,6}\b/);
         if (rqeMatch) extractedData.rqe = rqeMatch[0];
@@ -754,11 +772,32 @@ Estamos com poucas vagas nesse lote!`;
     /**
      * Sincronizar dados da sessão com CRM
      * Chama automaticamente após cada mensagem significativa
+     * Throttle: 30 segundos entre sincronizações para mesmo usuário
      */
     async syncSessionToCRM(userId, phoneNumber, conversationHistory = []) {
         try {
+            const syncKey = `${userId}-${phoneNumber}`;
+            const now = Date.now();
+            const lastSync = this.lastCRMSync.get(syncKey) || 0;
+            
+            // Throttle: não sincronizar se última sync foi há menos de 30 segundos
+            if (now - lastSync < 30000) {
+                console.log(`⏱️ [CRM SYNC] Throttled - última sync há ${Math.floor((now - lastSync) / 1000)}s`);
+                return null;
+            }
+
             const crmService = require('./crm.service');
             const leadData = await this.extractLeadDataFromConversation(userId, phoneNumber, conversationHistory);
+            
+            console.log(`🔍 [CRM SYNC] Phone: ${phoneNumber}`);
+            console.log(`🔍 [CRM SYNC] Extracted:`, JSON.stringify(leadData, null, 2));
+            console.log(`🔍 [CRM SYNC] History length: ${conversationHistory?.length || 0}`);
+            
+            // Validar dados mínimos
+            if (!leadData.name && !leadData.interestedCourse) {
+                console.log(`⚠️ [CRM SYNC] Skipped - insufficient data (no name/course)`);
+                return null;
+            }
             
             // Criar ou atualizar lead no CRM (etapa Triagem)
             const leadId = await crmService.upsertLead({
@@ -775,7 +814,10 @@ Estamos com poucas vagas nesse lote!`;
                 source: 'chatbot_ia'
             });
 
-            console.log(`✅ [CRM SYNC] Lead ${leadId} atualizado com dados da conversa`);
+            // Atualizar timestamp da última sincronização
+            this.lastCRMSync.set(syncKey, now);
+
+            console.log(`✅ [CRM SYNC] Lead ${leadId} ${leadId ? 'upserted' : 'created'} - Nome: ${leadData.name || 'N/A'}, Curso: ${leadData.interestedCourse || 'N/A'}`);
             return leadId;
         } catch (error) {
             console.error('❌ Erro ao sincronizar sessão com CRM:', error);
