@@ -324,6 +324,84 @@
             color: #991b1b;
         }
 
+        .btn-message {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-message:hover {
+            background: #059669;
+        }
+
+        /* Novos elementos do card - Milestone 2 */
+        .engagement-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 20px;
+            line-height: 1;
+            z-index: 10;
+        }
+
+        .card-subheader {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .score-badge {
+            background: #fbbf24;
+            color: #78350f;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .time-alert {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .detail-icon {
+            display: inline-block;
+            width: 20px;
+            text-align: center;
+        }
+
+        .hot-lead {
+            border: 3px solid #fbbf24;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+            background: linear-gradient(145deg, #ffffff, #fffbeb);
+        }
+
+        .hot-lead:hover {
+            box-shadow: 0 6px 24px rgba(251, 191, 36, 0.4);
+        }
+
+        .warm-lead {
+            border: 2px solid #94a3b8;
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+        }
+
+        /* Posicionar card relativamente para o badge de engagement */
+        .lead-card {
+            position: relative;
+        }
+
         /* Modal */
         .modal {
             display: none;
@@ -722,52 +800,106 @@
             card.draggable = true;
             card.dataset.leadId = lead.id;
 
-            const tempEmoji = {
-                'hot': '🔥',
-                'warm': '🌤️',
-                'cold': '❄️'
-            }[lead.temperature] || '🌤️';
+            // Termômetro de Engajamento (baseado em minutes_since_response)
+            const minutesSince = lead.minutes_since_response || 9999;
+            let engagement = '';
+            if (minutesSince < 120) engagement = '🔥🔥🔥'; // < 2h
+            else if (minutesSince < 480) engagement = '🔥🔥'; // 2-8h
+            else if (minutesSince < 1440) engagement = '🔥'; // 8-24h
+            else engagement = '❄️'; // > 24h
 
             const channelIcon = {
-                'whatsapp': '💬',
+                'whatsapp': '📱',
                 'instagram': '📷',
                 'facebook': '📘',
                 'manual': '✍️'
             }[lead.channel] || '📱';
 
-            const botStatus = lead.bot_active ? 
-                '<span class="bot-status bot-active">🟢 Bot Ativo</span>' :
-                '<span class="bot-status bot-paused">🔴 Bot Pausado</span>';
+            // Badge do Bot
+            let botBadge = '';
+            if (lead.bot_active) {
+                botBadge = '<span class="bot-status bot-active">🟢 Bot Ativo</span>';
+            } else if (lead.bot_paused_at) {
+                botBadge = '<span class="bot-status bot-paused">🔴 Pausado</span>';
+            } else {
+                botBadge = '<span class="bot-status bot-warning">🟡 Intervenção</span>';
+            }
+
+            // Alerta de Tempo (SLA)
+            let timeAlert = '';
+            if (minutesSince > 120) {
+                const hoursSince = Math.floor(minutesSince / 60);
+                timeAlert = `<div class="time-alert">⚠️ ${hoursSince > 24 ? Math.floor(hoursSince/24) + 'd' : hoursSince + 'h'} sem resposta</div>`;
+            }
+
+            // Última interação formatada
+            const lastInteraction = lead.last_response_at ? 
+                formatTimeAgo(lead.last_response_at) : 
+                'Nunca respondeu';
 
             card.innerHTML = `
                 <div class="card-header">
                     <div class="card-name">
                         <span class="channel-icon">${channelIcon}</span>
-                        ${lead.name || lead.phone}
+                        <strong>${lead.name || 'Lead'}</strong>
                     </div>
-                    ${botStatus}
+                    <div class="engagement-badge">${engagement}</div>
                 </div>
+                
+                <div class="card-subheader">
+                    ${botBadge}
+                    ${lead.score ? `<span class="score-badge">⭐ ${lead.score}</span>` : ''}
+                </div>
+
                 <div class="card-details">
-                    ${lead.specialty ? `<div class="card-detail-row">🩺 ${lead.specialty}</div>` : ''}
-                    ${lead.interested_course ? `<div class="card-detail-row">📚 ${lead.interested_course}</div>` : ''}
-                    ${lead.assigned_name ? `<div class="card-detail-row">👤 ${lead.assigned_name}</div>` : ''}
-                    <div class="card-detail-row" style="font-size: 11px; color: #9ca3af;">
-                        Última atividade: ${formatTimeAgo(lead.last_activity_at)}
+                    ${lead.assigned_name ? 
+                        `<div class="card-detail-row">
+                            <span class="detail-icon">👨‍💼</span> 
+                            <strong>${lead.assigned_name}</strong>
+                        </div>` : 
+                        `<div class="card-detail-row" style="color: #ef4444;">
+                            <span class="detail-icon">⚠️</span> 
+                            <strong>Sem vendedor</strong>
+                        </div>`
+                    }
+                    
+                    ${lead.interested_course ? 
+                        `<div class="card-detail-row">
+                            <span class="detail-icon">📚</span> 
+                            ${lead.interested_course}
+                        </div>` : ''
+                    }
+                    
+                    <div class="card-detail-row">
+                        <span class="detail-icon">📞</span> 
+                        ${lead.phone || 'Sem telefone'}
+                    </div>
+                    
+                    <div class="card-detail-row" style="font-size: 11px; color: #6b7280;">
+                        <span class="detail-icon">⏱️</span> 
+                        Última msg: ${lastInteraction}
                     </div>
                 </div>
+
+                ${timeAlert}
+
                 <div class="card-footer">
                     <div class="card-value">
-                        R$ ${parseFloat(lead.potential_value || 0).toFixed(2).replace('.', ',')}
+                        💰 R$ ${(parseFloat(lead.potential_value || 0)).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
                     </div>
-                    <div class="card-temperature">${tempEmoji}</div>
                 </div>
+                
                 <div class="card-actions">
-                    <button class="btn-small btn-view" onclick="openLeadDetails(${lead.id})">
-                        👁️ Ver Detalhes
+                    <button class="btn-small btn-view" onclick="openLeadDetails(${lead.id})" title="Ver detalhes completos">
+                        👁️ Detalhes
                     </button>
                     <button class="btn-small btn-bot ${lead.bot_active ? '' : 'paused'}" 
-                            onclick="toggleBot(${lead.id}, ${!lead.bot_active})">
-                        ${lead.bot_active ? '⏸️ Pausar Bot' : '▶️ Ativar Bot'}
+                            onclick="toggleBot(${lead.id}, ${!lead.bot_active})"
+                            title="${lead.bot_active ? 'Pausar automação' : 'Retomar automação'}">
+                        ${lead.bot_active ? '⏸️' : '▶️'}
+                    </button>
+                    <button class="btn-small btn-message" onclick="openQuickMessage(${lead.id})" title="Enviar mensagem">
+                        💬
                     </button>
                 </div>
             `;
@@ -775,6 +907,13 @@
             // Drag events
             card.addEventListener('dragstart', drag);
             card.addEventListener('dragend', () => card.classList.remove('dragging'));
+
+            // Adicionar classe especial para leads hot
+            if (lead.score >= 80) {
+                card.classList.add('hot-lead');
+            } else if (lead.score >= 50) {
+                card.classList.add('warm-lead');
+            }
 
             return card;
         }
@@ -845,6 +984,43 @@
         }
 
         // Modal de Detalhes
+        async function openQuickMessage(leadId) {
+            const lead = allLeads.find(l => l.id === leadId);
+            if (!lead) return;
+
+            const message = prompt(`💬 Enviar mensagem para ${lead.name || lead.phone}:`);
+            if (!message || !message.trim()) return;
+
+            try {
+                // Pausar bot antes de enviar mensagem
+                await fetch('/api/whatsapp/bot-control', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        leadId: leadId,
+                        action: 'pause',
+                        reason: 'Manual message sent'
+                    })
+                });
+
+                // Enviar mensagem
+                await fetch('/api/whatsapp/send-message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phone: lead.phone,
+                        message: message.trim()
+                    })
+                });
+
+                alert('✅ Mensagem enviada! Bot pausado automaticamente.');
+                loadLeads();
+            } catch (error) {
+                console.error('Erro ao enviar mensagem:', error);
+                alert('❌ Erro ao enviar mensagem. Tente novamente.');
+            }
+        }
+
         async function openLeadDetails(leadId) {
             currentLeadId = leadId;
             const lead = allLeads.find(l => l.id === leadId);
