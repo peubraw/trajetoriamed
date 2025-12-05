@@ -92,6 +92,35 @@ class CRMService {
     }
 
     /**
+     * Deletar lead permanentemente
+     */
+    async deleteLead(leadId, userId) {
+        try {
+            // Verificar se o lead pertence ao usuário
+            const [lead] = await db.query(
+                'SELECT id FROM crm_leads WHERE id = ? AND user_id = ?',
+                [leadId, userId]
+            );
+
+            if (lead.length === 0) {
+                throw new Error('Lead não encontrado ou sem permissão');
+            }
+
+            // Deletar atividades relacionadas
+            await db.query('DELETE FROM crm_activities WHERE lead_id = ?', [leadId]);
+
+            // Deletar o lead
+            await db.query('DELETE FROM crm_leads WHERE id = ?', [leadId]);
+
+            console.log(`✅ Lead ${leadId} deletado com sucesso`);
+            return true;
+        } catch (error) {
+            console.error('❌ Erro ao deletar lead:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Buscar lead por telefone
      */
     async getLeadByPhone(phone, userId) {

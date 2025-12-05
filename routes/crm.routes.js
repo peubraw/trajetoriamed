@@ -106,6 +106,23 @@ router.put('/leads/:id', requireAuth, async (req, res) => {
 });
 
 /**
+ * DELETE /api/crm/leads/:id - Deletar lead
+ */
+router.delete('/leads/:id', requireAuth, async (req, res) => {
+    try {
+        const leadId = req.params.id;
+        const userId = req.session.userId;
+
+        await crmService.deleteLead(leadId, userId);
+
+        res.json({ success: true, message: 'Lead deletado com sucesso' });
+    } catch (error) {
+        console.error('❌ Erro ao deletar lead:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+/**
  * POST /api/crm/leads/:id/move - Mover lead para outro estágio
  */
 router.post('/leads/:id/move', requireAuth, async (req, res) => {

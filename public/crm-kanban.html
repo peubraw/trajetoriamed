@@ -341,6 +341,15 @@
             background: #059669;
         }
 
+        .btn-delete {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .btn-delete:hover {
+            background: #fecaca;
+        }
+
         /* Novos elementos do card - Milestone 2 */
         .engagement-badge {
             position: absolute;
@@ -949,6 +958,9 @@
                     <button class="btn-small btn-message" onclick="openQuickMessage(${lead.id})" title="Enviar mensagem">
                         💬
                     </button>
+                    <button class="btn-small btn-delete" onclick="deleteLead(${lead.id})" title="Remover lead">
+                        🗑️
+                    </button>
                 </div>
             `;
 
@@ -1110,6 +1122,40 @@
                 }
             } catch (error) {
                 console.error('Erro ao alternar bot:', error);
+            }
+        }
+
+        // Deletar Lead
+        async function deleteLead(leadId) {
+            const lead = allLeads.find(l => l.id === leadId);
+            if (!lead) return;
+
+            const confirmMsg = `⚠️ ATENÇÃO: Tem certeza que deseja DELETAR permanentemente este lead?\n\n` +
+                              `Nome: ${lead.name || 'Sem nome'}\n` +
+                              `Telefone: ${lead.phone}\n` +
+                              `Curso: ${lead.interested_course || 'N/A'}\n\n` +
+                              `Esta ação NÃO pode ser desfeita!`;
+
+            if (!confirm(confirmMsg)) return;
+
+            try {
+                const res = await fetch(`/api/crm/leads/${leadId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert('✅ Lead deletado com sucesso!');
+                    await loadKanbanBoard();
+                } else {
+                    alert('❌ Erro: ' + (data.message || 'Não foi possível deletar o lead'));
+                }
+            } catch (error) {
+                console.error('Erro ao deletar lead:', error);
+                alert('❌ Erro ao deletar lead. Tente novamente.');
             }
         }
 
