@@ -1228,6 +1228,18 @@ Digite o número da opção desejada:
             
             setTimeout(() => alertDiv.remove(), 5000);
         }
+        
+        // Detecta se está dentro de iframe e oculta sidebar
+        if (window.self !== window.top) {
+            // Está dentro de iframe
+            const sidebar = document.querySelector('.w-72');
+            const contentArea = document.querySelector('.flex-1');
+            if (sidebar) sidebar.style.display = 'none';
+            if (contentArea) {
+                contentArea.style.width = '100%';
+                contentArea.classList.remove('flex-1');
+            }
+        }
     </script>
             </div>
         </div>
