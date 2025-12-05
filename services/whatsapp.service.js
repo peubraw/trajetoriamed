@@ -186,8 +186,12 @@ class WhatsAppService {
 
     async handleIncomingMessage(userId, message) {
         try {
-            // Ignorar mensagens enviadas pelo próprio bot
-            if (message.isGroupMsg || message.from === 'status@broadcast') {
+            // Ignorar mensagens enviadas pelo próprio bot, grupos e status
+            if (message.isGroupMsg || 
+                message.from === 'status@broadcast' || 
+                message.from.includes('@g.us') || 
+                message.from.includes('@lid')) {
+                console.log(`⚠️ Mensagem ignorada - Grupo/Status: ${message.from}`);
                 return;
             }
 
