@@ -890,3 +890,365 @@ async function loadMessages() {
         console.error('Erro ao carregar mensagens:', error);
     }
 }
+
+// ===== CRM FUNCTIONS =====
+let crmSocket = null;
+let allCRMLeads = [];
+let allCRMStages = [];
+let pipelineChart = null;
+let lostReasonsChart = null;
+
+// Alternar tabs do CRM
+window.switchCRMTab = function(tabName, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    // Remover active de todas as tabs
+    document.querySelectorAll('.crm-tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.crm-tab-content').forEach(content => content.classList.remove('active'));
+    
+    // Ativar tab clicada
+    event.target.classList.add('active');
+    document.getElementById(`crm-tab-${tabName}`).classList.add('active');
+    
+    // Carregar dados da tab
+    if (tabName === 'kanban') {
+        loadKanbanBoard();
+    } else if (tabName === 'analytics') {
+        loadCRMAnalytics();
+    }
+}
+
+// Conectar Socket.IO para atualizações em tempo real
+function connectCRMSocket() {
+    if (!crmSocket && typeof io !== 'undefined') {
+        crmSocket = io({
+            transports: ['websocket', 'polling']
+        });
+        
+        crmSocket.on('connect', () => {
+            console.log('Socket.IO CRM conectado');
+            if (currentUser) {
+                crmSocket.emit('join-crm', currentUser.id);
+            }
+        });
+        
+        crmSocket.on('new-lead', () => {
+            console.log('Novo lead recebido');
+            loadKanbanBoard();
+        });
+        
+        crmSocket.on('lead-moved', () => {
+            console.log('Lead movido');
+            loadKanbanBoard();
+        });
+        
+        crmSocket.on('bot-toggled', () => {
+            console.log('Bot alternado');
+            loadKanbanBoard();
+        });
+    }
+}
+
+// Carregar Kanban
+async function loadKanbanBoard() {
+    try {
+        const [stagesRes, leadsRes] = await Promise.all([
+            fetch('/api/crm/stages', { credentials: 'include' }),
+            fetch('/api/crm/leads', { credentials: 'include' })
+        ]);
+        
+        allCRMStages = await stagesRes.json();
+        const leadsData = await leadsRes.json();
+        allCRMLeads = leadsData.leads || [];
+        
+        renderKanbanBoard();
+    } catch (error) {
+        console.error('Erro ao carregar Kanban:', error);
+    }
+}
+
+function renderKanbanBoard() {
+    const board = document.getElementById('kanban-board');
+    if (!board) return;
+    
+    board.innerHTML = '';
+    
+    allCRMStages.forEach(stage => {
+        const stageLeads = allCRMLeads.filter(lead => lead.stage_id === stage.id);
+        
+        const column = document.createElement('div');
+        column.className = 'kanban-column';
+        column.dataset.stageId = stage.id;
+        column.ondrop = dropLead;
+        column.ondragover = allowDrop;
+        
+        column.innerHTML = `
+            <div class="column-header" style="border-color: ${stage.color}">
+                <div class="column-title">${stage.name}</div>
+                <div class="column-count">${stageLeads.length}</div>
+            </div>
+            <div class="cards-container"></div>
+        `;
+        
+        const container = column.querySelector('.cards-container');
+        stageLeads.forEach(lead => {
+            container.appendChild(createLeadCard(lead));
+        });
+        
+        board.appendChild(column);
+    });
+}
+
+function createLeadCard(lead) {
+    const card = document.createElement('div');
+    card.className = 'lead-card';
+    card.draggable = true;
+    card.dataset.leadId = lead.id;
+    
+    const tempEmoji = {
+        'hot': '🔥',
+        'warm': '🌤️',
+        'cold': '❄️'
+    }[lead.temperature] || '🌤️';
+    
+    const botStatus = lead.bot_active ? 
+        '<span class="bot-status bot-active">🟢 Bot Ativo</span>' :
+        '<span class="bot-status bot-paused">🔴 Bot Pausado</span>';
+    
+    card.innerHTML = `
+        <div class="card-header">
+            <div class="card-name">${lead.name || lead.phone}</div>
+            ${botStatus}
+        </div>
+        <div class="card-details">
+            ${lead.specialty ? `<div class="card-detail-row">🩺 ${lead.specialty}</div>` : ''}
+            ${lead.interested_course ? `<div class="card-detail-row">📚 ${lead.interested_course}</div>` : ''}
+        </div>
+        <div class="card-footer">
+            <div class="card-value">R$ ${parseFloat(lead.potential_value || 0).toFixed(2).replace('.', ',')}</div>
+            <div class="card-temperature">${tempEmoji}</div>
+        </div>
+    `;
+    
+    card.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('leadId', lead.id);
+        card.classList.add('dragging');
+    });
+    
+    card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+    });
+    
+    return card;
+}
+
+function allowDrop(e) {
+    e.preventDefault();
+}
+
+async function dropLead(e) {
+    e.preventDefault();
+    const leadId = e.dataTransfer.getData('leadId');
+    const newStageId = e.currentTarget.dataset.stageId;
+    
+    try {
+        const res = await fetch(`/api/crm/leads/${leadId}/move`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ stageId: newStageId })
+        });
+        
+        if (res.ok) {
+            await loadKanbanBoard();
+        } else {
+            alert('Erro ao mover lead');
+        }
+    } catch (error) {
+        console.error('Erro ao mover:', error);
+    }
+}
+
+function filterKanbanLeads() {
+    const searchTerm = document.getElementById('kanbanSearchInput')?.value.toLowerCase() || '';
+    const tempFilter = document.getElementById('kanbanTempFilter')?.value || '';
+    
+    const cards = document.querySelectorAll('.lead-card');
+    cards.forEach(card => {
+        const leadId = card.dataset.leadId;
+        const lead = allCRMLeads.find(l => l.id == leadId);
+        
+        if (!lead) return;
+        
+        const matchesSearch = !searchTerm || 
+            (lead.name && lead.name.toLowerCase().includes(searchTerm)) ||
+            (lead.phone && lead.phone.includes(searchTerm));
+        
+        const matchesTemp = !tempFilter || lead.temperature === tempFilter;
+        
+        card.style.display = (matchesSearch && matchesTemp) ? 'block' : 'none';
+    });
+}
+
+window.refreshKanban = function() {
+    loadKanbanBoard();
+}
+
+// Carregar Analytics
+async function loadCRMAnalytics() {
+    try {
+        const [statsRes, pipelineRes, rankingRes] = await Promise.all([
+            fetch('/api/crm/dashboard/stats', { credentials: 'include' }),
+            fetch('/api/crm/dashboard/pipeline', { credentials: 'include' }),
+            fetch('/api/crm/dashboard/ranking', { credentials: 'include' })
+        ]);
+        
+        const stats = await statsRes.json();
+        const pipeline = await pipelineRes.json();
+        const ranking = await rankingRes.json();
+        
+        // Atualizar KPIs
+        document.getElementById('kpi-revenue').textContent = formatCurrency(stats.revenue || 0);
+        document.getElementById('kpi-pipeline').textContent = formatCurrency(stats.pipeline || 0);
+        document.getElementById('kpi-waiting').textContent = formatCurrency(stats.waiting || 0);
+        document.getElementById('kpi-lost').textContent = formatCurrency(stats.lost || 0);
+        
+        // Renderizar gráficos
+        renderPipelineChart(pipeline.stages || []);
+        renderLostReasonsChart(stats.lostReasons || []);
+        
+        // Renderizar ranking
+        renderSellerRanking(ranking.sellers || []);
+    } catch (error) {
+        console.error('Erro ao carregar analytics:', error);
+    }
+}
+
+function formatCurrency(value) {
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    }).format(value);
+}
+
+function renderPipelineChart(stages) {
+    const ctx = document.getElementById('pipelineChart');
+    if (!ctx) return;
+    
+    if (pipelineChart) pipelineChart.destroy();
+    
+    pipelineChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: stages.map(s => s.name),
+            datasets: [{
+                label: 'Valor Total (R$)',
+                data: stages.map(s => parseFloat(s.total_value || 0)),
+                backgroundColor: stages.map(s => s.color || '#3b82f6'),
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: (value) => 'R$ ' + value.toFixed(0)
+                    }
+                }
+            }
+        }
+    });
+}
+
+function renderLostReasonsChart(reasons) {
+    const ctx = document.getElementById('lostReasonsChart');
+    if (!ctx) return;
+    
+    if (lostReasonsChart) lostReasonsChart.destroy();
+    
+    const labels = reasons.map(r => r.reason || 'Não informado');
+    const data = reasons.map(r => r.count);
+    
+    lostReasonsChart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#10b981']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+}
+
+function renderSellerRanking(sellers) {
+    const tbody = document.getElementById('ranking-table-body');
+    if (!tbody) return;
+    
+    if (sellers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #9ca3af;">Nenhum dado disponível</td></tr>';
+        return;
+    }
+    
+    const maxRevenue = Math.max(...sellers.map(s => parseFloat(s.total_revenue || 0)));
+    const maxConversion = Math.max(...sellers.map(s => parseFloat(s.conversion_rate || 0)));
+    
+    tbody.innerHTML = sellers.map((seller, index) => {
+        const position = index + 1;
+        let badge = '';
+        
+        if (parseFloat(seller.total_revenue) === maxRevenue && maxRevenue > 0) {
+            badge += '<span style="background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">👑 Alpha</span> ';
+        }
+        if (parseFloat(seller.conversion_rate) === maxConversion && maxConversion > 0) {
+            badge += '<span style="background: #dbeafe; color: #1e40af; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700;">🎯 Sniper</span>';
+        }
+        
+        return `
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+                <td style="padding: 12px; font-weight: 700;">${position}°</td>
+                <td style="padding: 12px; font-weight: 600;">${seller.name}</td>
+                <td style="padding: 12px;">${seller.total_leads} leads</td>
+                <td style="padding: 12px; color: ${seller.conversion_rate > 50 ? '#10b981' : '#6b7280'}; font-weight: 600;">
+                    ${parseFloat(seller.conversion_rate || 0).toFixed(1)}%
+                </td>
+                <td style="padding: 12px; color: #10b981; font-weight: 700;">
+                    ${formatCurrency(seller.total_revenue)}
+                </td>
+                <td style="padding: 12px; font-weight: 600;">
+                    ${formatCurrency(parseFloat(seller.total_revenue || 0) * 0.1)}
+                </td>
+                <td style="padding: 12px;">${badge}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+window.exportCRMLeads = function() {
+    window.location.href = '/api/crm/export';
+}
+
+// Inicializar CRM quando a seção for aberta
+const originalShowDashboardSection = window.showDashboardSection;
+window.showDashboardSection = function(section, event) {
+    originalShowDashboardSection(section, event);
+    
+    if (section === 'crm') {
+        connectCRMSocket();
+        loadKanbanBoard();
+    }
+}
