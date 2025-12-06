@@ -1159,42 +1159,28 @@
             }
         }
 
-        // Modal de Detalhes
-        async function openQuickMessage(leadId) {
+        // Abrir WhatsApp Web
+        function openQuickMessage(leadId) {
             const lead = allLeads.find(l => l.id === leadId);
             if (!lead) return;
 
-            const message = prompt(`💬 Enviar mensagem para ${lead.name || lead.phone}:`);
-            if (!message || !message.trim()) return;
-
-            try {
-                // Pausar bot antes de enviar mensagem
-                await fetch('/api/whatsapp/bot-control', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        leadId: leadId,
-                        action: 'pause',
-                        reason: 'Manual message sent'
-                    })
-                });
-
-                // Enviar mensagem
-                await fetch('/api/whatsapp/send-message', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        phone: lead.phone,
-                        message: message.trim()
-                    })
-                });
-
-                alert('✅ Mensagem enviada! Bot pausado automaticamente.');
-                loadLeads();
-            } catch (error) {
-                console.error('Erro ao enviar mensagem:', error);
-                alert('❌ Erro ao enviar mensagem. Tente novamente.');
-            }
+            // Limpar telefone (remover caracteres especiais)
+            const cleanPhone = lead.phone.replace(/\D/g, '');
+            
+            // Abrir WhatsApp Web com o número do lead
+            const whatsappUrl = `https://web.whatsapp.com/send?phone=${cleanPhone}`;
+            window.open(whatsappUrl, '_blank');
+            
+            // Pausar bot automaticamente quando vendedor assumir conversa
+            fetch('/api/whatsapp/bot-control', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    leadId: leadId,
+                    action: 'pause',
+                    reason: 'Vendedor iniciou conversa manual via WhatsApp Web'
+                })
+            }).catch(err => console.log('Aviso: não foi possível pausar o bot automaticamente'));
         }
 
         async function openLeadDetails(leadId) {
