@@ -34,12 +34,26 @@ class WhatsAppService {
             const client = await wppconnect.create({
                 session: sessionName,
                 catchQR: (base64Qr, asciiQR, attempts) => {
-                    console.log(`QR Code gerado para sessão ${sessionName}`);
+                    console.log(`📱 QR Code gerado para sessão ${sessionName} (tentativa ${attempts})`);
+                    console.log(`⏱️ Você tem 45 segundos para escanear`);
                     this.saveQRCode(userId, base64Qr);
                 },
                 statusFind: (statusSession, session) => {
-                    console.log(`Status da sessão ${session}: ${statusSession}`);
+                    console.log(`📊 Status da sessão ${session}: ${statusSession}`);
                     this.updateSessionStatus(userId, statusSession);
+                    
+                    // Logs detalhados para debug
+                    if (statusSession === 'qrReadSuccess') {
+                        console.log(`✅ QR Code escaneado com sucesso!`);
+                    } else if (statusSession === 'qrReadFail') {
+                        console.log(`❌ Falha ao escanear QR Code`);
+                    } else if (statusSession === 'autocloseCalled') {
+                        console.log(`⏱️ Timeout - QR Code expirou`);
+                    } else if (statusSession === 'notLogged') {
+                        console.log(`🔄 Aguardando conexão...`);
+                    } else if (statusSession === 'isLogged') {
+                        console.log(`🎉 WhatsApp conectado com sucesso!`);
+                    }
                 },
                 headless: true,
                 devtools: false,
@@ -48,7 +62,9 @@ class WhatsAppService {
                 logQR: false,
                 disableWelcome: true,
                 updatesLog: false,
-                autoClose: 300000,
+                autoClose: 60000, // 60 segundos ao invés de 5 minutos
+                createPathFileToken: true,
+                waitForLogin: true,
                 folderNameToken: 'tokens',
                 puppeteerOptions: {
                     executablePath: '/root/.cache/puppeteer/chrome/linux-142.0.7444.175/chrome-linux64/chrome',
@@ -59,8 +75,11 @@ class WhatsAppService {
                         '--disable-accelerated-2d-canvas',
                         '--no-first-run',
                         '--no-zygote',
-                        '--disable-gpu'
-                    ]
+                        '--disable-gpu',
+                        '--disable-extensions',
+                        '--disable-software-rasterizer'
+                    ],
+                    headless: true
                 }
             });
 
