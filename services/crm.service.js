@@ -498,6 +498,17 @@ class CRMService {
     }
 
     async createDefaultStages(userId) {
+        // Verificar se já existem estágios para este usuário
+        const [existing] = await db.query(
+            'SELECT COUNT(*) as count FROM crm_stages WHERE user_id = ?',
+            [userId]
+        );
+        
+        if (existing[0].count > 0) {
+            console.log(`⚠️ Estágios já existem para usuário ${userId} - pulando criação`);
+            return;
+        }
+
         const stages = [
             { name: 'Novos / Triagem', color: '#6366F1', bot: 1, prob: 5 },
             { name: 'Nutrição / Apresentação', color: '#3B82F6', bot: 1, prob: 15 },
