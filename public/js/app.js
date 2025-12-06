@@ -1,11 +1,85 @@
 // Estado da aplicação
 let currentUser = null;
 let qrCheckInterval = null;
+let socket = null;
 
 // Verificar autenticação ao carregar
 document.addEventListener('DOMContentLoaded', async () => {
     await checkAuth();
+    
+    // 🔥 Inicializar Socket.IO
+    initializeSocketIO();
 });
+
+// 🔥 Inicializar Socket.IO para receber QR Code em tempo real
+function initializeSocketIO() {
+    socket = io({
+        transports: ['websocket', 'polling']
+    });
+    
+    socket.on('connect', () => {
+        console.log('🔌 Conectado ao Socket.IO:', socket.id);
+        
+        // Se usuário já está logado, conectar aos eventos específicos
+        if (currentUser) {
+            setupWhatsAppListeners();
+        }
+    });
+    
+    socket.on('disconnect', () => {
+        console.log('🔌 Desconectado do Socket.IO');
+    });
+    
+    socket.on('connect_error', (error) => {
+        console.error('❌ Erro de conexão Socket.IO:', error);
+    });
+}
+
+// 🔥 Configurar listeners do WhatsApp após login
+function setupWhatsAppListeners() {
+    if (!socket || !currentUser) return;
+    
+    const userId = currentUser.id;
+    
+    // Listener para QR Code
+    socket.on(`qrcode-${userId}`, (data) => {
+        console.log(`📱 QR Code recebido via Socket.IO (tentativa ${data.attempts})`);
+        
+        if (data.qrCode) {
+            document.getElementById('qrcode-container').innerHTML = 
+                `<img src="${data.qrCode}" alt="QR Code" class="mx-auto max-w-sm rounded-lg shadow-lg">`;
+            
+            // Mostrar card de conexão se não estiver visível
+            document.getElementById('whatsapp-disconnected').classList.add('hidden');
+            document.getElementById('whatsapp-connecting').classList.remove('hidden');
+        }
+    });
+    
+    // Listener para status do WhatsApp
+    socket.on(`whatsapp-status-${userId}`, (data) => {
+        console.log(`📊 Status WhatsApp recebido via Socket.IO:`, data.status);
+        
+        if (data.status === 'connected') {
+            // Limpar QR Code
+            document.getElementById('qrcode-container').innerHTML = 
+                '<p class="text-green-600 text-center font-semibold">✅ WhatsApp conectado com sucesso!</p>';
+            
+            // Mostrar card de conectado
+            setTimeout(() => {
+                document.getElementById('whatsapp-connecting').classList.add('hidden');
+                document.getElementById('whatsapp-connected').classList.remove('hidden');
+                checkWhatsAppStatus();
+            }, 1500);
+        } else if (data.status === 'disconnected') {
+            // Mostrar card de desconectado
+            document.getElementById('whatsapp-connecting').classList.add('hidden');
+            document.getElementById('whatsapp-connected').classList.add('hidden');
+            document.getElementById('whatsapp-disconnected').classList.remove('hidden');
+        }
+    });
+    
+    console.log(`🎯 Listeners configurados para usuário ${userId}`);
+}
 
 // Autenticação
 async function checkAuth() {
@@ -154,6 +228,11 @@ window.restartServer = async function() {
 window.showDashboard = function() {
     document.getElementById('landing-page').classList.add('hidden');
     document.getElementById('dashboard').classList.remove('hidden');
+    
+    // 🔥 Configurar listeners do WhatsApp após login
+    if (socket && currentUser) {
+        setupWhatsAppListeners();
+    }
 }
 
 // Navegar entre seções do dashboard
@@ -228,9 +307,13 @@ async function loadDashboardData() {
 // WhatsApp
 window.connectWhatsApp = async function() {
     try {
-        console.log('Conectando WhatsApp...');
+        console.log('🔄 Conectando WhatsApp...');
+        
+        // Mostrar tela de carregamento
         document.getElementById('whatsapp-disconnected').classList.add('hidden');
         document.getElementById('whatsapp-connecting').classList.remove('hidden');
+        document.getElementById('qrcode-container').innerHTML = 
+            '<p class="text-gray-600 text-center">⏳ Gerando QR Code... Aguarde alguns segundos.</p>';
         
         const response = await fetch('/api/whatsapp/connect', {
             method: 'POST',
@@ -240,24 +323,28 @@ window.connectWhatsApp = async function() {
         console.log('Response status:', response.status, response.ok);
         
         if (response.ok) {
-            console.log('Iniciando polling do QR Code...');
-            // Iniciar polling do QR Code
-            window.startQRCodePolling();
+            console.log('✅ Sessão iniciada! Aguardando QR Code via Socket.IO...');
+            // QR Code virá automaticamente via Socket.IO em tempo real
+            // Não precisa de polling!
         } else {
             const errorData = await response.json();
-            console.error('Erro na resposta:', errorData);
+            console.error('❌ Erro na resposta:', errorData);
             alert('Erro ao conectar WhatsApp: ' + (errorData.error || 'Erro desconhecido'));
             document.getElementById('whatsapp-disconnected').classList.remove('hidden');
             document.getElementById('whatsapp-connecting').classList.add('hidden');
         }
     } catch (error) {
-        console.error('Erro:', error);
+        console.error('❌ Erro:', error);
         alert('Erro ao conectar WhatsApp');
         document.getElementById('whatsapp-disconnected').classList.remove('hidden');
         document.getElementById('whatsapp-connecting').classList.add('hidden');
     }
 }
 
+// 🚫 FUNÇÃO DE POLLING ANTIGA - NÃO MAIS NECESSÁRIA COM SOCKET.IO
+// O QR Code agora é recebido em tempo real via Socket.IO
+// Mantida aqui apenas para referência (pode ser removida futuramente)
+/*
 window.startQRCodePolling = function() {
     qrCheckInterval = setInterval(async () => {
         try {
@@ -284,6 +371,7 @@ window.startQRCodePolling = function() {
         }
     }, 2000);
 }
+*/
 
 window.checkWhatsAppStatus = async function() {
     try {

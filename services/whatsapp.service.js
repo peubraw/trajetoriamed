@@ -36,11 +36,39 @@ class WhatsAppService {
                 catchQR: (base64Qr, asciiQR, attempts) => {
                     console.log(`📱 QR Code gerado para sessão ${sessionName} (tentativa ${attempts})`);
                     console.log(`⏱️ Você tem 45 segundos para escanear`);
+                    
+                    // Salvar no banco
                     this.saveQRCode(userId, base64Qr);
+                    
+                    // 🔥 Emitir via Socket.IO em tempo real
+                    if (global.io) {
+                        global.io.emit(`qrcode-${userId}`, {
+                            qrCode: base64Qr,
+                            attempts: attempts,
+                            status: 'qrcode'
+                        });
+                        console.log(`🔌 QR Code emitido via Socket.IO para user ${userId}`);
+                    }
                 },
                 statusFind: (statusSession, session) => {
                     console.log(`📊 Status da sessão ${session}: ${statusSession}`);
                     this.updateSessionStatus(userId, statusSession);
+                    
+                    // 🔥 Emitir status via Socket.IO
+                    if (global.io) {
+                        let clientStatus = 'connecting';
+                        if (statusSession === 'isLogged' || statusSession === 'qrReadSuccess') {
+                            clientStatus = 'connected';
+                        } else if (statusSession === 'qrReadFail' || statusSession === 'autocloseCalled') {
+                            clientStatus = 'disconnected';
+                        }
+                        
+                        global.io.emit(`whatsapp-status-${userId}`, {
+                            status: clientStatus,
+                            sessionStatus: statusSession
+                        });
+                        console.log(`🔌 Status emitido via Socket.IO: ${statusSession}`);
+                    }
                     
                     // Logs detalhados para debug
                     if (statusSession === 'qrReadSuccess') {
@@ -67,7 +95,7 @@ class WhatsAppService {
                 waitForLogin: true,
                 folderNameToken: 'tokens',
                 puppeteerOptions: {
-                    executablePath: '/root/.cache/puppeteer/chrome/linux-142.0.7444.175/chrome-linux64/chrome',
+                    // Detectar automaticamente Chrome instalado (Windows/Linux)
                     args: [
                         '--no-sandbox',
                         '--disable-setuid-sandbox',
