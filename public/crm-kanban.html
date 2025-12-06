@@ -1203,31 +1203,31 @@
 
             document.getElementById('modalLeadName').textContent = lead.name || lead.phone;
 
-            // Informações básicas
+            // Informações básicas - apenas campos essenciais
             const infoHTML = `
                 <div class="info-item">
                     <label>📞 Telefone</label>
                     <value>${lead.phone}</value>
                 </div>
+                ${lead.email ? `
                 <div class="info-item">
                     <label>📧 Email</label>
-                    <value>${lead.email || '-'}</value>
+                    <value>${lead.email}</value>
+                </div>
+                ` : ''}
+                ${lead.interested_course ? `
+                <div class="info-item">
+                    <label>🎓 Curso de Interesse</label>
+                    <value>${lead.interested_course}</value>
+                </div>
+                ` : ''}
+                <div class="info-item">
+                    <label>🌡️ Temperatura</label>
+                    <value>${lead.temperature === 'hot' ? '🔥 Quente' : lead.temperature === 'warm' ? '🌤️ Morno' : '❄️ Frio'}</value>
                 </div>
                 <div class="info-item">
-                    <label>🏥 RQE</label>
-                    <value>${lead.rqe || '-'}</value>
-                </div>
-                <div class="info-item">
-                    <label>🩺 Especialidade</label>
-                    <value>${lead.specialty || '-'}</value>
-                </div>
-                <div class="info-item">
-                    <label>📍 Estado</label>
-                    <value>${lead.state || '-'}</value>
-                </div>
-                <div class="info-item">
-                    <label>🎯 Score</label>
-                    <value>${lead.score}/100</value>
+                    <label>🤖 Bot</label>
+                    <value>${lead.bot_active ? '✅ Ativo' : '⏸️ Pausado'}</value>
                 </div>
             `;
             document.getElementById('modalLeadInfo').innerHTML = infoHTML;
