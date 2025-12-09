@@ -7,6 +7,18 @@ require('dotenv').config();
 const VERIFY_TOKEN = process.env.META_WEBHOOK_VERIFY_TOKEN;
 
 /**
+ * Rota de teste para ver se o webhook está acessível
+ */
+router.get('/webhook-test', (req, res) => {
+    res.json({
+        status: 'OK',
+        message: 'Meta Webhook está funcionando!',
+        timestamp: new Date().toISOString(),
+        verifyToken: VERIFY_TOKEN ? 'Configurado' : 'NÃO CONFIGURADO'
+    });
+});
+
+/**
  * Webhook Verification (GET)
  * A Meta envia uma requisição GET para verificar o webhook
  */
