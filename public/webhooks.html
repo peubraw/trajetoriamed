@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhooks - TrajetóriaMed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+        
+        .sidebar-gradient { background: linear-gradient(180deg, #667eea 0%, #764ba2 100%); }
+        .nav-item { transition: all 0.2s ease; border-left: 3px solid transparent; }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.1); border-left-color: #ffffff; }
+        .nav-item.active { background: rgba(255, 255, 255, 0.15); border-left-color: #ffffff; }
+        .content-container { background: #f7f9fc; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3); }
+        .btn-secondary { background: white; color: #667eea; border: 1px solid #667eea; transition: all 0.3s ease; }
+        .btn-secondary:hover { background: #667eea; color: white; }
+        
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 50; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-error { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body class="content-container">
+    
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- Sidebar -->
+        <aside class="sidebar-gradient w-64 flex-shrink-0 hidden md:flex flex-col shadow-2xl">
+            <div class="p-6 border-b border-white border-opacity-10">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h1 class="text-white font-bold text-lg">TrajetóriaMed</h1>
+                        <p class="text-white text-opacity-60 text-xs">Sistema CRM</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+                <a href="/dashboard.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-home w-5"></i><span class="ml-3">Dashboard</span>
+                </a>
+                <a href="/crm-kanban.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-columns w-5"></i><span class="ml-3">CRM Kanban</span>
+                </a>
+                <a href="/whatsapp.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fab fa-whatsapp w-5"></i><span class="ml-3">WhatsApp</span>
+                </a>
+                <a href="/bot-config.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-robot w-5"></i><span class="ml-3">Configurar Bot</span>
+                </a>
+                <a href="/webhooks.html" class="nav-item active flex items-center px-4 py-3 text-white rounded-lg">
+                    <i class="fas fa-link w-5"></i><span class="ml-3">Webhooks</span>
+                </a>
+                <div class="pt-6 mt-6 border-t border-white border-opacity-10">
+                    <a href="/settings.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                        <i class="fas fa-cog w-5"></i><span class="ml-3">Configurações</span>
+                    </a>
+                </div>
+            </nav>
+            
+            <div class="p-4 border-t border-white border-opacity-10">
+                <div class="flex items-center px-4 py-3 bg-white bg-opacity-10 rounded-lg">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-700 flex items-center justify-center text-white font-semibold"><span>LB</span></div>
+                    <div class="ml-3 flex-1 min-w-0">
+                        <p class="text-sm font-medium text-white truncate">Leandro Berti</p>
+                        <p class="text-xs text-white text-opacity-60 truncate">Admin</p>
+                    </div>
+                    <button onclick="logout()" class="text-white text-opacity-60 hover:text-opacity-100"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            
+            <!-- Top Bar -->
+            <header class="bg-white border-b border-gray-200 px-8 py-4 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Webhooks</h1>
+                        <p class="text-sm text-gray-500 mt-1">Configure integrações externas via webhooks</p>
+                    </div>
+                    <button onclick="openModal()" class="btn-primary px-6 py-2.5 rounded-lg text-white font-semibold shadow-lg">
+                        <i class="fas fa-plus mr-2"></i>Novo Webhook
+                    </button>
+                </div>
+            </header>
+            
+            <!-- Content -->
+            <main class="flex-1 overflow-y-auto content-container p-8">
+                
+                <!-- Meta Webhook Status -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-start">
+                            <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white shadow-lg">
+                                <i class="fab fa-meta text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h3 class="text-lg font-semibold text-gray-800">Meta WhatsApp Business API</h3>
+                                <p class="text-sm text-gray-500 mt-1">Webhook oficial da Meta para receber mensagens</p>
+                                <div class="mt-3 flex items-center space-x-4">
+                                    <span class="badge-success px-3 py-1 rounded-full text-xs font-semibold">
+                                        <i class="fas fa-check-circle mr-1"></i>Verificado
+                                    </span>
+                                    <span class="text-xs text-gray-500">
+                                        <i class="fas fa-link mr-1"></i>
+                                        stockings-pubs-katrina-modes.trycloudflare.com/api/meta/webhook
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="text-purple-600 hover:text-purple-700 font-semibold text-sm">
+                            <i class="fas fa-vial mr-1"></i>Testar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Webhooks List -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-800">Webhooks Configurados</h3>
+                    </div>
+                    
+                    <div id="webhooks-container" class="divide-y divide-gray-200">
+                        <!-- Empty State -->
+                        <div class="text-center py-12">
+                            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                                <i class="fas fa-webhook text-3xl text-gray-400"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Nenhum webhook personalizado</h3>
+                            <p class="text-gray-500 mb-6">Crie webhooks para integrar com sistemas externos</p>
+                            <button onclick="openModal()" class="btn-primary px-6 py-2.5 rounded-lg text-white font-semibold shadow-lg">
+                                <i class="fas fa-plus mr-2"></i>Criar Primeiro Webhook
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Logs -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 mt-6">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-800">Logs Recentes</h3>
+                    </div>
+                    
+                    <div class="divide-y divide-gray-200">
+                        <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-3">
+                                        <span class="badge-success px-2 py-1 rounded text-xs font-semibold">200</span>
+                                        <span class="text-sm font-medium text-gray-800">POST /api/meta/webhook</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">Mensagem recebida de +5511999887766</p>
+                                </div>
+                                <span class="text-xs text-gray-400">há 2 minutos</span>
+                            </div>
+                        </div>
+                        
+                        <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-3">
+                                        <span class="badge-success px-2 py-1 rounded text-xs font-semibold">200</span>
+                                        <span class="text-sm font-medium text-gray-800">GET /api/meta/webhook</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 mt-1">Verificação do webhook pela Meta</p>
+                                </div>
+                                <span class="text-xs text-gray-400">há 15 minutos</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </main>
+            
+        </div>
+        
+    </div>
+    
+    <!-- Add Webhook Modal -->
+    <div id="webhook-modal" class="modal">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-xl font-bold text-gray-800">Novo Webhook</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Webhook</label>
+                    <input type="text" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: Integração CRM">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">URL de Destino</label>
+                    <input type="url" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="https://exemplo.com/webhook">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Eventos</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                            <span class="ml-2 text-sm text-gray-700">Nova mensagem recebida</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                            <span class="ml-2 text-sm text-gray-700">Lead criado</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500">
+                            <span class="ml-2 text-sm text-gray-700">Lead atualizado</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
+                <button onclick="closeModal()" class="btn-secondary px-6 py-2.5 rounded-lg font-semibold">Cancelar</button>
+                <button class="btn-primary px-6 py-2.5 rounded-lg text-white font-semibold shadow-lg">
+                    <i class="fas fa-save mr-2"></i>Salvar Webhook
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function logout() {
+            fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+                .then(() => window.location.href = '/login.html');
+        }
+        
+        function openModal() {
+            document.getElementById('webhook-modal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('webhook-modal').classList.remove('active');
+        }
+    </script>
+    
+</body>
+</html>

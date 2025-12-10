@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configurar Bot - TrajetóriaMed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+        
+        .sidebar-gradient { background: linear-gradient(180deg, #667eea 0%, #764ba2 100%); }
+        .nav-item { transition: all 0.2s ease; border-left: 3px solid transparent; }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.1); border-left-color: #ffffff; }
+        .nav-item.active { background: rgba(255, 255, 255, 0.15); border-left-color: #ffffff; }
+        .content-container { background: #f7f9fc; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3); }
+        
+        .toggle-switch { width: 48px; height: 24px; background: #e5e7eb; border-radius: 12px; position: relative; cursor: pointer; transition: all 0.3s; }
+        .toggle-switch.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .toggle-switch::after { content: ''; width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .toggle-switch.active::after { left: 26px; }
+    </style>
+</head>
+<body class="content-container">
+    
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- Sidebar (same as dashboard) -->
+        <aside class="sidebar-gradient w-64 flex-shrink-0 hidden md:flex flex-col shadow-2xl">
+            <div class="p-6 border-b border-white border-opacity-10">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h1 class="text-white font-bold text-lg">TrajetóriaMed</h1>
+                        <p class="text-white text-opacity-60 text-xs">Sistema CRM</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+                <a href="/dashboard.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-home w-5"></i><span class="ml-3">Dashboard</span>
+                </a>
+                <a href="/crm-kanban.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-columns w-5"></i><span class="ml-3">CRM Kanban</span>
+                </a>
+                <a href="/whatsapp.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fab fa-whatsapp w-5"></i><span class="ml-3">WhatsApp</span>
+                </a>
+                <a href="/bot-config.html" class="nav-item active flex items-center px-4 py-3 text-white rounded-lg">
+                    <i class="fas fa-robot w-5"></i><span class="ml-3">Configurar Bot</span>
+                </a>
+                <a href="/webhooks.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-link w-5"></i><span class="ml-3">Webhooks</span>
+                </a>
+                <div class="pt-6 mt-6 border-t border-white border-opacity-10">
+                    <a href="/settings.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                        <i class="fas fa-cog w-5"></i><span class="ml-3">Configurações</span>
+                    </a>
+                </div>
+            </nav>
+            
+            <div class="p-4 border-t border-white border-opacity-10">
+                <div class="flex items-center px-4 py-3 bg-white bg-opacity-10 rounded-lg">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-700 flex items-center justify-center text-white font-semibold"><span>LB</span></div>
+                    <div class="ml-3 flex-1 min-w-0">
+                        <p class="text-sm font-medium text-white truncate">Leandro Berti</p>
+                        <p class="text-xs text-white text-opacity-60 truncate">Admin</p>
+                    </div>
+                    <button onclick="logout()" class="text-white text-opacity-60 hover:text-opacity-100"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            
+            <!-- Top Bar -->
+            <header class="bg-white border-b border-gray-200 px-8 py-4 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Configurar Bot</h1>
+                        <p class="text-sm text-gray-500 mt-1">Personalize as respostas automáticas do WhatsApp</p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white font-semibold shadow-lg"><span>LB</span></div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Content -->
+            <main class="flex-1 overflow-y-auto content-container p-8">
+                
+                <!-- Bot Status Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-1">Status do Bot</h3>
+                            <p class="text-sm text-gray-500">O bot está respondendo automaticamente</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-sm font-medium text-gray-700">Ativar Bot</span>
+                            <div class="toggle-switch active" onclick="toggleBot(this)"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Configuration Tabs -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                    <div class="border-b border-gray-200 px-6 py-4">
+                        <div class="flex space-x-6">
+                            <button class="tab-btn active px-4 py-2 font-semibold text-purple-600 border-b-2 border-purple-600" onclick="switchTab('messages')">
+                                <i class="fas fa-comments mr-2"></i>Mensagens
+                            </button>
+                            <button class="tab-btn px-4 py-2 font-semibold text-gray-500 hover:text-gray-700" onclick="switchTab('courses')">
+                                <i class="fas fa-graduation-cap mr-2"></i>Cursos
+                            </button>
+                            <button class="tab-btn px-4 py-2 font-semibold text-gray-500 hover:text-gray-700" onclick="switchTab('instagram')">
+                                <i class="fab fa-instagram mr-2"></i>Instagram
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Messages Tab -->
+                    <div id="tab-messages" class="tab-content p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Mensagens Automáticas</h3>
+                        
+                        <div class="space-y-4">
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Mensagem de Boas-Vindas</label>
+                                <textarea rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Olá! Bem-vindo à TrajetóriaMed..."></textarea>
+                            </div>
+                            
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Mensagem Fora do Horário</label>
+                                <textarea rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Nosso horário de atendimento é..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 flex justify-end">
+                            <button class="btn-primary text-white px-6 py-3 rounded-lg font-semibold shadow-lg">
+                                <i class="fas fa-save mr-2"></i>Salvar Configurações
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Courses Tab -->
+                    <div id="tab-courses" class="tab-content hidden p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Configuração de Cursos</h3>
+                        <p class="text-gray-500">Configure os cursos disponíveis no bot...</p>
+                    </div>
+                    
+                    <!-- Instagram Tab -->
+                    <div id="tab-instagram" class="tab-content hidden p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Links do Instagram</h3>
+                        <p class="text-gray-500">Configure os links dos posts do Instagram...</p>
+                    </div>
+                </div>
+                
+            </main>
+            
+        </div>
+        
+    </div>
+    
+    <script>
+        function logout() {
+            fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+                .then(() => window.location.href = '/login.html');
+        }
+        
+        function toggleBot(el) {
+            el.classList.toggle('active');
+        }
+        
+        function switchTab(tab) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('active', 'text-purple-600', 'border-b-2', 'border-purple-600');
+                b.classList.add('text-gray-500');
+            });
+            
+            // Show selected tab
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            event.target.closest('.tab-btn').classList.add('active', 'text-purple-600', 'border-b-2', 'border-purple-600');
+            event.target.closest('.tab-btn').classList.remove('text-gray-500');
+        }
+    </script>
+    
+</body>
+</html>

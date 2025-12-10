@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp - TrajetóriaMed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+        
+        .sidebar-gradient { background: linear-gradient(180deg, #667eea 0%, #764ba2 100%); }
+        .nav-item { transition: all 0.2s ease; border-left: 3px solid transparent; }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.1); border-left-color: #ffffff; }
+        .nav-item.active { background: rgba(255, 255, 255, 0.15); border-left-color: #ffffff; }
+        .content-container { background: #f7f9fc; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3); }
+        .btn-secondary { background: white; color: #667eea; border: 1px solid #667eea; transition: all 0.3s ease; }
+        .btn-secondary:hover { background: #667eea; color: white; }
+        
+        .status-connected { background: #d1fae5; color: #065f46; }
+        .status-disconnected { background: #fee2e2; color: #991b1b; }
+        
+        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+    </style>
+</head>
+<body class="content-container">
+    
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- Sidebar -->
+        <aside class="sidebar-gradient w-64 flex-shrink-0 hidden md:flex flex-col shadow-2xl">
+            <div class="p-6 border-b border-white border-opacity-10">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h1 class="text-white font-bold text-lg">TrajetóriaMed</h1>
+                        <p class="text-white text-opacity-60 text-xs">Sistema CRM</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+                <a href="/dashboard.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-home w-5"></i><span class="ml-3">Dashboard</span>
+                </a>
+                <a href="/crm-kanban.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-columns w-5"></i><span class="ml-3">CRM Kanban</span>
+                </a>
+                <a href="/whatsapp.html" class="nav-item active flex items-center px-4 py-3 text-white rounded-lg">
+                    <i class="fab fa-whatsapp w-5"></i><span class="ml-3">WhatsApp</span>
+                </a>
+                <a href="/bot-config.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-robot w-5"></i><span class="ml-3">Configurar Bot</span>
+                </a>
+                <a href="/webhooks.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-link w-5"></i><span class="ml-3">Webhooks</span>
+                </a>
+                <div class="pt-6 mt-6 border-t border-white border-opacity-10">
+                    <a href="/settings.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                        <i class="fas fa-cog w-5"></i><span class="ml-3">Configurações</span>
+                    </a>
+                </div>
+            </nav>
+            
+            <div class="p-4 border-t border-white border-opacity-10">
+                <div class="flex items-center px-4 py-3 bg-white bg-opacity-10 rounded-lg">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-700 flex items-center justify-center text-white font-semibold"><span>LB</span></div>
+                    <div class="ml-3 flex-1 min-w-0">
+                        <p class="text-sm font-medium text-white truncate">Leandro Berti</p>
+                        <p class="text-xs text-white text-opacity-60 truncate">Admin</p>
+                    </div>
+                    <button onclick="logout()" class="text-white text-opacity-60 hover:text-opacity-100"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            
+            <!-- Top Bar -->
+            <header class="bg-white border-b border-gray-200 px-8 py-4 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">WhatsApp</h1>
+                        <p class="text-sm text-gray-500 mt-1">Gerencie a conexão com o WhatsApp Business</p>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Content -->
+            <main class="flex-1 overflow-y-auto content-container p-8">
+                
+                <div class="max-w-5xl mx-auto">
+                    
+                    <!-- Connection Status Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-start">
+                                <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center text-white shadow-lg">
+                                    <i class="fab fa-whatsapp text-3xl"></i>
+                                </div>
+                                <div class="ml-5">
+                                    <h3 class="text-xl font-bold text-gray-800 mb-1">Meta WhatsApp Business API</h3>
+                                    <div class="flex items-center space-x-2 mb-2">
+                                        <span class="status-connected px-3 py-1 rounded-full text-xs font-semibold">
+                                            <i class="fas fa-circle pulse mr-1"></i>Conectado
+                                        </span>
+                                        <span class="text-sm text-gray-500">API Oficial v21.0</span>
+                                    </div>
+                                    <p class="text-sm text-gray-500">Número conectado: +55 11 99988-7766</p>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="btn-secondary px-4 py-2 rounded-lg font-semibold text-sm">
+                                    <i class="fas fa-sync-alt mr-2"></i>Atualizar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white shadow-lg">
+                                    <i class="fas fa-paper-plane text-xl"></i>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-500 mb-1">Mensagens Enviadas</p>
+                            <h3 class="text-3xl font-bold text-gray-800">1,284</h3>
+                            <p class="text-xs text-green-600 mt-2">
+                                <i class="fas fa-arrow-up mr-1"></i>+12% vs. ontem
+                            </p>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center text-white shadow-lg">
+                                    <i class="fas fa-inbox text-xl"></i>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-500 mb-1">Mensagens Recebidas</p>
+                            <h3 class="text-3xl font-bold text-gray-800">892</h3>
+                            <p class="text-xs text-green-600 mt-2">
+                                <i class="fas fa-arrow-up mr-1"></i>+8% vs. ontem
+                            </p>
+                        </div>
+                        
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white shadow-lg">
+                                    <i class="fas fa-users text-xl"></i>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-500 mb-1">Contatos Ativos</p>
+                            <h3 class="text-3xl font-bold text-gray-800">347</h3>
+                            <p class="text-xs text-green-600 mt-2">
+                                <i class="fas fa-arrow-up mr-1"></i>+15 novos
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Configuration Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        <!-- API Configuration -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-cog mr-2 text-purple-600"></i>Configuração da API
+                            </h3>
+                            
+                            <div class="space-y-3 text-sm">
+                                <div class="flex justify-between py-2 border-b border-gray-100">
+                                    <span class="text-gray-500">App ID</span>
+                                    <span class="font-semibold text-gray-800">874380495066899</span>
+                                </div>
+                                <div class="flex justify-between py-2 border-b border-gray-100">
+                                    <span class="text-gray-500">Phone Number ID</span>
+                                    <span class="font-semibold text-gray-800">517663••••••••</span>
+                                </div>
+                                <div class="flex justify-between py-2 border-b border-gray-100">
+                                    <span class="text-gray-500">Webhook URL</span>
+                                    <span class="font-semibold text-gray-800 truncate">stockings-pubs...cloudflare.com</span>
+                                </div>
+                                <div class="flex justify-between py-2">
+                                    <span class="text-gray-500">Status da App</span>
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-semibold">
+                                        Em Análise
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6">
+                                <button class="w-full btn-primary px-4 py-2.5 rounded-lg text-white font-semibold shadow-lg">
+                                    <i class="fas fa-external-link-alt mr-2"></i>Abrir Meta App Dashboard
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-bolt mr-2 text-purple-600"></i>Ações Rápidas
+                            </h3>
+                            
+                            <div class="space-y-3">
+                                <button class="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </div>
+                                        <span class="ml-3 font-semibold text-gray-800">Enviar Mensagem de Teste</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </button>
+                                
+                                <button class="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center text-green-600">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                        <span class="ml-3 font-semibold text-gray-800">Testar Webhook</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </button>
+                                
+                                <button class="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600">
+                                            <i class="fas fa-file-alt"></i>
+                                        </div>
+                                        <span class="ml-3 font-semibold text-gray-800">Ver Logs de Mensagens</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </button>
+                                
+                                <button class="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600">
+                                            <i class="fas fa-chart-line"></i>
+                                        </div>
+                                        <span class="ml-3 font-semibold text-gray-800">Analytics da Meta</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- Important Notice -->
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mt-6">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle text-yellow-600 text-2xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-lg font-semibold text-yellow-800 mb-2">App em Modo de Teste</h4>
+                                <p class="text-sm text-yellow-700 mb-3">
+                                    Sua aplicação Meta está atualmente em modo de teste. Você só pode enviar mensagens para números que foram adicionados à lista de permissões no Meta App Dashboard.
+                                </p>
+                                <p class="text-sm text-yellow-700 mb-3">
+                                    <strong>Para enviar para qualquer número:</strong>
+                                </p>
+                                <ol class="text-sm text-yellow-700 list-decimal ml-5 space-y-1">
+                                    <li>Adicione informações comerciais completas no Meta App Dashboard</li>
+                                    <li>Submeta sua aplicação para revisão da Meta</li>
+                                    <li>Aguarde aprovação (geralmente 1-3 dias úteis)</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+            </main>
+            
+        </div>
+        
+    </div>
+    
+    <script>
+        function logout() {
+            fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+                .then(() => window.location.href = '/login.html');
+        }
+    </script>
+    
+</body>
+</html>
