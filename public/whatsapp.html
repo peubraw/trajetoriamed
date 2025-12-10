@@ -102,118 +102,71 @@
                 <div class="max-w-5xl mx-auto">
                     
                     <!-- Connection Status Card -->
-                    <div id="connection-status" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
                         <div class="flex items-start justify-between">
                             <div class="flex items-start">
                                 <div class="w-16 h-16 rounded-xl bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center text-white shadow-lg">
                                     <i class="fab fa-whatsapp text-3xl"></i>
                                 </div>
                                 <div class="ml-5">
-                                    <h3 class="text-xl font-bold text-gray-800 mb-1">WPPConnect</h3>
+                                    <h3 class="text-xl font-bold text-gray-800 mb-1">Meta WhatsApp Business API</h3>
                                     <div class="flex items-center space-x-2 mb-2">
-                                        <span id="status-badge" class="status-disconnected px-3 py-1 rounded-full text-xs font-semibold">
-                                            <i class="fas fa-circle mr-1"></i><span id="status-text">Desconectado</span>
+                                        <span class="status-connected px-3 py-1 rounded-full text-xs font-semibold">
+                                            <i class="fas fa-circle pulse mr-1"></i>Conectado
                                         </span>
+                                        <span class="text-sm text-gray-500">API Oficial v21.0</span>
                                     </div>
-                                    <p id="phone-display" class="text-sm text-gray-500">Nenhum número conectado</p>
+                                    <p class="text-sm text-gray-500">Número conectado: <span id="display_phone_connected">+55 11 99988-7766</span></p>
                                 </div>
                             </div>
                             <div class="flex space-x-2">
-                                <button onclick="checkStatus()" class="btn-secondary px-4 py-2 rounded-lg font-semibold text-sm">
+                                <button class="btn-secondary px-4 py-2 rounded-lg font-semibold text-sm">
                                     <i class="fas fa-sync-alt mr-2"></i>Atualizar
                                 </button>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- QR Code Section -->
-                    <div id="qr-section" class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-6 text-center">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-4">
-                            <i class="fas fa-qrcode text-purple-600 mr-2"></i>Conectar WhatsApp
-                        </h3>
-                        <p class="text-gray-600 mb-6">Escaneie o QR Code com seu WhatsApp para conectar</p>
-                        
-                        <div id="qrcode-container" class="flex justify-center mb-6 min-h-[300px] items-center">
-                            <div class="text-gray-400">
-                                <i class="fas fa-qrcode text-6xl mb-4"></i>
-                                <p>Clique em "Iniciar Sessão" para gerar o QR Code</p>
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white shadow-lg">
+                                    <i class="fas fa-paper-plane text-xl"></i>
+                                </div>
                             </div>
+                            <p class="text-sm text-gray-500 mb-1">Mensagens Enviadas</p>
+                            <h3 id="stats_sent" class="text-3xl font-bold text-gray-800">-</h3>
+                            <p class="text-xs text-green-600 mt-2">
+                                <i class="fas fa-arrow-up mr-1"></i><span id="stats_sent_growth">-</span>
+                            </p>
                         </div>
                         
-                        <div class="flex justify-center space-x-4">
-                            <button onclick="startSession()" id="btn-start" class="btn-primary px-6 py-3 rounded-lg text-white font-semibold shadow-lg">
-                                <i class="fas fa-play mr-2"></i>Iniciar Sessão
-                            </button>
-                            <button onclick="closeSession()" id="btn-close" class="btn-secondary px-6 py-3 rounded-lg font-semibold" style="display:none;">
-                                <i class="fas fa-stop mr-2"></i>Fechar Sessão
-                            </button>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-green-500 to-green-700 flex items-center justify-center text-white shadow-lg">
+                                    <i class="fas fa-inbox text-xl"></i>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-500 mb-1">Mensagens Recebidas</p>
+                            <h3 id="stats_received" class="text-3xl font-bold text-gray-800">-</h3>
+                            <p class="text-xs text-green-600 mt-2">
+                                <i class="fas fa-arrow-up mr-1"></i><span id="stats_received_growth">-</span>
+                            </p>
                         </div>
-                    </div>
-                    
-                    <!-- Sessions List -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">
-                            <i class="fas fa-list mr-2 text-purple-600"></i>Sessões Ativas
-                        </h3>
-                        <div id="sessions-list" class="space-y-3">
-                            <p class="text-gray-400 text-center py-8">Nenhuma sessão ativa</p>
+                        
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white shadow-lg">
+                                    <i class="fas fa-users text-xl"></i>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-500 mb-1">Contatos Ativos</p>
+                            <h3 id="stats_contacts" class="text-3xl font-bold text-gray-800">-</h3>
+                            <p class="text-xs text-green-600 mt-2">
+                                <i class="fas fa-arrow-up mr-1"></i>+15 novos
+                            </p>
                         </div>
-                    </div>
-                    
-                </div>
-                
-            </main>
-                
-                <div class="max-w-5xl mx-auto">
-                    
-                    <!-- Connection Status Card -->
-                    
-                </div>
-                
-            </main>
-            
-        </div>
-        
-    </div>
-    
-    <style>
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 50; align-items: center; justify-content: center; }
-        .modal.active { display: flex; }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.5rem 1rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-        
-        .status-connected { background-color: #d1fae5; color: #065f46; }
-        .status-disconnected { background-color: #fee2e2; color: #991b1b; }
-        .status-loading { background-color: #fef3c7; color: #92400e; }
-    </style>
-    
-    <script>
-        function logout() {
-            fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
-                .then(() => window.location.href = '/login.html');
-        }
-        
-        let statusInterval;
-        
-        // Iniciar sessão e mostrar QR Code
-        async function startSession() {
-            try {
-                document.getElementById('qrcode-container').innerHTML = '<div class="text-purple-600"><i class="fas fa-spinner fa-spin text-4xl mb-4"></i><p>Iniciando sessão...</p></div>';
-                document.getElementById('btn-start').disabled = true;
                     </div>
                     
                     <!-- Configuration Info -->
@@ -403,132 +356,80 @@
                 .then(() => window.location.href = '/login.html');
         }
         
-        let statusInterval;
+        function openMetaConfigModal() {
+            // Load current config
+            loadMetaConfig();
+            document.getElementById('meta-config-modal').classList.add('active');
+        }
         
-        // Iniciar sessão e mostrar QR Code
-        async function startSession() {
+        function closeMetaConfigModal() {
+            document.getElementById('meta-config-modal').classList.remove('active');
+        }
+        
+        async function loadMetaConfig() {
             try {
-                document.getElementById('qrcode-container').innerHTML = '<div class="text-purple-600"><i class="fas fa-spinner fa-spin text-4xl mb-4"></i><p>Iniciando sessão...</p></div>';
-                document.getElementById('btn-start').disabled = true;
-                
-                const response = await fetch('/api/whatsapp/start-session', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                const data = await response.json();
-                
-                if (data.qrcode) {
-                    document.getElementById('qrcode-container').innerHTML = `<img src="${data.qrcode}" alt="QR Code" class="mx-auto border-4 border-purple-600 rounded-lg shadow-xl">`;
-                    document.getElementById('btn-close').style.display = 'inline-block';
+                const response = await fetch('/api/meta/config');
+                if (response.ok) {
+                    const data = await response.json();
+                    const config = data.config || {};
                     
-                    // Iniciar verificação de status
-                    statusInterval = setInterval(checkStatus, 3000);
-                } else if (data.message) {
-                    document.getElementById('qrcode-container').innerHTML = `<div class="text-green-600"><i class="fas fa-check-circle text-4xl mb-4"></i><p>${data.message}</p></div>`;
-                    checkStatus();
+                    // Preencher formulário modal
+                    document.getElementById('meta_app_id').value = config.app_id || '';
+                    document.getElementById('meta_access_token').value = config.access_token || '';
+                    document.getElementById('meta_phone_id').value = config.phone_number_id || '';
+                    document.getElementById('meta_business_id').value = config.business_account_id || '';
+                    document.getElementById('meta_verify_token').value = config.webhook_verify_token || '';
+                    
+                    // Atualizar display na página
+                    document.getElementById('display_app_id').textContent = config.app_id || 'Não configurado';
+                    document.getElementById('display_phone_id').textContent = config.phone_number_id || 'Não configurado';
+                    document.getElementById('display_business_id').textContent = config.business_account_id || 'Não configurado';
+                    document.getElementById('display_verify_token').textContent = config.webhook_verify_token || 'Não configurado';
                 }
-                
-                document.getElementById('btn-start').disabled = false;
             } catch (error) {
-                document.getElementById('qrcode-container').innerHTML = `<div class="text-red-600"><i class="fas fa-exclamation-circle text-4xl mb-4"></i><p>Erro: ${error.message}</p></div>`;
-                document.getElementById('btn-start').disabled = false;
+                console.error('Erro ao carregar config:', error);
+                document.getElementById('display_app_id').textContent = 'Erro ao carregar';
+                document.getElementById('display_phone_id').textContent = 'Erro ao carregar';
+                document.getElementById('display_business_id').textContent = 'Erro ao carregar';
+                document.getElementById('display_verify_token').textContent = 'Erro ao carregar';
             }
         }
         
-        // Verificar status da conexão
-        async function checkStatus() {
-            try {
-                const response = await fetch('/api/whatsapp/status');
-                const data = await response.json();
-                
-                const statusBadge = document.getElementById('status-badge');
-                const statusText = document.getElementById('status-text');
-                const phoneDisplay = document.getElementById('phone-display');
-                
-                if (data.connected) {
-                    statusBadge.className = 'status-connected px-3 py-1 rounded-full text-xs font-semibold';
-                    statusText.innerHTML = '<i class="fas fa-circle pulse mr-1"></i>Conectado';
-                    phoneDisplay.textContent = `Número conectado: ${data.phone || 'Desconhecido'}`;
-                    
-                    document.getElementById('qrcode-container').innerHTML = `<div class="text-green-600"><i class="fas fa-check-circle text-6xl mb-4"></i><p class="text-xl font-semibold">Conectado com sucesso!</p><p class="text-gray-600 mt-2">${data.phone}</p></div>`;
-                    document.getElementById('btn-close').style.display = 'inline-block';
-                    document.getElementById('btn-start').style.display = 'none';
-                    
-                    if (statusInterval) {
-                        clearInterval(statusInterval);
-                    }
-                } else {
-                    statusBadge.className = 'status-disconnected px-3 py-1 rounded-full text-xs font-semibold';
-                    statusText.innerHTML = '<i class="fas fa-circle mr-1"></i>Desconectado';
-                    phoneDisplay.textContent = 'Nenhum número conectado';
-                    document.getElementById('btn-start').style.display = 'inline-block';
-                    document.getElementById('btn-close').style.display = 'none';
-                }
-                
-                loadSessions();
-            } catch (error) {
-                console.error('Erro ao verificar status:', error);
-            }
-        }
-        
-        // Fechar sessão
-        async function closeSession() {
-            if (!confirm('Deseja realmente fechar a sessão do WhatsApp?')) return;
+        async function saveMetaConfig() {
+            if (!confirm('Salvar configurações Meta?')) return;
+            
+            const config = {
+                app_id: document.getElementById('meta_app_id').value,
+                access_token: document.getElementById('meta_access_token').value,
+                phone_number_id: document.getElementById('meta_phone_id').value,
+                business_account_id: document.getElementById('meta_business_id').value,
+                webhook_verify_token: document.getElementById('meta_verify_token').value
+            };
             
             try {
-                await fetch('/api/whatsapp/close-session', { method: 'POST' });
-                document.getElementById('qrcode-container').innerHTML = '<div class="text-gray-400"><i class="fas fa-qrcode text-6xl mb-4"></i><p>Sessão encerrada. Clique em "Iniciar Sessão" para reconectar</p></div>';
-                document.getElementById('btn-start').style.display = 'inline-block';
-                document.getElementById('btn-close').style.display = 'none';
-                checkStatus();
-            } catch (error) {
-                alert('Erro ao fechar sessão: ' + error.message);
-            }
-        }
-        
-        // Carregar lista de sessões
-        async function loadSessions() {
-            try {
-                const response = await fetch('/api/whatsapp/sessions');
-                const data = await response.json();
+                const response = await fetch('/api/meta/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
                 
-                const container = document.getElementById('sessions-list');
-                
-                if (data.sessions && data.sessions.length > 0) {
-                    container.innerHTML = data.sessions.map(session => `
-                        <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                            <div class="flex items-center">
-                                <div class="w-12 h-12 rounded-full ${session.connected ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'} flex items-center justify-center">
-                                    <i class="fab fa-whatsapp text-xl"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="font-semibold text-gray-800">${session.phone || 'Desconhecido'}</p>
-                                    <p class="text-sm text-gray-500">${session.connected ? 'Conectado' : 'Desconectado'}</p>
-                                </div>
-                            </div>
-                            <span class="px-3 py-1 ${session.connected ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'} rounded-full text-xs font-semibold">
-                                ${session.connected ? 'Ativo' : 'Inativo'}
-                            </span>
-                        </div>
-                    `).join('');
+                if (response.ok) {
+                    alert('✅ Configurações salvas com sucesso!');
+                    closeMetaConfigModal();
+                    loadMetaConfig(); // Recarregar dados na página
                 } else {
-                    container.innerHTML = '<p class="text-gray-400 text-center py-8">Nenhuma sessão ativa</p>';
+                    alert('❌ Erro ao salvar configurações');
                 }
             } catch (error) {
-                console.error('Erro ao carregar sessões:', error);
+                alert('❌ Erro ao salvar: ' + error.message);
             }
         }
         
-        // Carregar ao iniciar
+        // Carregar configurações ao abrir a página
         document.addEventListener('DOMContentLoaded', function() {
-            checkStatus();
-            loadSessions();
+            loadMetaConfig();
+            loadStats();
         });
-    </script>
-    
-</body>
-</html>
         
         // Carregar estatísticas
         async function loadStats() {
