@@ -201,4 +201,66 @@ router.get('/analytics', async (req, res) => {
     }
 });
 
+/**
+ * Obter configurações Meta API
+ */
+router.get('/config', async (req, res) => {
+    try {
+        const db = require('../config/database');
+        const userId = req.session?.userId || 1;
+
+        const [configs] = await db.execute(
+            'SELECT * FROM meta_api_configs WHERE user_id = ?',
+            [userId]
+        );
+
+        if (configs.length === 0) {
+            return res.json({ config: null });
+        }
+
+        res.json({ config: configs[0] });
+    } catch (error) {
+        console.error('Erro ao obter config Meta:', error);
+        res.status(500).json({ error: 'Erro ao obter configuração' });
+    }
+});
+
+/**
+ * Salvar configurações Meta API
+ */
+router.post('/config', async (req, res) => {
+    try {
+        const db = require('../config/database');
+        const userId = req.session?.userId || 1;
+        const { app_id, access_token, phone_number_id, business_account_id, webhook_verify_token } = req.body;
+
+        const [existing] = await db.execute(
+            'SELECT id FROM meta_api_configs WHERE user_id = ?',
+            [userId]
+        );
+
+        if (existing.length === 0) {
+            // Criar nova configuração
+            await db.execute(
+                `INSERT INTO meta_api_configs (user_id, app_id, access_token, phone_number_id, business_account_id, webhook_verify_token) 
+                 VALUES (?, ?, ?, ?, ?, ?)`,
+                [userId, app_id, access_token, phone_number_id, business_account_id, webhook_verify_token]
+            );
+        } else {
+            // Atualizar configuração existente
+            await db.execute(
+                `UPDATE meta_api_configs 
+                 SET app_id = ?, access_token = ?, phone_number_id = ?, business_account_id = ?, webhook_verify_token = ?
+                 WHERE user_id = ?`,
+                [app_id, access_token, phone_number_id, business_account_id, webhook_verify_token, userId]
+            );
+        }
+
+        res.json({ success: true, message: 'Configuração salva com sucesso!' });
+    } catch (error) {
+        console.error('Erro ao salvar config Meta:', error);
+        res.status(500).json({ error: 'Erro ao salvar configuração' });
+    }
+});
+
 module.exports = router;
