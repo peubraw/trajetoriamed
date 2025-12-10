@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - TrajetóriaMed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .sidebar-gradient {
+            background: linear-gradient(180deg, #0f2557 0%, #1a3a6e 100%);
+        }
+        
+        .nav-item {
+            transition: all 0.2s ease;
+        }
+        
+        .nav-item:hover {
+            background: rgba(251, 191, 36, 0.1);
+            border-left: 3px solid #fbbf24;
+        }
+        
+        .nav-item.active {
+            background: rgba(251, 191, 36, 0.15);
+            border-left: 3px solid #fbbf24;
+        }
+        
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- Sidebar -->
+        <aside class="sidebar-gradient w-64 flex-shrink-0 hidden md:flex flex-col">
+            
+            <!-- Logo -->
+            <div class="p-6 border-b border-white border-opacity-10">
+                <img src="/images/logo-branca.png" alt="TrajetóriaMed" class="h-8">
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+                <a href="/dashboard.html" class="nav-item active flex items-center px-4 py-3 text-white rounded-lg">
+                    <i class="fas fa-home w-5"></i>
+                    <span class="ml-3">Dashboard</span>
+                </a>
+                
+                <a href="/crm-kanban.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-columns w-5"></i>
+                    <span class="ml-3">CRM Kanban</span>
+                </a>
+                
+                <a href="/whatsapp.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fab fa-whatsapp w-5"></i>
+                    <span class="ml-3">WhatsApp</span>
+                </a>
+                
+                <a href="/bot-config.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-robot w-5"></i>
+                    <span class="ml-3">Configurar Bot</span>
+                </a>
+                
+                <a href="/webhooks.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-link w-5"></i>
+                    <span class="ml-3">Webhooks</span>
+                </a>
+                
+                <div class="pt-6 mt-6 border-t border-white border-opacity-10">
+                    <a href="/settings.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                        <i class="fas fa-cog w-5"></i>
+                        <span class="ml-3">Configurações</span>
+                    </a>
+                </div>
+            </nav>
+            
+            <!-- User Profile -->
+            <div class="p-4 border-t border-white border-opacity-10">
+                <div class="flex items-center px-4 py-3 bg-white bg-opacity-10 rounded-lg">
+                    <div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-white font-semibold">
+                        <span id="userInitials">LB</span>
+                    </div>
+                    <div class="ml-3 flex-1 min-w-0">
+                        <p class="text-sm font-medium text-white truncate" id="userName">Leandro Berti</p>
+                        <p class="text-xs text-white text-opacity-60 truncate" id="userEmail">leandro.berti@gmail.com</p>
+                    </div>
+                    <button onclick="logout()" class="text-white text-opacity-60 hover:text-opacity-100">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+            
+        </aside>
+        
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            
+            <!-- Top Bar -->
+            <header class="bg-white border-b border-gray-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Dashboard</h1>
+                        <p class="text-sm text-gray-500 mt-1">Visão geral do sistema</p>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <!-- Notifications -->
+                        <button class="relative p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                        </button>
+                        
+                        <!-- Mobile Menu -->
+                        <button class="md:hidden p-2 text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Content Area -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+                
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    
+                    <!-- Total Leads -->
+                    <div class="stat-card bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-users text-blue-600 text-xl"></i>
+                            </div>
+                            <span class="badge badge-info">
+                                <i class="fas fa-arrow-up text-xs mr-1"></i> 12%
+                            </span>
+                        </div>
+                        <h3 class="text-gray-500 text-sm font-medium">Total de Leads</h3>
+                        <p class="text-3xl font-bold text-gray-800 mt-2" id="totalLeads">0</p>
+                    </div>
+                    
+                    <!-- Active Conversations -->
+                    <div class="stat-card bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-comments text-green-600 text-xl"></i>
+                            </div>
+                            <span class="badge badge-success">
+                                <i class="fas fa-arrow-up text-xs mr-1"></i> 8%
+                            </span>
+                        </div>
+                        <h3 class="text-gray-500 text-sm font-medium">Conversas Ativas</h3>
+                        <p class="text-3xl font-bold text-gray-800 mt-2" id="activeConversations">0</p>
+                    </div>
+                    
+                    <!-- Conversion Rate -->
+                    <div class="stat-card bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-chart-line text-amber-600 text-xl"></i>
+                            </div>
+                            <span class="badge badge-warning">
+                                <i class="fas fa-arrow-down text-xs mr-1"></i> 3%
+                            </span>
+                        </div>
+                        <h3 class="text-gray-500 text-sm font-medium">Taxa de Conversão</h3>
+                        <p class="text-3xl font-bold text-gray-800 mt-2" id="conversionRate">0%</p>
+                    </div>
+                    
+                    <!-- WhatsApp Status -->
+                    <div class="stat-card bg-white rounded-xl shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <i class="fab fa-whatsapp text-purple-600 text-xl"></i>
+                            </div>
+                            <span class="badge badge-success" id="whatsappBadge">
+                                <i class="fas fa-circle text-xs mr-1"></i> Online
+                            </span>
+                        </div>
+                        <h3 class="text-gray-500 text-sm font-medium">Status WhatsApp</h3>
+                        <p class="text-xl font-semibold text-gray-800 mt-2" id="whatsappStatus">Meta API</p>
+                    </div>
+                    
+                </div>
+                
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    
+                    <!-- Leads Chart -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Leads por Dia</h3>
+                        <canvas id="leadsChart" height="250"></canvas>
+                    </div>
+                    
+                    <!-- Pipeline Chart -->
+                    <div class="bg-white rounded-xl shadow-sm p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Pipeline de Vendas</h3>
+                        <canvas id="pipelineChart" height="250"></canvas>
+                    </div>
+                    
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-xl shadow-sm">
+                    <div class="p-6 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-800">Atividade Recente</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4" id="recentActivity">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <i class="fas fa-user-plus text-blue-600 text-sm"></i>
+                                </div>
+                                <div class="ml-4 flex-1">
+                                    <p class="text-sm font-medium text-gray-800">Novo lead adicionado</p>
+                                    <p class="text-xs text-gray-500">João Silva - há 5 minutos</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </main>
+            
+        </div>
+        
+    </div>
+    
+    <script>
+        // Check authentication
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/auth/check', {
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    window.location.href = '/login.html';
+                }
+            } catch (error) {
+                window.location.href = '/login.html';
+            }
+        }
+        
+        // Logout
+        function logout() {
+            fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+                .then(() => window.location.href = '/login.html');
+        }
+        
+        // Load Dashboard Data
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/dashboard/stats', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                
+                document.getElementById('totalLeads').textContent = data.totalLeads || 0;
+                document.getElementById('activeConversations').textContent = data.activeConversations || 0;
+                document.getElementById('conversionRate').textContent = (data.conversionRate || 0) + '%';
+                
+                // Charts
+                createLeadsChart(data.leadsPerDay || []);
+                createPipelineChart(data.pipeline || []);
+                
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+        
+        // Create Leads Chart
+        function createLeadsChart(data) {
+            const ctx = document.getElementById('leadsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.date),
+                    datasets: [{
+                        label: 'Novos Leads',
+                        data: data.map(d => d.count),
+                        borderColor: '#fbbf24',
+                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Create Pipeline Chart
+        function createPipelineChart(data) {
+            const ctx = document.getElementById('pipelineChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.map(d => d.stage),
+                    datasets: [{
+                        data: data.map(d => d.count),
+                        backgroundColor: [
+                            '#3b82f6',
+                            '#10b981',
+                            '#fbbf24',
+                            '#ef4444',
+                            '#8b5cf6'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+        
+        // Initialize
+        checkAuth();
+        loadDashboardData();
+    </script>
+    
+</body>
+</html>
