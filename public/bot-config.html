@@ -336,6 +336,8 @@
         let coursesData = [];
 
         function showTab(tabName, button) {
+            console.log('Switching to tab:', tabName);
+            
             // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
@@ -345,8 +347,13 @@
             });
 
             // Show selected tab
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-            button.classList.add('active');
+            const selectedTab = document.getElementById(`tab-${tabName}`);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            if (button) {
+                button.classList.add('active');
+            }
         }
 
         function showAlert(message, type = 'success') {
