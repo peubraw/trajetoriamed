@@ -535,18 +535,6 @@
                                 document.getElementById('bot_tone').value = coursesConfig.bot_persona.tone || '';
                             }
 
-                            // Pricing
-                            if (coursesConfig.pricing) {
-                                document.getElementById('price_installment').value = coursesConfig.pricing.installment || '';
-                                document.getElementById('price_cash').value = coursesConfig.pricing.cash || '';
-                                document.getElementById('price_coupon').value = coursesConfig.pricing.coupon || '';
-                                
-                                if (coursesConfig.pricing.subscription) {
-                                    document.getElementById('subscription_fee').value = coursesConfig.pricing.subscription.initial_fee || '';
-                                    document.getElementById('subscription_installment').value = coursesConfig.pricing.subscription.monthly_installment || '';
-                                }
-                            }
-
                             // Courses
                             if (coursesConfig.courses && Array.isArray(coursesConfig.courses)) {
                                 coursesData = coursesConfig.courses;
@@ -559,11 +547,12 @@
 
                     showAlert('✅ Configuração carregada com sucesso!', 'success');
                 } else {
-                    showAlert('Nenhuma configuração encontrada. Configure o bot abaixo.', 'error');
+                    // Configuração inicial vazia - não é erro
+                    console.log('Nenhuma configuração encontrada. Usando valores padrão.');
                 }
             } catch (error) {
                 console.error('Erro ao carregar configuração:', error);
-                showAlert('❌ Erro ao carregar configuração', 'error');
+                showAlert('❌ Erro ao conectar com o servidor', 'error');
             }
         }
 
