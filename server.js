@@ -53,15 +53,15 @@ app.use(session({
 // Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rotas - USANDO APENAS META API OFICIAL
+// Rotas - WPPCONNECT + IA INTEGRADA
 app.use('/api/auth', require('./routes/auth.routes'));
-app.use('/api/whatsapp', require('./routes/whatsapp-meta.routes')); // META API (substituiu wppconnect)
+app.use('/api/whatsapp', require('./routes/whatsapp.routes')); // WPPCONNECT (reativado)
 app.use('/api/bot', require('./routes/bot.routes'));
 app.use('/api/bot-control', require('./routes/bot-control.routes')); // Controle Bot + Distribuição
 app.use('/api/dashboard', require('./routes/dashboard.routes'));
 app.use('/api/crm', require('./routes/crm.routes')); // CRM Kanban
 app.use('/api/webhooks', require('./routes/webhook.routes')); // Webhooks pagamento
-app.use('/api/meta', require('./routes/meta-webhook.routes')); // Meta WhatsApp Business API Webhook
+app.use('/api/meta', require('./routes/meta-webhook.routes')); // Meta WhatsApp Business API Webhook (mantido como backup)
 
 // Rota principal
 app.get('/', (req, res) => {
