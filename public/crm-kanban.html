@@ -210,6 +210,7 @@
         
         // Initialize
         async function init() {
+            console.log('Initializing CRM Kanban...');
             await checkAuth();
             await loadStages();
             await loadLeads();
@@ -219,8 +220,13 @@
         async function checkAuth() {
             try {
                 const response = await fetch('/api/auth/check', { credentials: 'include' });
-                if (!response.ok) window.location.href = '/login.html';
+                console.log('Auth check:', response.ok);
+                if (!response.ok) {
+                    console.log('Not authenticated, redirecting...');
+                    window.location.href = '/login.html';
+                }
             } catch (error) {
+                console.error('Auth check error:', error);
                 window.location.href = '/login.html';
             }
         }
@@ -231,12 +237,44 @@
         }
         
         async function loadStages() {
-            const response = await fetch('/api/crm/stages', { credentials: 'include' });
-            stages = await response.json();
-            renderColumns();
+            try {
+                console.log('Loading stages...');
+                const response = await fetch('/api/crm/stages', { credentials: 'include' });
+                console.log('Stages response:', response.status);
+                
+                if (response.ok) {
+                    stages = await response.json();
+                    console.log('Stages loaded:', stages);
+                } else {
+                    console.error('Failed to load stages:', response.status);
+                    // Use default stages if API fails
+                    stages = [
+                        { id: 1, name: 'Novo Lead', order: 1 },
+                        { id: 2, name: 'Contato Inicial', order: 2 },
+                        { id: 3, name: 'Qualificação', order: 3 },
+                        { id: 4, name: 'Proposta', order: 4 },
+                        { id: 5, name: 'Negociação', order: 5 },
+                        { id: 6, name: 'Fechado', order: 6 }
+                    ];
+                }
+                renderColumns();
+            } catch (error) {
+                console.error('Error loading stages:', error);
+                // Use default stages on error
+                stages = [
+                    { id: 1, name: 'Novo Lead', order: 1 },
+                    { id: 2, name: 'Contato Inicial', order: 2 },
+                    { id: 3, name: 'Qualificação', order: 3 },
+                    { id: 4, name: 'Proposta', order: 4 },
+                    { id: 5, name: 'Negociação', order: 5 },
+                    { id: 6, name: 'Fechado', order: 6 }
+                ];
+                renderColumns();
+            }
         }
         
         function renderColumns() {
+            console.log('Rendering columns for stages:', stages);
             const container = document.getElementById('kanbanColumns');
             const colors = ['blue', 'purple', 'green', 'amber', 'red', 'gray', 'pink'];
             
@@ -259,35 +297,58 @@
                 </div>
             `).join('');
             
+            console.log('Columns rendered, initializing Sortable...');
+            
             // Initialize Sortable for each column
             stages.forEach(stage => {
                 const column = document.getElementById(`column-${stage.id}`);
-                Sortable.create(column, {
-                    group: 'kanban',
-                    animation: 150,
-                    ghostClass: 'sortable-ghost',
-                    chosenClass: 'sortable-chosen',
-                    onEnd: handleDrop
-                });
+                if (column) {
+                    Sortable.create(column, {
+                        group: 'kanban',
+                        animation: 150,
+                        ghostClass: 'sortable-ghost',
+                        chosenClass: 'sortable-chosen',
+                        onEnd: handleDrop
+                    });
+                }
             });
+            
+            console.log('Sortable initialized');
         }
         
         async function loadLeads() {
-            const response = await fetch('/api/crm/leads', { credentials: 'include' });
-            const leads = await response.json();
-            
-            // Clear all columns
-            stages.forEach(stage => {
-                document.getElementById(`column-${stage.id}`).innerHTML = '';
-                document.getElementById(`count-${stage.id}`).textContent = '0';
-            });
-            
-            // Populate columns
-            leads.forEach(lead => {
-                addLeadCard(lead);
-            });
-            
-            document.getElementById('totalLeads').textContent = leads.length;
+            try {
+                console.log('Loading leads...');
+                const response = await fetch('/api/crm/leads', { credentials: 'include' });
+                console.log('Leads response:', response.status);
+                
+                if (!response.ok) {
+                    console.error('Failed to load leads:', response.status);
+                    return;
+                }
+                
+                const leads = await response.json();
+                console.log('Leads loaded:', leads.length);
+                
+                // Clear all columns
+                stages.forEach(stage => {
+                    const column = document.getElementById(`column-${stage.id}`);
+                    if (column) {
+                        column.innerHTML = '';
+                        const countEl = document.getElementById(`count-${stage.id}`);
+                        if (countEl) countEl.textContent = '0';
+                    }
+                });
+                
+                // Populate columns
+                leads.forEach(lead => {
+                    addLeadCard(lead);
+                });
+                
+                document.getElementById('totalLeads').textContent = leads.length;
+            } catch (error) {
+                console.error('Error loading leads:', error);
+            }
         }
         
         function addLeadCard(lead) {
