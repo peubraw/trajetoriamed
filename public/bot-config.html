@@ -4,366 +4,670 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configurar Bot - TrajetóriaMed</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        * { font-family: 'Inter', sans-serif; }
-        
-        .sidebar-gradient { background: linear-gradient(180deg, #667eea 0%, #764ba2 100%); }
-        .nav-item { transition: all 0.2s ease; border-left: 3px solid transparent; }
-        .nav-item:hover { background: rgba(255, 255, 255, 0.1); border-left-color: #ffffff; }
-        .nav-item.active { background: rgba(255, 255, 255, 0.15); border-left-color: #ffffff; }
-        .content-container { background: #f7f9fc; }
-        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3); }
-        .btn-secondary { background: white; color: #667eea; border: 1px solid #667eea; transition: all 0.3s ease; }
-        .btn-secondary:hover { background: #667eea; color: white; }
-        .btn-danger { background: #dc2626; color: white; transition: all 0.3s; }
-        .btn-danger:hover { background: #b91c1c; }
-        
-        .toggle-switch { width: 48px; height: 24px; background: #e5e7eb; border-radius: 12px; position: relative; cursor: pointer; transition: all 0.3s; }
-        .toggle-switch.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .toggle-switch::after { content: ''; width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .toggle-switch.active::after { left: 26px; }
-        
-        .tab-btn { border-bottom: 2px solid transparent; transition: all 0.3s; }
-        .tab-btn.active { border-bottom-color: #667eea; color: #667eea; }
-        
-        .course-item { border-left: 4px solid #667eea; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            background: rgba(255,255,255,0.9);
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            color: #333;
+        }
+
+        .tab:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 4px;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .course-item {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .course-item h3 {
+            color: #333;
+            font-size: 16px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .course-fields {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            flex-wrap: wrap;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .course-fields {
+                grid-template-columns: 1fr;
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
-<body class="content-container">
-    
-    <div class="flex h-screen overflow-hidden">
-        
-        <!-- Sidebar -->
-        <aside class="sidebar-gradient w-64 flex-shrink-0 hidden md:flex flex-col shadow-2xl">
-            <div class="p-6 border-b border-white border-opacity-10">
-                <div class="flex items-center">
-                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                        <i class="fas fa-graduation-cap text-purple-600 text-xl"></i>
-                    </div>
-                    <div class="ml-3">
-                        <h1 class="text-white font-bold text-lg">TrajetóriaMed</h1>
-                        <p class="text-white text-opacity-60 text-xs">Sistema CRM</p>
-                    </div>
-                </div>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>⚙️ Configuração do Bot</h1>
+                <p>Configure todas as informações que a IA usa para atender seus clientes</p>
             </div>
-            
-            <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-                <a href="/dashboard.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
-                    <i class="fas fa-home w-5"></i><span class="ml-3">Dashboard</span>
-                </a>
-                <a href="/crm-kanban.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
-                    <i class="fas fa-columns w-5"></i><span class="ml-3">CRM Kanban</span>
-                </a>
-                <a href="/whatsapp.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
-                    <i class="fab fa-whatsapp w-5"></i><span class="ml-3">WhatsApp</span>
-                </a>
-                <a href="/bot-config.html" class="nav-item active flex items-center px-4 py-3 text-white rounded-lg">
-                    <i class="fas fa-robot w-5"></i><span class="ml-3">Configurar Bot</span>
-                </a>
-                <a href="/webhooks.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
-                    <i class="fas fa-link w-5"></i><span class="ml-3">Webhooks</span>
-                </a>
-                <div class="pt-6 mt-6 border-t border-white border-opacity-10">
-                    <a href="/settings.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
-                        <i class="fas fa-cog w-5"></i><span class="ml-3">Configurações</span>
-                    </a>
-                </div>
-            </nav>
-            
-            <div class="p-4 border-t border-white border-opacity-10">
-                <div class="flex items-center px-4 py-3 bg-white bg-opacity-10 rounded-lg">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-700 flex items-center justify-center text-white font-semibold"><span>LB</span></div>
-                    <div class="ml-3 flex-1 min-w-0">
-                        <p class="text-sm font-medium text-white truncate">Leandro Berti</p>
-                        <p class="text-xs text-white text-opacity-60 truncate">Admin</p>
-                    </div>
-                    <button onclick="logout()" class="text-white text-opacity-60 hover:text-opacity-100"><i class="fas fa-sign-out-alt"></i></button>
-                </div>
-            </div>
-        </aside>
-        
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            
-            <!-- Top Bar -->
-            <header class="bg-white border-b border-gray-200 px-8 py-4 shadow-sm">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Configurar Bot</h1>
-                        <p class="text-sm text-gray-500 mt-1">Personalize as respostas automáticas do WhatsApp</p>
-                    </div>
-                    <div class="flex items-center space-x-3">
-                        <span class="text-sm font-medium text-gray-700">Bot Ativo</span>
-                        <div class="toggle-switch active" id="botToggle" onclick="toggleBot(this)"></div>
-                    </div>
-                </div>
-            </header>
-            
-            <!-- Content -->
-            <main class="flex-1 overflow-y-auto content-container p-8">
-                
-                <div id="alert-container" class="mb-6"></div>
-                
-                <!-- Configuration Tabs -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
-                    <div class="border-b border-gray-200 px-6 py-4">
-                        <div class="flex space-x-6">
-                            <button class="tab-btn active px-4 py-2 font-semibold" onclick="switchTab('persona')">
-                                <i class="fas fa-user-circle mr-2"></i>Persona
-                            </button>
-                            <button class="tab-btn px-4 py-2 font-semibold text-gray-500" onclick="switchTab('courses')">
-                                <i class="fas fa-graduation-cap mr-2"></i>Cursos
-                            </button>
-                            <button class="tab-btn px-4 py-2 font-semibold text-gray-500" onclick="switchTab('pricing')">
-                                <i class="fas fa-dollar-sign mr-2"></i>Preços
-                            </button>
-                            <button class="tab-btn px-4 py-2 font-semibold text-gray-500" onclick="switchTab('vendors')">
-                                <i class="fas fa-users mr-2"></i>Vendedores
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Persona Tab -->
-                    <div id="tab-persona" class="tab-content p-6">
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Bot</label>
-                                <input type="text" id="bot_name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: Mia">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Função/Cargo</label>
-                                <input type="text" id="bot_role" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: Consultora de carreira">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Empresa</label>
-                                <input type="text" id="bot_company" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: TrajetóriaMed">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Tom de Voz</label>
-                                <textarea id="bot_tone" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: Consultiva e empática, use emojis moderados..."></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Courses Tab -->
-                    <div id="tab-courses" class="tab-content hidden p-6">
-                        <div id="courses-list" class="space-y-4 mb-4"></div>
-                        <button class="btn-secondary px-4 py-2 rounded-lg font-semibold" onclick="addCourse()">
-                            <i class="fas fa-plus mr-2"></i>Adicionar Curso
-                        </button>
-                    </div>
-                    
-                    <!-- Pricing Tab -->
-                    <div id="tab-pricing" class="tab-content hidden p-6">
-                        <div class="space-y-4">
-                            <h3 class="font-semibold text-gray-800 mb-3">Preços e Condições</h3>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Parcelamento</label>
-                                    <input type="text" id="price_installment" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: 12x de R$ 227,22">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">À Vista</label>
-                                    <input type="text" id="price_cash" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: R$ 2.197,00">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Cupom de Desconto</label>
-                                    <input type="text" id="price_coupon" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: TRAJETORIA40">
-                                </div>
-                            </div>
-                            
-                            <h3 class="font-semibold text-gray-800 mb-3 mt-6">Assinatura</h3>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Taxa Inicial</label>
-                                    <input type="text" id="subscription_fee" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: R$ 39,90">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Parcelamento Mensal</label>
-                                    <input type="text" id="subscription_installment" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: 12x de R$ 227,22">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Vendors Tab -->
-                    <div id="tab-vendors" class="tab-content hidden p-6">
-                        <p class="text-sm text-gray-500 mb-4">Vendedores que receberão notificações de novos leads</p>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Vendedor 1 - Nome</label>
-                                <input type="text" id="vendor1_name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Vendedor 1 - Telefone</label>
-                                <input type="text" id="vendor1_phone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="5531999999999">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Vendedor 2 - Nome</label>
-                                <input type="text" id="vendor2_name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Vendedor 2 - Telefone</label>
-                                <input type="text" id="vendor2_phone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="5531999999999">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Save Button -->
-                <div class="flex justify-end space-x-3">
-                    <button class="btn-secondary px-6 py-3 rounded-lg font-semibold" onclick="loadConfig()">
-                        <i class="fas fa-sync-alt mr-2"></i>Recarregar
-                    </button>
-                    <button class="btn-primary px-6 py-3 rounded-lg text-white font-semibold shadow-lg" onclick="saveConfig()">
-                        <i class="fas fa-save mr-2"></i>Salvar Configurações
-                    </button>
-                </div>
-                
-            </main>
-            
+            <a href="/dashboard.html" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Dashboard
+            </a>
         </div>
-        
+
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('persona')">🎭 Persona do Bot</button>
+            <button class="tab" onclick="showTab('cursos')">📚 Cursos</button>
+            <button class="tab" onclick="showTab('precos')">💰 Preços e Condições</button>
+            <button class="tab" onclick="showTab('vendedores')">👥 Vendedores</button>
+            <button class="tab" onclick="showTab('avancado')">🔧 Avançado</button>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <!-- Tab Persona do Bot -->
+        <div id="tab-persona" class="tab-content active">
+            <div class="card">
+                <h2>Persona do Bot</h2>
+                <div class="form-group">
+                    <label for="bot_name">Nome do Bot</label>
+                    <input type="text" id="bot_name" placeholder="Ex: Mia">
+                    <small>Nome que o bot usará para se apresentar</small>
+                </div>
+                <div class="form-group">
+                    <label for="bot_role">Função/Cargo</label>
+                    <input type="text" id="bot_role" placeholder="Ex: Consultora de carreira da Trajetória Med">
+                    <small>Como o bot se descreve</small>
+                </div>
+                <div class="form-group">
+                    <label for="bot_company">Nome da Empresa</label>
+                    <input type="text" id="bot_company" placeholder="Ex: Trajetória Med">
+                </div>
+                <div class="form-group">
+                    <label for="bot_tone">Tom de Voz</label>
+                    <textarea id="bot_tone" placeholder="Ex: Consultiva e empática, use emojis moderados, mensagens curtas e diretas"></textarea>
+                    <small>Como o bot deve se comunicar</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Cursos -->
+        <div id="tab-cursos" class="tab-content">
+            <div class="card">
+                <h2>Configuração dos Cursos</h2>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                    Configure todos os cursos disponíveis, incluindo informações da prova, preços e instruções para a IA
+                </p>
+                <div id="courses-list"></div>
+                <button class="btn" onclick="addCourse()">➕ Adicionar Curso</button>
+            </div>
+        </div>
+
+        <!-- Tab Preços Globais -->
+        <div id="tab-precos" class="tab-content">
+            <div class="card">
+                <h2>Preços e Condições de Pagamento Globais</h2>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                    Estes valores são usados como padrão quando não especificados por curso
+                </p>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="price_installment">Parcelamento Padrão</label>
+                        <input type="text" id="price_installment" placeholder="Ex: 12x de R$ 227,22">
+                    </div>
+                    <div class="form-group">
+                        <label for="price_cash">À Vista Padrão</label>
+                        <input type="text" id="price_cash" placeholder="Ex: R$ 2.197,00">
+                    </div>
+                    <div class="form-group">
+                        <label for="price_coupon">Cupom de Desconto</label>
+                        <input type="text" id="price_coupon" placeholder="Ex: TRAJETORIA40">
+                    </div>
+                </div>
+                
+                <h2 style="margin-top: 24px;">Assinatura</h2>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="subscription_fee">Taxa Inicial</label>
+                        <input type="text" id="subscription_fee" placeholder="Ex: R$ 39,90">
+                    </div>
+                    <div class="form-group">
+                        <label for="subscription_installment">Parcelamento Mensal</label>
+                        <input type="text" id="subscription_installment" placeholder="Ex: 12x de R$ 227,22 + taxa do cartão">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Vendedores -->
+        <div id="tab-vendedores" class="tab-content">
+            <div class="card">
+                <h2>Vendedores para Notificação</h2>
+                <p style="color: #666; margin-bottom: 20px; font-size: 14px;">
+                    Esses vendedores receberão notificações quando um lead demonstrar interesse ou solicitar assinatura
+                </p>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="vendor1_name">Vendedor 1 - Nome</label>
+                        <input type="text" id="vendor1_name" placeholder="Nome">
+                    </div>
+                    <div class="form-group">
+                        <label for="vendor1_phone">Vendedor 1 - Telefone</label>
+                        <input type="text" id="vendor1_phone" placeholder="5531999999999">
+                        <small>Formato: 5531999999999 (sem espaços ou caracteres)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="vendor2_name">Vendedor 2 - Nome</label>
+                        <input type="text" id="vendor2_name" placeholder="Nome">
+                    </div>
+                    <div class="form-group">
+                        <label for="vendor2_phone">Vendedor 2 - Telefone</label>
+                        <input type="text" id="vendor2_phone" placeholder="5531999999999">
+                    </div>
+                    <div class="form-group">
+                        <label for="vendor3_name">Vendedor 3 - Nome</label>
+                        <input type="text" id="vendor3_name" placeholder="Nome">
+                    </div>
+                    <div class="form-group">
+                        <label for="vendor3_phone">Vendedor 3 - Telefone</label>
+                        <input type="text" id="vendor3_phone" placeholder="5531999999999">
+                    </div>
+                    <div class="form-group">
+                        <label for="vendor4_name">Vendedor 4 - Nome</label>
+                        <input type="text" id="vendor4_name" placeholder="Nome">
+                    </div>
+                    <div class="form-group">
+                        <label for="vendor4_phone">Vendedor 4 - Telefone</label>
+                        <input type="text" id="vendor4_phone" placeholder="5531999999999">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Avançado -->
+        <div id="tab-avancado" class="tab-content">
+            <div class="card">
+                <h2>Configurações Avançadas da IA</h2>
+                <div class="form-group">
+                    <label for="temperature">Temperature (Criatividade)</label>
+                    <input type="number" id="temperature" min="0" max="2" step="0.1" value="0.7">
+                    <small>0.0 = Mais determinístico | 2.0 = Mais criativo</small>
+                </div>
+                <div class="form-group">
+                    <label for="max_tokens">Max Tokens (Tamanho da Resposta)</label>
+                    <input type="number" id="max_tokens" min="50" max="2000" step="50" value="500">
+                    <small>Limite de tokens por resposta</small>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="is_active"> Bot Ativo
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ações Globais -->
+        <div class="card">
+            <div class="actions">
+                <button class="btn btn-success" onclick="saveConfig()">💾 Salvar Configuração</button>
+                <button class="btn btn-secondary" onclick="loadConfig()">🔄 Recarregar</button>
+                <button class="btn" onclick="testBot()">🧪 Testar Bot</button>
+            </div>
+        </div>
     </div>
-    
+
     <script>
         let coursesData = [];
-        
-        function logout() {
-            fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
-                .then(() => window.location.href = '/login.html');
-        }
-        
-        function toggleBot(el) {
-            el.classList.toggle('active');
-        }
-        
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(b => {
-                b.classList.remove('active', 'text-purple-600');
-                b.classList.add('text-gray-500');
+
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
             });
-            
-            document.getElementById('tab-' + tab).classList.remove('hidden');
-            event.target.closest('.tab-btn').classList.add('active', 'text-purple-600');
-            event.target.closest('.tab-btn').classList.remove('text-gray-500');
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            event.target.classList.add('active');
         }
-        
+
         function showAlert(message, type = 'success') {
-            const container = document.getElementById('alert-container');
-            const bgColor = type === 'success' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200';
-            container.innerHTML = `<div class="${bgColor} border px-4 py-3 rounded-lg">${message}</div>`;
-            setTimeout(() => container.innerHTML = '', 5000);
+            const alertContainer = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alertContainer.appendChild(alert);
+
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
         }
-        
+
         function addCourse() {
-            coursesData.push({
+            const course = {
                 id: `course_${Date.now()}`,
                 name: '',
                 salary: '',
                 exam_date: '',
+                registration_deadline: '',
+                registration_fee: '',
+                registration_fee_due: '',
                 subjects: '',
-                payment_link_new: ''
-            });
+                payment_link_new: '',
+                payment_link_alumni: '',
+                price_installment: '',
+                price_cash: '',
+                ai_instructions: ''
+            };
+
+            coursesData.push(course);
             renderCourses();
         }
-        
+
         function removeCourse(index) {
-            if (confirm('Remover este curso?')) {
+            if (confirm('Tem certeza que deseja remover este curso?')) {
                 coursesData.splice(index, 1);
                 renderCourses();
             }
         }
-        
+
         function renderCourses() {
             const container = document.getElementById('courses-list');
-            container.innerHTML = coursesData.map((course, idx) => `
-                <div class="border border-gray-200 rounded-lg p-4 course-item">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-semibold text-gray-800">Curso ${idx + 1}</h3>
-                        <button class="btn-danger px-3 py-1 rounded text-sm" onclick="removeCourse(${idx})">
-                            <i class="fas fa-trash"></i>
+            container.innerHTML = '';
+
+            coursesData.forEach((course, index) => {
+                const courseDiv = document.createElement('div');
+                courseDiv.className = 'course-item';
+                courseDiv.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <h3>📚 Curso ${index + 1}</h3>
+                        <button class="btn btn-danger" style="padding: 8px 16px; font-size: 13px;" onclick="removeCourse(${index})">
+                            🗑️ Remover
                         </button>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Nome do Curso</label>
-                            <input type="text" value="${course.name}" onchange="coursesData[${idx}].name = this.value" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <div class="course-fields">
+                        <div class="form-group">
+                            <label>ID do Curso</label>
+                            <input type="text" value="${course.id || ''}" onchange="coursesData[${index}].id = this.value" placeholder="Ex: caixa, tcemg">
+                            <small>Identificador único (sem espaços)</small>
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Salário</label>
-                            <input type="text" value="${course.salary}" onchange="coursesData[${idx}].salary = this.value" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <div class="form-group">
+                            <label>Nome do Curso</label>
+                            <input type="text" value="${course.name || ''}" onchange="coursesData[${index}].name = this.value" placeholder="Ex: CAIXA - Médico do Trabalho">
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Data da Prova</label>
-                            <input type="text" value="${course.exam_date}" onchange="coursesData[${idx}].exam_date = this.value" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <div class="form-group">
+                            <label>Salário</label>
+                            <input type="text" value="${course.salary || ''}" onchange="coursesData[${index}].salary = this.value" placeholder="Ex: R$ 15.000,00">
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Link de Pagamento</label>
-                            <input type="text" value="${course.payment_link_new}" onchange="coursesData[${idx}].payment_link_new = this.value" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        <div class="form-group">
+                            <label>Data da Prova</label>
+                            <input type="text" value="${course.exam_date || ''}" onchange="coursesData[${index}].exam_date = this.value" placeholder="Ex: 25/01/2026">
                         </div>
-                        <div class="col-span-2">
-                            <label class="block text-xs font-medium text-gray-600 mb-1">Matérias da Prova</label>
-                            <textarea rows="2" onchange="coursesData[${idx}].subjects = this.value" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">${course.subjects}</textarea>
+                        <div class="form-group">
+                            <label>Prazo de Inscrição</label>
+                            <input type="text" value="${course.registration_deadline || ''}" onchange="coursesData[${index}].registration_deadline = this.value" placeholder="Ex: até 09/12/2025">
+                        </div>
+                        <div class="form-group">
+                            <label>Taxa de Inscrição</label>
+                            <input type="text" value="${course.registration_fee || ''}" onchange="coursesData[${index}].registration_fee = this.value" placeholder="Ex: R$ 180,00">
+                        </div>
+                        <div class="form-group">
+                            <label>Vencimento da Taxa</label>
+                            <input type="text" value="${course.registration_fee_due || ''}" onchange="coursesData[${index}].registration_fee_due = this.value" placeholder="Ex: 11/12/2025">
+                        </div>
+                        <div class="form-group">
+                            <label>Parcelamento (específico do curso)</label>
+                            <input type="text" value="${course.price_installment || ''}" onchange="coursesData[${index}].price_installment = this.value" placeholder="Ex: 12x de R$ 227,22">
+                            <small>Deixe vazio para usar o valor global</small>
+                        </div>
+                        <div class="form-group">
+                            <label>À Vista (específico do curso)</label>
+                            <input type="text" value="${course.price_cash || ''}" onchange="coursesData[${index}].price_cash = this.value" placeholder="Ex: R$ 2.197,00">
+                            <small>Deixe vazio para usar o valor global</small>
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>Matérias da Prova</label>
+                            <textarea onchange="coursesData[${index}].subjects = this.value" placeholder="Ex: P1 - Português, Matemática, Raciocínio Lógico&#10;P2 - Conhecimentos Específicos">${course.subjects || ''}</textarea>
+                            <small>Separe as provas/matérias por linha</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Link Pagamento (Novo Aluno)</label>
+                            <input type="text" value="${course.payment_link_new || ''}" onchange="coursesData[${index}].payment_link_new = this.value" placeholder="https://pay.kiwify.com.br/...">
+                        </div>
+                        <div class="form-group">
+                            <label>Link Pagamento (Ex-Aluno)</label>
+                            <input type="text" value="${course.payment_link_alumni || ''}" onchange="coursesData[${index}].payment_link_alumni = this.value" placeholder="https://pay.kiwify.com.br/...">
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label>🤖 Instruções para a IA (específicas deste curso)</label>
+                            <textarea onchange="coursesData[${index}].ai_instructions = this.value" placeholder="Ex: Ao falar sobre o CAIXA, destaque a estabilidade e benefícios. Mencione que é concurso federal com muita concorrência..." style="min-height: 120px;">${course.ai_instructions || ''}</textarea>
+                            <small>Instruções personalizadas que a IA deve seguir ao falar sobre este curso específico</small>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+                container.appendChild(courseDiv);
+            });
         }
-        
+
         async function loadConfig() {
             try {
                 const response = await fetch('/api/bot/config');
                 const data = await response.json();
-                
+
                 if (data.config) {
                     const config = data.config;
-                    document.getElementById('bot_name').value = config.bot_name || '';
+
+                    // Persona
+                    document.getElementById('bot_name').value = config.bot_name || 'Mia';
+                    document.getElementById('temperature').value = config.temperature || 0.7;
+                    document.getElementById('max_tokens').value = config.max_tokens || 500;
+                    document.getElementById('is_active').checked = config.is_active;
+
+                    // Vendedores
                     document.getElementById('vendor1_name').value = config.vendor1_name || '';
                     document.getElementById('vendor1_phone').value = config.vendor1_phone || '';
                     document.getElementById('vendor2_name').value = config.vendor2_name || '';
                     document.getElementById('vendor2_phone').value = config.vendor2_phone || '';
-                    
-                    if (config.is_active) {
-                        document.getElementById('botToggle').classList.add('active');
-                    }
-                    
+                    document.getElementById('vendor3_name').value = config.vendor3_name || '';
+                    document.getElementById('vendor3_phone').value = config.vendor3_phone || '';
+                    document.getElementById('vendor4_name').value = config.vendor4_name || '';
+                    document.getElementById('vendor4_phone').value = config.vendor4_phone || '';
+
+                    // Carregar courses_config se existir
                     if (config.courses_config) {
-                        const coursesConfig = typeof config.courses_config === 'string' ? JSON.parse(config.courses_config) : config.courses_config;
-                        
-                        if (coursesConfig.bot_persona) {
-                            document.getElementById('bot_role').value = coursesConfig.bot_persona.role || '';
-                            document.getElementById('bot_company').value = coursesConfig.bot_persona.company || '';
-                            document.getElementById('bot_tone').value = coursesConfig.bot_persona.tone || '';
-                        }
-                        
-                        if (coursesConfig.pricing) {
-                            document.getElementById('price_installment').value = coursesConfig.pricing.installment || '';
-                            document.getElementById('price_cash').value = coursesConfig.pricing.cash || '';
-                            document.getElementById('price_coupon').value = coursesConfig.pricing.coupon || '';
-                            if (coursesConfig.pricing.subscription) {
-                                document.getElementById('subscription_fee').value = coursesConfig.pricing.subscription.initial_fee || '';
-                                document.getElementById('subscription_installment').value = coursesConfig.pricing.subscription.monthly_installment || '';
+                        try {
+                            const coursesConfig = typeof config.courses_config === 'string' 
+                                ? JSON.parse(config.courses_config) 
+                                : config.courses_config;
+
+                            // Bot persona
+                            if (coursesConfig.bot_persona) {
+                                document.getElementById('bot_role').value = coursesConfig.bot_persona.role || '';
+                                document.getElementById('bot_company').value = coursesConfig.bot_persona.company || '';
+                                document.getElementById('bot_tone').value = coursesConfig.bot_persona.tone || '';
                             }
-                        }
-                        
-                        if (coursesConfig.courses) {
-                            coursesData = coursesConfig.courses;
-                            renderCourses();
+
+                            // Pricing
+                            if (coursesConfig.pricing) {
+                                document.getElementById('price_installment').value = coursesConfig.pricing.installment || '';
+                                document.getElementById('price_cash').value = coursesConfig.pricing.cash || '';
+                                document.getElementById('price_coupon').value = coursesConfig.pricing.coupon || '';
+                                
+                                if (coursesConfig.pricing.subscription) {
+                                    document.getElementById('subscription_fee').value = coursesConfig.pricing.subscription.initial_fee || '';
+                                    document.getElementById('subscription_installment').value = coursesConfig.pricing.subscription.monthly_installment || '';
+                                }
+                            }
+
+                            // Courses
+                            if (coursesConfig.courses && Array.isArray(coursesConfig.courses)) {
+                                coursesData = coursesConfig.courses;
+                                renderCourses();
+                            }
+                        } catch (e) {
+                            console.error('Erro ao parsear courses_config:', e);
                         }
                     }
-                    showAlert('Configuração carregada!', 'success');
+
+                    showAlert('✅ Configuração carregada com sucesso!', 'success');
+                } else {
+                    showAlert('Nenhuma configuração encontrada. Configure o bot abaixo.', 'error');
                 }
             } catch (error) {
-                showAlert('Erro ao carregar configuração', 'error');
+                console.error('Erro ao carregar configuração:', error);
+                showAlert('❌ Erro ao carregar configuração', 'error');
             }
         }
-        
+
         async function saveConfig() {
             try {
                 const coursesConfig = {
@@ -384,32 +688,53 @@
                     },
                     courses: coursesData
                 };
-                
+
                 const configData = {
                     bot_name: document.getElementById('bot_name').value,
-                    is_active: document.getElementById('botToggle').classList.contains('active') ? 1 : 0,
+                    temperature: parseFloat(document.getElementById('temperature').value),
+                    max_tokens: parseInt(document.getElementById('max_tokens').value),
+                    is_active: document.getElementById('is_active').checked ? 1 : 0,
                     vendor1_name: document.getElementById('vendor1_name').value,
                     vendor1_phone: document.getElementById('vendor1_phone').value,
                     vendor2_name: document.getElementById('vendor2_name').value,
                     vendor2_phone: document.getElementById('vendor2_phone').value,
-                    courses_config: JSON.stringify(coursesConfig)
+                    vendor3_name: document.getElementById('vendor3_name').value,
+                    vendor3_phone: document.getElementById('vendor3_phone').value,
+                    vendor4_name: document.getElementById('vendor4_name').value,
+                    vendor4_phone: document.getElementById('vendor4_phone').value,
+                    courses_config: JSON.stringify(coursesConfig),
+                    system_prompt: 'dynamic'
                 };
-                
+
                 const response = await fetch('/api/bot/config', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify(configData)
                 });
-                
+
                 const data = await response.json();
-                showAlert(data.success ? '✅ Configuração salva com sucesso!' : '❌ Erro ao salvar', data.success ? 'success' : 'error');
+
+                if (data.success) {
+                    showAlert('✅ Configuração salva com sucesso!', 'success');
+                } else {
+                    showAlert('❌ Erro ao salvar configuração', 'error');
+                }
             } catch (error) {
+                console.error('Erro ao salvar:', error);
                 showAlert('❌ Erro ao salvar configuração', 'error');
             }
         }
-        
-        document.addEventListener('DOMContentLoaded', loadConfig);
+
+        function testBot() {
+            alert('Funcionalidade de teste será implementada em breve!');
+        }
+
+        // Carregar configuração ao iniciar
+        document.addEventListener('DOMContentLoaded', () => {
+            loadConfig();
+        });
     </script>
-    
 </body>
 </html>
