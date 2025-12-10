@@ -31,9 +31,14 @@ router.get('/config', requireAuth, async (req, res) => {
             id: config.id,
             user_id: config.user_id,
             bot_name: config.bot_name,
-            courses_config_length: config.courses_config ? config.courses_config.length : 0,
+            courses_config_exists: !!config.courses_config,
             courses_config_type: typeof config.courses_config
         });
+
+        // Se courses_config for objeto, converter para string
+        if (config.courses_config && typeof config.courses_config === 'object') {
+            config.courses_config = JSON.stringify(config.courses_config);
+        }
 
         res.json({ config: config });
     } catch (error) {
