@@ -577,7 +577,19 @@
                         tone: document.getElementById('bot_tone').value
                     },
                     courses: coursesData
-                };  vendor3_phone: document.getElementById('vendor3_phone').value,
+                };
+
+                const configData = {
+                    bot_name: document.getElementById('bot_name').value,
+                    temperature: parseFloat(document.getElementById('temperature').value),
+                    max_tokens: parseInt(document.getElementById('max_tokens').value),
+                    is_active: document.getElementById('is_active').checked ? 1 : 0,
+                    vendor1_name: document.getElementById('vendor1_name').value,
+                    vendor1_phone: document.getElementById('vendor1_phone').value,
+                    vendor2_name: document.getElementById('vendor2_name').value,
+                    vendor2_phone: document.getElementById('vendor2_phone').value,
+                    vendor3_name: document.getElementById('vendor3_name').value,
+                    vendor3_phone: document.getElementById('vendor3_phone').value,
                     vendor4_name: document.getElementById('vendor4_name').value,
                     vendor4_phone: document.getElementById('vendor4_phone').value,
                     courses_config: JSON.stringify(coursesConfig),
