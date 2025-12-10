@@ -169,16 +169,16 @@
                 
                 <!-- Tabs -->
                 <div class="flex gap-3 mb-6 flex-wrap">
-                    <button class="tab-btn active" onclick="showTab('persona', this)">
+                    <button class="tab-btn active" data-tab="persona">
                         <i class="fas fa-user-tie mr-2"></i>Persona do Bot
                     </button>
-                    <button class="tab-btn" onclick="showTab('cursos', this)">
+                    <button class="tab-btn" data-tab="cursos">
                         <i class="fas fa-book mr-2"></i>Cursos
                     </button>
-                    <button class="tab-btn" onclick="showTab('vendedores', this)">
+                    <button class="tab-btn" data-tab="vendedores">
                         <i class="fas fa-users mr-2"></i>Vendedores
                     </button>
-                    <button class="tab-btn" onclick="showTab('avancado', this)">
+                    <button class="tab-btn" data-tab="avancado">
                         <i class="fas fa-cog mr-2"></i>Avançado
                     </button>
                 </div>
@@ -614,6 +614,14 @@
 
         // Carregar configuração ao iniciar
         document.addEventListener('DOMContentLoaded', () => {
+            // Setup tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    showTab(tabName, this);
+                });
+            });
+            
             loadConfig();
         });
     </script>
