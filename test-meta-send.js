@@ -5,11 +5,11 @@ require('dotenv').config();
 async function testMetaSend() {
     try {
         console.log('📤 Enviando mensagem de teste...');
-        console.log('   Para: 5584996464766');
+        console.log('   Para: 558496464766');
         console.log('   Via: Meta WhatsApp Business API');
         
         const result = await metaWhatsAppService.sendTextMessage(
-            '5584996464766',
+            '558496464766',
             '🎉 Teste da Meta WhatsApp Business API!\n\nSistema TrajetóriaMed funcionando perfeitamente com a API oficial da Meta.\n\n✅ Webhook configurado\n✅ Mensagens sendo enviadas\n✅ Sistema 100% operacional'
         );
         
