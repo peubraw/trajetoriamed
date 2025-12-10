@@ -116,7 +116,7 @@
                                         </span>
                                         <span class="text-sm text-gray-500">API Oficial v21.0</span>
                                     </div>
-                                    <p class="text-sm text-gray-500">Número conectado: +55 11 99988-7766</p>
+                                    <p class="text-sm text-gray-500">Número conectado: <span id="display_phone_connected">+55 11 99988-7766</span></p>
                                 </div>
                             </div>
                             <div class="flex space-x-2">
@@ -136,9 +136,9 @@
                                 </div>
                             </div>
                             <p class="text-sm text-gray-500 mb-1">Mensagens Enviadas</p>
-                            <h3 class="text-3xl font-bold text-gray-800">1,284</h3>
+                            <h3 id="stats_sent" class="text-3xl font-bold text-gray-800">-</h3>
                             <p class="text-xs text-green-600 mt-2">
-                                <i class="fas fa-arrow-up mr-1"></i>+12% vs. ontem
+                                <i class="fas fa-arrow-up mr-1"></i><span id="stats_sent_growth">-</span>
                             </p>
                         </div>
                         
@@ -149,9 +149,9 @@
                                 </div>
                             </div>
                             <p class="text-sm text-gray-500 mb-1">Mensagens Recebidas</p>
-                            <h3 class="text-3xl font-bold text-gray-800">892</h3>
+                            <h3 id="stats_received" class="text-3xl font-bold text-gray-800">-</h3>
                             <p class="text-xs text-green-600 mt-2">
-                                <i class="fas fa-arrow-up mr-1"></i>+8% vs. ontem
+                                <i class="fas fa-arrow-up mr-1"></i><span id="stats_received_growth">-</span>
                             </p>
                         </div>
                         
@@ -162,7 +162,7 @@
                                 </div>
                             </div>
                             <p class="text-sm text-gray-500 mb-1">Contatos Ativos</p>
-                            <h3 class="text-3xl font-bold text-gray-800">347</h3>
+                            <h3 id="stats_contacts" class="text-3xl font-bold text-gray-800">-</h3>
                             <p class="text-xs text-green-600 mt-2">
                                 <i class="fas fa-arrow-up mr-1"></i>+15 novos
                             </p>
@@ -214,7 +214,7 @@
                             </h3>
                             
                             <div class="space-y-3">
-                                <button class="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                <button onclick="sendTestMessage()" class="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                                     <div class="flex items-center">
                                         <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
                                             <i class="fas fa-paper-plane"></i>
@@ -224,7 +224,7 @@
                                     <i class="fas fa-chevron-right text-gray-400"></i>
                                 </button>
                                 
-                                <button class="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                <button onclick="testWebhook()" class="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                                     <div class="flex items-center">
                                         <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center text-green-600">
                                             <i class="fas fa-check-circle"></i>
@@ -428,7 +428,68 @@
         // Carregar configurações ao abrir a página
         document.addEventListener('DOMContentLoaded', function() {
             loadMetaConfig();
+            loadStats();
         });
+        
+        // Carregar estatísticas
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/dashboard/stats');
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('stats_sent').textContent = data.messages_sent || '0';
+                    document.getElementById('stats_received').textContent = data.messages_received || '0';
+                    document.getElementById('stats_contacts').textContent = data.total_leads || '0';
+                    document.getElementById('stats_sent_growth').textContent = data.growth_sent || '+0%';
+                    document.getElementById('stats_received_growth').textContent = data.growth_received || '+0%';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar stats:', error);
+            }
+        }
+        
+        // Enviar mensagem de teste
+        async function sendTestMessage() {
+            const phone = prompt('Digite o número de telefone (apenas números com código do país):\nExemplo: 5511999887766');
+            if (!phone) return;
+            
+            const message = prompt('Digite a mensagem de teste:', 'Olá! Esta é uma mensagem de teste da API Meta WhatsApp Business.');
+            if (!message) return;
+            
+            try {
+                const response = await fetch('/api/meta/test-send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone, message })
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    alert(`✅ Mensagem enviada com sucesso!\nID: ${data.messageId}`);
+                    loadStats(); // Atualizar estatísticas
+                } else {
+                    alert(`❌ Erro ao enviar: ${data.error}\n${data.details || ''}`);
+                }
+            } catch (error) {
+                alert('❌ Erro ao enviar mensagem: ' + error.message);
+            }
+        }
+        
+        // Testar webhook
+        async function testWebhook() {
+            try {
+                const response = await fetch('/api/meta/webhook-test');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert(`✅ Webhook está funcionando!\n\nStatus: ${data.status}\nVerify Token: ${data.verifyToken}\nTimestamp: ${data.timestamp}`);
+                } else {
+                    alert('❌ Erro ao testar webhook');
+                }
+            } catch (error) {
+                alert('❌ Erro: ' + error.message);
+            }
+        }
     </script>
     
 </body>

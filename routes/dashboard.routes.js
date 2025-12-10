@@ -43,11 +43,23 @@ router.get('/stats', requireAuth, async (req, res) => {
             [userId]
         );
 
+        // Total de leads
+        const [totalLeads] = await db.execute(
+            'SELECT COUNT(*) as total FROM crm_leads WHERE user_id = ?',
+            [userId]
+        );
+
         res.json({
             totalMessages: totalMessages[0].total,
             todayMessages: todayMessages[0] || { messages_received: 0, messages_sent: 0 },
             recentMessages,
-            weekStats
+            weekStats,
+            // Adicionar campos para WhatsApp page
+            messages_sent: todayMessages[0]?.messages_sent || 0,
+            messages_received: todayMessages[0]?.messages_received || 0,
+            total_leads: totalLeads[0].total,
+            growth_sent: '+0%',
+            growth_received: '+0%'
         });
     } catch (error) {
         console.error('Erro ao obter estatísticas:', error);
