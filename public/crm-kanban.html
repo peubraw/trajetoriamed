@@ -220,10 +220,10 @@
         async function checkAuth() {
             try {
                 const response = await fetch('/api/auth/check', { credentials: 'include' });
-                console.log('Auth check:', response.ok);
+                console.log('Auth check response status:', response.ok);
                 
                 if (!response.ok) {
-                    console.log('Not authenticated, redirecting to login...');
+                    console.log('Auth check failed, redirecting to login...');
                     window.location.href = '/login.html';
                     return false;
                 }
@@ -231,12 +231,13 @@
                 const data = await response.json();
                 console.log('Auth data:', data);
                 
-                if (!data.userId) {
-                    console.log('No userId in session, redirecting to login...');
+                if (!data.authenticated) {
+                    console.log('Not authenticated, redirecting to login...');
                     window.location.href = '/login.html';
                     return false;
                 }
                 
+                console.log('User authenticated:', data.user);
                 return true;
             } catch (error) {
                 console.error('Auth check error:', error);
