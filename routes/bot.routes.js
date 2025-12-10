@@ -26,7 +26,16 @@ router.get('/config', requireAuth, async (req, res) => {
             return res.json({ config: null });
         }
 
-        res.json({ config: configs[0] });
+        const config = configs[0];
+        console.log('Config being returned:', {
+            id: config.id,
+            user_id: config.user_id,
+            bot_name: config.bot_name,
+            courses_config_length: config.courses_config ? config.courses_config.length : 0,
+            courses_config_type: typeof config.courses_config
+        });
+
+        res.json({ config: config });
     } catch (error) {
         console.error('Erro ao obter configuração:', error);
         res.status(500).json({ error: 'Erro ao obter configuração' });
