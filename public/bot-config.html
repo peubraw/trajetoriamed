@@ -501,6 +501,8 @@
             try {
                 const response = await fetch('/api/bot/config');
                 const data = await response.json();
+                
+                console.log('Config data received:', data);
 
                 if (data.config) {
                     const config = data.config;
@@ -528,6 +530,8 @@
                                 ? JSON.parse(config.courses_config) 
                                 : config.courses_config;
 
+                            console.log('Parsed courses config:', coursesConfig);
+
                             // Bot persona
                             if (coursesConfig.bot_persona) {
                                 document.getElementById('bot_role').value = coursesConfig.bot_persona.role || '';
@@ -538,6 +542,7 @@
                             // Courses
                             if (coursesConfig.courses && Array.isArray(coursesConfig.courses)) {
                                 coursesData = coursesConfig.courses;
+                                console.log('Loaded courses:', coursesData.length);
                                 renderCourses();
                             }
                         } catch (e) {
