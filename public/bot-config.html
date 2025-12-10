@@ -614,10 +614,17 @@
 
         // Carregar configuração ao iniciar
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM loaded, setting up tabs...');
+            
             // Setup tab buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            console.log('Found tab buttons:', tabButtons.length);
+            
+            tabButtons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
                     const tabName = this.getAttribute('data-tab');
+                    console.log('Tab clicked:', tabName);
                     showTab(tabName, this);
                 });
             });
