@@ -181,21 +181,19 @@
                             <div class="space-y-3 text-sm">
                                 <div class="flex justify-between py-2 border-b border-gray-100">
                                     <span class="text-gray-500">App ID</span>
-                                    <span class="font-semibold text-gray-800">874380495066899</span>
+                                    <span id="display_app_id" class="font-semibold text-gray-800">Carregando...</span>
                                 </div>
                                 <div class="flex justify-between py-2 border-b border-gray-100">
                                     <span class="text-gray-500">Phone Number ID</span>
-                                    <span class="font-semibold text-gray-800">517663••••••••</span>
+                                    <span id="display_phone_id" class="font-semibold text-gray-800">Carregando...</span>
                                 </div>
                                 <div class="flex justify-between py-2 border-b border-gray-100">
-                                    <span class="text-gray-500">Webhook URL</span>
-                                    <span class="font-semibold text-gray-800 truncate">stockings-pubs...cloudflare.com</span>
+                                    <span class="text-gray-500">Business Account ID</span>
+                                    <span id="display_business_id" class="font-semibold text-gray-800">Carregando...</span>
                                 </div>
                                 <div class="flex justify-between py-2">
-                                    <span class="text-gray-500">Status da App</span>
-                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-semibold">
-                                        Em Análise
-                                    </span>
+                                    <span class="text-gray-500">Webhook Verify Token</span>
+                                    <span id="display_verify_token" class="font-semibold text-gray-800">Carregando...</span>
                                 </div>
                             </div>
                             
@@ -372,27 +370,40 @@
             try {
                 const response = await fetch('/api/meta/config');
                 if (response.ok) {
-                    const config = await response.json();
+                    const data = await response.json();
+                    const config = data.config || {};
+                    
+                    // Preencher formulário modal
                     document.getElementById('meta_app_id').value = config.app_id || '';
                     document.getElementById('meta_access_token').value = config.access_token || '';
-                    document.getElementById('meta_phone_id').value = config.phone_id || '';
-                    document.getElementById('meta_business_id').value = config.business_id || '';
-                    document.getElementById('meta_verify_token').value = config.verify_token || '';
+                    document.getElementById('meta_phone_id').value = config.phone_number_id || '';
+                    document.getElementById('meta_business_id').value = config.business_account_id || '';
+                    document.getElementById('meta_verify_token').value = config.webhook_verify_token || '';
+                    
+                    // Atualizar display na página
+                    document.getElementById('display_app_id').textContent = config.app_id || 'Não configurado';
+                    document.getElementById('display_phone_id').textContent = config.phone_number_id || 'Não configurado';
+                    document.getElementById('display_business_id').textContent = config.business_account_id || 'Não configurado';
+                    document.getElementById('display_verify_token').textContent = config.webhook_verify_token || 'Não configurado';
                 }
             } catch (error) {
                 console.error('Erro ao carregar config:', error);
+                document.getElementById('display_app_id').textContent = 'Erro ao carregar';
+                document.getElementById('display_phone_id').textContent = 'Erro ao carregar';
+                document.getElementById('display_business_id').textContent = 'Erro ao carregar';
+                document.getElementById('display_verify_token').textContent = 'Erro ao carregar';
             }
         }
         
         async function saveMetaConfig() {
-            if (!confirm('Salvar configurações Meta? O servidor será reiniciado.')) return;
+            if (!confirm('Salvar configurações Meta?')) return;
             
             const config = {
                 app_id: document.getElementById('meta_app_id').value,
                 access_token: document.getElementById('meta_access_token').value,
-                phone_id: document.getElementById('meta_phone_id').value,
-                business_id: document.getElementById('meta_business_id').value,
-                verify_token: document.getElementById('meta_verify_token').value
+                phone_number_id: document.getElementById('meta_phone_id').value,
+                business_account_id: document.getElementById('meta_business_id').value,
+                webhook_verify_token: document.getElementById('meta_verify_token').value
             };
             
             try {
@@ -403,9 +414,9 @@
                 });
                 
                 if (response.ok) {
-                    alert('✅ Configurações salvas! O servidor será reiniciado em 3 segundos...');
+                    alert('✅ Configurações salvas com sucesso!');
                     closeMetaConfigModal();
-                    setTimeout(() => window.location.reload(), 3000);
+                    loadMetaConfig(); // Recarregar dados na página
                 } else {
                     alert('❌ Erro ao salvar configurações');
                 }
@@ -413,6 +424,11 @@
                 alert('❌ Erro ao salvar: ' + error.message);
             }
         }
+        
+        // Carregar configurações ao abrir a página
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMetaConfig();
+        });
     </script>
     
 </body>
