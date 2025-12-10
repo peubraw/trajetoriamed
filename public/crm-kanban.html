@@ -243,33 +243,20 @@
                 console.log('Stages response:', response.status);
                 
                 if (response.ok) {
-                    stages = await response.json();
-                    console.log('Stages loaded:', stages);
+                    const data = await response.json();
+                    console.log('Stages data received:', data);
+                    
+                    // Handle both response formats
+                    stages = Array.isArray(data) ? data : (data.stages || []);
+                    console.log('Stages array:', stages);
+                    renderColumns();
                 } else {
                     console.error('Failed to load stages:', response.status);
-                    // Use default stages if API fails
-                    stages = [
-                        { id: 1, name: 'Novo Lead', order: 1 },
-                        { id: 2, name: 'Contato Inicial', order: 2 },
-                        { id: 3, name: 'Qualificação', order: 3 },
-                        { id: 4, name: 'Proposta', order: 4 },
-                        { id: 5, name: 'Negociação', order: 5 },
-                        { id: 6, name: 'Fechado', order: 6 }
-                    ];
+                    alert('Erro ao carregar stages do CRM. Por favor, configure as stages primeiro.');
                 }
-                renderColumns();
             } catch (error) {
                 console.error('Error loading stages:', error);
-                // Use default stages on error
-                stages = [
-                    { id: 1, name: 'Novo Lead', order: 1 },
-                    { id: 2, name: 'Contato Inicial', order: 2 },
-                    { id: 3, name: 'Qualificação', order: 3 },
-                    { id: 4, name: 'Proposta', order: 4 },
-                    { id: 5, name: 'Negociação', order: 5 },
-                    { id: 6, name: 'Fechado', order: 6 }
-                ];
-                renderColumns();
+                alert('Erro ao conectar com o servidor.');
             }
         }
         
