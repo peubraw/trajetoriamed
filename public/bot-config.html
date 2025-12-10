@@ -17,18 +17,27 @@
         .content-container { background: #f7f9fc; }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3); }
+        .btn-secondary { background: white; color: #667eea; border: 1px solid #667eea; transition: all 0.3s ease; }
+        .btn-secondary:hover { background: #667eea; color: white; }
+        .btn-danger { background: #dc2626; color: white; transition: all 0.3s; }
+        .btn-danger:hover { background: #b91c1c; }
         
         .toggle-switch { width: 48px; height: 24px; background: #e5e7eb; border-radius: 12px; position: relative; cursor: pointer; transition: all 0.3s; }
         .toggle-switch.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
         .toggle-switch::after { content: ''; width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: all 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         .toggle-switch.active::after { left: 26px; }
+        
+        .tab-btn { border-bottom: 2px solid transparent; transition: all 0.3s; }
+        .tab-btn.active { border-bottom-color: #667eea; color: #667eea; }
+        
+        .course-item { border-left: 4px solid #667eea; }
     </style>
 </head>
 <body class="content-container">
     
     <div class="flex h-screen overflow-hidden">
         
-        <!-- Sidebar (same as dashboard) -->
+        <!-- Sidebar -->
         <aside class="sidebar-gradient w-64 flex-shrink-0 hidden md:flex flex-col shadow-2xl">
             <div class="p-6 border-b border-white border-opacity-10">
                 <div class="flex items-center">
@@ -88,7 +97,8 @@
                         <p class="text-sm text-gray-500 mt-1">Personalize as respostas automáticas do WhatsApp</p>
                     </div>
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white font-semibold shadow-lg"><span>LB</span></div>
+                        <span class="text-sm font-medium text-gray-700">Bot Ativo</span>
+                        <div class="toggle-switch active" id="botToggle" onclick="toggleBot(this)"></div>
                     </div>
                 </div>
             </header>
@@ -96,70 +106,122 @@
             <!-- Content -->
             <main class="flex-1 overflow-y-auto content-container p-8">
                 
-                <!-- Bot Status Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-800 mb-1">Status do Bot</h3>
-                            <p class="text-sm text-gray-500">O bot está respondendo automaticamente</p>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <span class="text-sm font-medium text-gray-700">Ativar Bot</span>
-                            <div class="toggle-switch active" onclick="toggleBot(this)"></div>
-                        </div>
-                    </div>
-                </div>
+                <div id="alert-container" class="mb-6"></div>
                 
                 <!-- Configuration Tabs -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
                     <div class="border-b border-gray-200 px-6 py-4">
                         <div class="flex space-x-6">
-                            <button class="tab-btn active px-4 py-2 font-semibold text-purple-600 border-b-2 border-purple-600" onclick="switchTab('messages')">
-                                <i class="fas fa-comments mr-2"></i>Mensagens
+                            <button class="tab-btn active px-4 py-2 font-semibold" onclick="switchTab('persona')">
+                                <i class="fas fa-user-circle mr-2"></i>Persona
                             </button>
-                            <button class="tab-btn px-4 py-2 font-semibold text-gray-500 hover:text-gray-700" onclick="switchTab('courses')">
+                            <button class="tab-btn px-4 py-2 font-semibold text-gray-500" onclick="switchTab('courses')">
                                 <i class="fas fa-graduation-cap mr-2"></i>Cursos
                             </button>
-                            <button class="tab-btn px-4 py-2 font-semibold text-gray-500 hover:text-gray-700" onclick="switchTab('instagram')">
-                                <i class="fab fa-instagram mr-2"></i>Instagram
+                            <button class="tab-btn px-4 py-2 font-semibold text-gray-500" onclick="switchTab('pricing')">
+                                <i class="fas fa-dollar-sign mr-2"></i>Preços
+                            </button>
+                            <button class="tab-btn px-4 py-2 font-semibold text-gray-500" onclick="switchTab('vendors')">
+                                <i class="fas fa-users mr-2"></i>Vendedores
                             </button>
                         </div>
                     </div>
                     
-                    <!-- Messages Tab -->
-                    <div id="tab-messages" class="tab-content p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Mensagens Automáticas</h3>
-                        
+                    <!-- Persona Tab -->
+                    <div id="tab-persona" class="tab-content p-6">
                         <div class="space-y-4">
-                            <div class="border border-gray-200 rounded-lg p-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Mensagem de Boas-Vindas</label>
-                                <textarea rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Olá! Bem-vindo à TrajetóriaMed..."></textarea>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Bot</label>
+                                <input type="text" id="bot_name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: Mia">
                             </div>
-                            
-                            <div class="border border-gray-200 rounded-lg p-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Mensagem Fora do Horário</label>
-                                <textarea rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Nosso horário de atendimento é..."></textarea>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Função/Cargo</label>
+                                <input type="text" id="bot_role" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: Consultora de carreira">
                             </div>
-                        </div>
-                        
-                        <div class="mt-6 flex justify-end">
-                            <button class="btn-primary text-white px-6 py-3 rounded-lg font-semibold shadow-lg">
-                                <i class="fas fa-save mr-2"></i>Salvar Configurações
-                            </button>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Empresa</label>
+                                <input type="text" id="bot_company" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: TrajetóriaMed">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tom de Voz</label>
+                                <textarea id="bot_tone" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: Consultiva e empática, use emojis moderados..."></textarea>
+                            </div>
                         </div>
                     </div>
                     
                     <!-- Courses Tab -->
                     <div id="tab-courses" class="tab-content hidden p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Configuração de Cursos</h3>
-                        <p class="text-gray-500">Configure os cursos disponíveis no bot...</p>
+                        <div id="courses-list" class="space-y-4 mb-4"></div>
+                        <button class="btn-secondary px-4 py-2 rounded-lg font-semibold" onclick="addCourse()">
+                            <i class="fas fa-plus mr-2"></i>Adicionar Curso
+                        </button>
                     </div>
                     
-                    <!-- Instagram Tab -->
-                    <div id="tab-instagram" class="tab-content hidden p-6">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Links do Instagram</h3>
-                        <p class="text-gray-500">Configure os links dos posts do Instagram...</p>
+                    <!-- Pricing Tab -->
+                    <div id="tab-pricing" class="tab-content hidden p-6">
+                        <div class="space-y-4">
+                            <h3 class="font-semibold text-gray-800 mb-3">Preços e Condições</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Parcelamento</label>
+                                    <input type="text" id="price_installment" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: 12x de R$ 227,22">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">À Vista</label>
+                                    <input type="text" id="price_cash" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: R$ 2.197,00">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Cupom de Desconto</label>
+                                    <input type="text" id="price_coupon" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: TRAJETORIA40">
+                                </div>
+                            </div>
+                            
+                            <h3 class="font-semibold text-gray-800 mb-3 mt-6">Assinatura</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Taxa Inicial</label>
+                                    <input type="text" id="subscription_fee" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: R$ 39,90">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Parcelamento Mensal</label>
+                                    <input type="text" id="subscription_installment" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: 12x de R$ 227,22">
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    
+                    <!-- Vendors Tab -->
+                    <div id="tab-vendors" class="tab-content hidden p-6">
+                        <p class="text-sm text-gray-500 mb-4">Vendedores que receberão notificações de novos leads</p>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Vendedor 1 - Nome</label>
+                                <input type="text" id="vendor1_name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Vendedor 1 - Telefone</label>
+                                <input type="text" id="vendor1_phone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="5531999999999">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Vendedor 2 - Nome</label>
+                                <input type="text" id="vendor2_name" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Vendedor 2 - Telefone</label>
+                                <input type="text" id="vendor2_phone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="5531999999999">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Save Button -->
+                <div class="flex justify-end space-x-3">
+                    <button class="btn-secondary px-6 py-3 rounded-lg font-semibold" onclick="loadConfig()">
+                        <i class="fas fa-sync-alt mr-2"></i>Recarregar
+                    </button>
+                    <button class="btn-primary px-6 py-3 rounded-lg text-white font-semibold shadow-lg" onclick="saveConfig()">
+                        <i class="fas fa-save mr-2"></i>Salvar Configurações
+                    </button>
                 </div>
                 
             </main>
@@ -169,6 +231,8 @@
     </div>
     
     <script>
+        let coursesData = [];
+        
         function logout() {
             fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
                 .then(() => window.location.href = '/login.html');
@@ -179,18 +243,172 @@
         }
         
         function switchTab(tab) {
-            // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(b => {
-                b.classList.remove('active', 'text-purple-600', 'border-b-2', 'border-purple-600');
+                b.classList.remove('active', 'text-purple-600');
                 b.classList.add('text-gray-500');
             });
             
-            // Show selected tab
             document.getElementById('tab-' + tab).classList.remove('hidden');
-            event.target.closest('.tab-btn').classList.add('active', 'text-purple-600', 'border-b-2', 'border-purple-600');
+            event.target.closest('.tab-btn').classList.add('active', 'text-purple-600');
             event.target.closest('.tab-btn').classList.remove('text-gray-500');
         }
+        
+        function showAlert(message, type = 'success') {
+            const container = document.getElementById('alert-container');
+            const bgColor = type === 'success' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-red-100 text-red-700 border-red-200';
+            container.innerHTML = `<div class="${bgColor} border px-4 py-3 rounded-lg">${message}</div>`;
+            setTimeout(() => container.innerHTML = '', 5000);
+        }
+        
+        function addCourse() {
+            coursesData.push({
+                id: `course_${Date.now()}`,
+                name: '',
+                salary: '',
+                exam_date: '',
+                subjects: '',
+                payment_link_new: ''
+            });
+            renderCourses();
+        }
+        
+        function removeCourse(index) {
+            if (confirm('Remover este curso?')) {
+                coursesData.splice(index, 1);
+                renderCourses();
+            }
+        }
+        
+        function renderCourses() {
+            const container = document.getElementById('courses-list');
+            container.innerHTML = coursesData.map((course, idx) => `
+                <div class="border border-gray-200 rounded-lg p-4 course-item">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-semibold text-gray-800">Curso ${idx + 1}</h3>
+                        <button class="btn-danger px-3 py-1 rounded text-sm" onclick="removeCourse(${idx})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Nome do Curso</label>
+                            <input type="text" value="${course.name}" onchange="coursesData[${idx}].name = this.value" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Salário</label>
+                            <input type="text" value="${course.salary}" onchange="coursesData[${idx}].salary = this.value" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Data da Prova</label>
+                            <input type="text" value="${course.exam_date}" onchange="coursesData[${idx}].exam_date = this.value" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Link de Pagamento</label>
+                            <input type="text" value="${course.payment_link_new}" onchange="coursesData[${idx}].payment_link_new = this.value" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Matérias da Prova</label>
+                            <textarea rows="2" onchange="coursesData[${idx}].subjects = this.value" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent">${course.subjects}</textarea>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function loadConfig() {
+            try {
+                const response = await fetch('/api/bot/config');
+                const data = await response.json();
+                
+                if (data.config) {
+                    const config = data.config;
+                    document.getElementById('bot_name').value = config.bot_name || '';
+                    document.getElementById('vendor1_name').value = config.vendor1_name || '';
+                    document.getElementById('vendor1_phone').value = config.vendor1_phone || '';
+                    document.getElementById('vendor2_name').value = config.vendor2_name || '';
+                    document.getElementById('vendor2_phone').value = config.vendor2_phone || '';
+                    
+                    if (config.is_active) {
+                        document.getElementById('botToggle').classList.add('active');
+                    }
+                    
+                    if (config.courses_config) {
+                        const coursesConfig = typeof config.courses_config === 'string' ? JSON.parse(config.courses_config) : config.courses_config;
+                        
+                        if (coursesConfig.bot_persona) {
+                            document.getElementById('bot_role').value = coursesConfig.bot_persona.role || '';
+                            document.getElementById('bot_company').value = coursesConfig.bot_persona.company || '';
+                            document.getElementById('bot_tone').value = coursesConfig.bot_persona.tone || '';
+                        }
+                        
+                        if (coursesConfig.pricing) {
+                            document.getElementById('price_installment').value = coursesConfig.pricing.installment || '';
+                            document.getElementById('price_cash').value = coursesConfig.pricing.cash || '';
+                            document.getElementById('price_coupon').value = coursesConfig.pricing.coupon || '';
+                            if (coursesConfig.pricing.subscription) {
+                                document.getElementById('subscription_fee').value = coursesConfig.pricing.subscription.initial_fee || '';
+                                document.getElementById('subscription_installment').value = coursesConfig.pricing.subscription.monthly_installment || '';
+                            }
+                        }
+                        
+                        if (coursesConfig.courses) {
+                            coursesData = coursesConfig.courses;
+                            renderCourses();
+                        }
+                    }
+                    showAlert('Configuração carregada!', 'success');
+                }
+            } catch (error) {
+                showAlert('Erro ao carregar configuração', 'error');
+            }
+        }
+        
+        async function saveConfig() {
+            try {
+                const coursesConfig = {
+                    bot_persona: {
+                        name: document.getElementById('bot_name').value,
+                        role: document.getElementById('bot_role').value,
+                        company: document.getElementById('bot_company').value,
+                        tone: document.getElementById('bot_tone').value
+                    },
+                    pricing: {
+                        installment: document.getElementById('price_installment').value,
+                        cash: document.getElementById('price_cash').value,
+                        coupon: document.getElementById('price_coupon').value,
+                        subscription: {
+                            initial_fee: document.getElementById('subscription_fee').value,
+                            monthly_installment: document.getElementById('subscription_installment').value
+                        }
+                    },
+                    courses: coursesData
+                };
+                
+                const configData = {
+                    bot_name: document.getElementById('bot_name').value,
+                    is_active: document.getElementById('botToggle').classList.contains('active') ? 1 : 0,
+                    vendor1_name: document.getElementById('vendor1_name').value,
+                    vendor1_phone: document.getElementById('vendor1_phone').value,
+                    vendor2_name: document.getElementById('vendor2_name').value,
+                    vendor2_phone: document.getElementById('vendor2_phone').value,
+                    courses_config: JSON.stringify(coursesConfig)
+                };
+                
+                const response = await fetch('/api/bot/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(configData)
+                });
+                
+                const data = await response.json();
+                showAlert(data.success ? '✅ Configuração salva com sucesso!' : '❌ Erro ao salvar', data.success ? 'success' : 'error');
+            } catch (error) {
+                showAlert('❌ Erro ao salvar configuração', 'error');
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', loadConfig);
     </script>
     
 </body>
