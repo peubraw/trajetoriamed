@@ -506,6 +506,10 @@
 
                 if (data.config) {
                     const config = data.config;
+                    
+                    console.log('Full config object:', config);
+                    console.log('courses_config field:', config.courses_config);
+                    console.log('courses_config type:', typeof config.courses_config);
 
                     // Persona
                     document.getElementById('bot_name').value = config.bot_name || 'Mia';
