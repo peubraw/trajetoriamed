@@ -234,6 +234,13 @@ router.post('/config', async (req, res) => {
         const userId = req.session?.userId || 1;
         const { app_id, access_token, phone_number_id, business_account_id, webhook_verify_token } = req.body;
 
+        // Converter undefined para null
+        const appId = app_id || null;
+        const accessToken = access_token || null;
+        const phoneNumberId = phone_number_id || null;
+        const businessAccountId = business_account_id || null;
+        const webhookVerifyToken = webhook_verify_token || null;
+
         const [existing] = await db.execute(
             'SELECT id FROM meta_api_configs WHERE user_id = ?',
             [userId]
@@ -244,7 +251,7 @@ router.post('/config', async (req, res) => {
             await db.execute(
                 `INSERT INTO meta_api_configs (user_id, app_id, access_token, phone_number_id, business_account_id, webhook_verify_token) 
                  VALUES (?, ?, ?, ?, ?, ?)`,
-                [userId, app_id, access_token, phone_number_id, business_account_id, webhook_verify_token]
+                [userId, appId, accessToken, phoneNumberId, businessAccountId, webhookVerifyToken]
             );
         } else {
             // Atualizar configuração existente
@@ -252,7 +259,7 @@ router.post('/config', async (req, res) => {
                 `UPDATE meta_api_configs 
                  SET app_id = ?, access_token = ?, phone_number_id = ?, business_account_id = ?, webhook_verify_token = ?
                  WHERE user_id = ?`,
-                [app_id, access_token, phone_number_id, business_account_id, webhook_verify_token, userId]
+                [appId, accessToken, phoneNumberId, businessAccountId, webhookVerifyToken, userId]
             );
         }
 
