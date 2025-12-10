@@ -526,28 +526,41 @@
                     // Carregar courses_config se existir
                     if (config.courses_config) {
                         try {
-                            const coursesConfig = typeof config.courses_config === 'string' 
-                                ? JSON.parse(config.courses_config) 
-                                : config.courses_config;
+                            let coursesConfig = config.courses_config;
+                            
+                            // Se for string, parsear
+                            if (typeof coursesConfig === 'string') {
+                                console.log('courses_config é string, parseando...');
+                                coursesConfig = JSON.parse(coursesConfig);
+                            }
 
                             console.log('Parsed courses config:', coursesConfig);
 
                             // Bot persona
                             if (coursesConfig.bot_persona) {
-                                document.getElementById('bot_role').value = coursesConfig.bot_persona.role || '';
-                                document.getElementById('bot_company').value = coursesConfig.bot_persona.company || '';
-                                document.getElementById('bot_tone').value = coursesConfig.bot_persona.tone || '';
+                                console.log('Loading bot persona:', coursesConfig.bot_persona);
+                                const roleField = document.getElementById('bot_role');
+                                const companyField = document.getElementById('bot_company');
+                                const toneField = document.getElementById('bot_tone');
+                                
+                                if (roleField) roleField.value = coursesConfig.bot_persona.role || '';
+                                if (companyField) companyField.value = coursesConfig.bot_persona.company || '';
+                                if (toneField) toneField.value = coursesConfig.bot_persona.tone || '';
                             }
 
                             // Courses
                             if (coursesConfig.courses && Array.isArray(coursesConfig.courses)) {
                                 coursesData = coursesConfig.courses;
-                                console.log('Loaded courses:', coursesData.length);
+                                console.log('Loading courses data:', coursesData.length, 'courses');
                                 renderCourses();
+                            } else {
+                                console.warn('No courses array found in config');
                             }
                         } catch (e) {
                             console.error('Erro ao parsear courses_config:', e);
                         }
+                    } else {
+                        console.log('No courses_config in response');
                     }
 
                     showAlert('✅ Configuração carregada com sucesso!', 'success');
