@@ -221,13 +221,27 @@
             try {
                 const response = await fetch('/api/auth/check', { credentials: 'include' });
                 console.log('Auth check:', response.ok);
+                
                 if (!response.ok) {
-                    console.log('Not authenticated, redirecting...');
+                    console.log('Not authenticated, redirecting to login...');
                     window.location.href = '/login.html';
+                    return false;
                 }
+                
+                const data = await response.json();
+                console.log('Auth data:', data);
+                
+                if (!data.userId) {
+                    console.log('No userId in session, redirecting to login...');
+                    window.location.href = '/login.html';
+                    return false;
+                }
+                
+                return true;
             } catch (error) {
                 console.error('Auth check error:', error);
                 window.location.href = '/login.html';
+                return false;
             }
         }
         
@@ -249,14 +263,43 @@
                     // Handle both response formats
                     stages = Array.isArray(data) ? data : (data.stages || []);
                     console.log('Stages array:', stages);
+                    
+                    if (stages.length === 0) {
+                        console.warn('No stages found, creating defaults...');
+                        await createDefaultStages();
+                        return;
+                    }
+                    
                     renderColumns();
                 } else {
                     console.error('Failed to load stages:', response.status);
-                    alert('Erro ao carregar stages do CRM. Por favor, configure as stages primeiro.');
+                    await createDefaultStages();
                 }
             } catch (error) {
                 console.error('Error loading stages:', error);
-                alert('Erro ao conectar com o servidor.');
+                await createDefaultStages();
+            }
+        }
+        
+        async function createDefaultStages() {
+            try {
+                const response = await fetch('/api/crm/stages/init', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    console.log('Default stages created, reloading...');
+                    // Reload stages after creation
+                    const stagesResponse = await fetch('/api/crm/stages', { credentials: 'include' });
+                    const data = await stagesResponse.json();
+                    stages = Array.isArray(data) ? data : (data.stages || []);
+                    renderColumns();
+                } else {
+                    console.error('Failed to create default stages');
+                }
+            } catch (error) {
+                console.error('Error creating default stages:', error);
             }
         }
         
