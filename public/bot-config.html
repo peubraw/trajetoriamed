@@ -536,22 +536,31 @@
 
                             console.log('Parsed courses config:', coursesConfig);
 
-                            // Bot persona
-                            if (coursesConfig.bot_persona) {
-                                console.log('Loading bot persona:', coursesConfig.bot_persona);
-                                const roleField = document.getElementById('bot_role');
-                                const companyField = document.getElementById('bot_company');
-                                const toneField = document.getElementById('bot_tone');
-                                
-                                if (roleField) roleField.value = coursesConfig.bot_persona.role || '';
-                                if (companyField) companyField.value = coursesConfig.bot_persona.company || '';
-                                if (toneField) toneField.value = coursesConfig.bot_persona.tone || '';
+                            // Bot persona - pode estar em bot_persona ou no próprio config
+                            const persona = coursesConfig.bot_persona || {};
+                            console.log('Loading bot persona:', persona);
+                            
+                            const roleField = document.getElementById('bot_role');
+                            const companyField = document.getElementById('bot_company');
+                            const toneField = document.getElementById('bot_tone');
+                            
+                            if (roleField && persona.role) {
+                                roleField.value = persona.role;
+                                console.log('Set role:', persona.role);
+                            }
+                            if (companyField && persona.company) {
+                                companyField.value = persona.company;
+                                console.log('Set company:', persona.company);
+                            }
+                            if (toneField && persona.tone) {
+                                toneField.value = persona.tone;
+                                console.log('Set tone:', persona.tone);
                             }
 
-                            // Courses
+                            // Courses - carregar array de cursos
                             if (coursesConfig.courses && Array.isArray(coursesConfig.courses)) {
                                 coursesData = coursesConfig.courses;
-                                console.log('Loading courses data:', coursesData.length, 'courses');
+                                console.log('Loading courses data:', coursesData.length, 'courses found');
                                 renderCourses();
                             } else {
                                 console.warn('No courses array found in config');
