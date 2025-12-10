@@ -327,8 +327,12 @@
                     return;
                 }
                 
-                const leads = await response.json();
-                console.log('Leads loaded:', leads.length);
+                const data = await response.json();
+                console.log('Leads data received:', data);
+                
+                // Handle both response formats: direct array or {success, leads}
+                const leads = Array.isArray(data) ? data : (data.leads || []);
+                console.log('Leads array:', leads.length, 'leads');
                 
                 // Clear all columns
                 stages.forEach(stage => {
@@ -342,6 +346,7 @@
                 
                 // Populate columns
                 leads.forEach(lead => {
+                    console.log('Adding lead card:', lead.name, 'to stage:', lead.stage_id);
                     addLeadCard(lead);
                 });
                 
@@ -352,8 +357,12 @@
         }
         
         function addLeadCard(lead) {
+            console.log('addLeadCard called with:', lead);
             const column = document.getElementById(`column-${lead.stage_id}`);
-            if (!column) return;
+            if (!column) {
+                console.warn('Column not found for stage_id:', lead.stage_id);
+                return;
+            }
             
             const card = document.createElement('div');
             card.className = 'lead-card bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md';
@@ -371,10 +380,12 @@
             `;
             
             column.appendChild(card);
+            console.log('Card added to column');
             
             // Update count
             const count = column.querySelectorAll('.lead-card').length;
             document.getElementById(`count-${lead.stage_id}`).textContent = count;
+            console.log('Column count updated:', count);
         }
         
         async function handleDrop(evt) {
