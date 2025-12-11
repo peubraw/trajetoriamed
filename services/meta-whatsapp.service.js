@@ -34,14 +34,25 @@ class MetaWhatsAppService {
     formatWhatsAppText(text) {
         if (!text) return text;
         
-        // WhatsApp usa:
+        // WhatsApp Cloud API suporta:
         // *texto* para negrito
         // _texto_ para itálico
         // ~texto~ para tachado
         // ```texto``` para monoespaçado
         
-        // Já está no formato correto, apenas garantir que símbolos especiais sejam preservados
-        return text;
+        let formatted = text;
+        
+        // Converter **texto** (Markdown) para *texto* (WhatsApp)
+        formatted = formatted.replace(/\*\*([^\*]+)\*\*/g, '*$1*');
+        
+        // Converter __texto__ (Markdown) para _texto_ (WhatsApp)
+        formatted = formatted.replace(/__([^_]+)__/g, '_$1_');
+        
+        // Garantir quebras de linha adequadas
+        // Substituir múltiplas quebras de linha por apenas uma
+        formatted = formatted.replace(/\n{3,}/g, '\n\n');
+        
+        return formatted;
     }
 
     /**
