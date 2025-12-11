@@ -115,8 +115,44 @@ router.post('/webhook', async (req, res) => {
         if (flowResponse) {
             let messageToSend = null;
             
+            // Verificar se deve usar IA (modo híbrido)
+            if (typeof flowResponse === 'object' && flowResponse.useAI) {
+                console.log('🔄 MODO HÍBRIDO: Passando controle para IA...');
+                
+                const whatsappService = require('../services/whatsapp.service');
+                const sessionInfo = chatbotFlowService.getSessionInfo(userId, messageData.from + '@c.us');
+                
+                // Buscar configuração do bot do usuário
+                const db = require('../config/database');
+                const [configs] = await db.execute(
+                    'SELECT * FROM bot_configs WHERE user_id = ?',
+                    [userId]
+                );
+                
+                const botConfig = configs.length > 0 ? configs[0] : {
+                    bot_name: 'Mia',
+                    system_prompt: 'Você é Mia, consultora de carreira da Trajetória Med.',
+                    temperature: 0.7,
+                    max_tokens: 300
+                };
+                
+                // Se flowResponse.message é null (primeira mensagem do curso), usar flag especial
+                const userMessage = (flowResponse.message === null || flowResponse.message === undefined) 
+                    ? '_PRIMEIRA_MENSAGEM_' 
+                    : flowResponse.message;
+                
+                const aiResponse = await whatsappService.processWithAI(
+                    userId,
+                    messageData.from + '@c.us',
+                    userMessage,
+                    botConfig,
+                    sessionInfo
+                );
+                
+                messageToSend = aiResponse;
+            }
             // Se resposta é string, enviar direto
-            if (typeof flowResponse === 'string') {
+            else if (typeof flowResponse === 'string') {
                 messageToSend = flowResponse;
             }
             // Se resposta é objeto com message
