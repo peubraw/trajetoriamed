@@ -29,18 +29,35 @@ class MetaWhatsAppService {
     }
 
     /**
+     * Formatar texto para WhatsApp (converter Markdown para formato WhatsApp)
+     */
+    formatWhatsAppText(text) {
+        if (!text) return text;
+        
+        // WhatsApp usa:
+        // *texto* para negrito
+        // _texto_ para itálico
+        // ~texto~ para tachado
+        // ```texto``` para monoespaçado
+        
+        // Já está no formato correto, apenas garantir que símbolos especiais sejam preservados
+        return text;
+    }
+
+    /**
      * Enviar mensagem de texto simples
      */
     async sendTextMessage(to, text) {
         try {
             const cleanPhone = to.replace(/\D/g, '');
+            const formattedText = this.formatWhatsAppText(text);
             
             const payload = {
                 messaging_product: 'whatsapp',
                 recipient_type: 'individual',
                 to: cleanPhone,
                 type: 'text',
-                text: { body: text }
+                text: { body: formattedText }
             };
 
             const response = await this.api.post(`/${this.phoneNumberId}/messages`, payload);
