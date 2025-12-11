@@ -1,6 +1,8 @@
 const db = require('../config/database');
 const bcrypt = require('bcrypt');
 
+console.log('✅ [AUTH SERVICE] Módulo carregado - Versão com prefixo l. no filtro SQL - ' + new Date().toISOString());
+
 /**
  * Auth Service - Gerenciamento de Autenticação e Autorização
  */
