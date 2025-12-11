@@ -131,9 +131,13 @@
                 <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
                     <div class="flex items-center justify-between flex-wrap gap-4">
                         <div class="flex items-center space-x-3">
-                            <button onclick="openAddLeadModal()" class="btn-primary text-white px-6 py-2.5 rounded-lg font-semibold flex items-center shadow-lg">
+                            <button onclick="crmAdvanced.openLeadModal()" class="btn-primary text-white px-6 py-2.5 rounded-lg font-semibold flex items-center shadow-lg">
                                 <i class="fas fa-plus mr-2"></i>
                                 Novo Lead
+                            </button>
+                            <button onclick="crmAdvanced.openStagesModal()" class="bg-white border-2 border-gray-200 text-gray-700 px-5 py-2.5 rounded-lg font-medium hover:border-purple-300 hover:text-purple-600 transition">
+                                <i class="fas fa-cog mr-2"></i>
+                                Gerenciar Estágios
                             </button>
                             <button class="bg-white border-2 border-gray-200 text-gray-700 px-5 py-2.5 rounded-lg font-medium hover:border-purple-300 hover:text-purple-600 transition">
                                 <i class="fas fa-filter mr-2"></i>
@@ -148,11 +152,8 @@
                 </div>
                 
                 <!-- Kanban Board -->
-                <div class="flex gap-6 pb-6" style="min-width: max-content;">
-                    
-                    <!-- Column Template (will be generated dynamically) -->
-                    <div id="kanbanColumns" class="flex gap-6"></div>
-                    
+                <div id="kanban-container" class="flex gap-6 pb-6" style="min-width: max-content;">
+                    <!-- Colunas serão renderizadas via JavaScript -->
                 </div>
                 
             </main>
@@ -507,6 +508,20 @@
         
         init();
     </script>
+    
+    <!-- Modals -->
+    <script>
+        fetch('/crm-modals.html')
+            .then(response => response.text())
+            .then(html => {
+                const div = document.createElement('div');
+                div.innerHTML = html;
+                document.body.appendChild(div);
+            });
+    </script>
+    
+    <!-- CRM Advanced Features -->
+    <script src="/js/crm-kanban-advanced.js"></script>
     
 </body>
 </html>
