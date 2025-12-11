@@ -98,27 +98,8 @@ router.post('/webhook', async (req, res) => {
 
         // Usar serviço Meta API direto (não precisa de adapter aqui)
 
-        // Buscar configuração do bot
-        const db = require('../config/database');
-        const [configs] = await db.execute(
-            'SELECT * FROM bot_configurations WHERE user_id = ?',
-            [userId]
-        );
-        
+        // Configuração padrão do flow (pode ser expandido depois)
         const flowConfig = {};
-        if (configs.length > 0) {
-            const config = configs[0];
-            try {
-                const coursesConfig = JSON.parse(config.courses_config || '[]');
-                coursesConfig.forEach(course => {
-                    if (course.instagram_link) {
-                        flowConfig[`link_${course.id}`] = course.instagram_link;
-                    }
-                });
-            } catch (e) {
-                console.log('⚠️ Erro ao parsear courses_config:', e.message);
-            }
-        }
 
         // Processar com o chatbot flow
         const leadId = leads.length > 0 ? leads[0].id : null;
