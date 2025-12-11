@@ -133,11 +133,27 @@ router.post('/webhook', async (req, res) => {
         );
 
         // Enviar resposta se houver
-        if (flowResponse && flowResponse.message) {
-            await client.sendText(messageData.from + '@c.us', flowResponse.message);
-            console.log(`✅ Resposta enviada para ${messageData.from}`);
-        } else if (flowResponse) {
-            console.log('⏸️ Resposta processada mas sem mensagem para enviar');
+        if (flowResponse) {
+            let messageToSend = null;
+            
+            // Se resposta é string, enviar direto
+            if (typeof flowResponse === 'string') {
+                messageToSend = flowResponse;
+            }
+            // Se resposta é objeto com message
+            else if (flowResponse.message) {
+                messageToSend = flowResponse.message;
+            }
+            
+            // Enviar mensagem via Meta API
+            if (messageToSend) {
+                // Remover @c.us do número para Meta API
+                const cleanPhone = messageData.from.replace('@c.us', '');
+                await metaWhatsAppService.sendTextMessage(cleanPhone, messageToSend);
+                console.log(`✅ Resposta enviada para ${messageData.from}: "${messageToSend.substring(0, 50)}..."`);
+            } else {
+                console.log('⏸️ Resposta processada mas sem mensagem para enviar (useAI ou null)');
+            }
         }
 
     } catch (error) {
