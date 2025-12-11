@@ -90,6 +90,7 @@ router.post('/login', async (req, res) => {
                 id: user.id,
                 name: user.name,
                 email: user.email,
+                role: user.role || 'admin',
                 subscriptionStatus: user.subscription_status,
                 trialEndDate: user.trial_end_date
             }
@@ -119,7 +120,7 @@ router.get('/check', async (req, res) => {
     }
 
     try {
-        const [users] = await db.execute('SELECT id, name, email, subscription_status, trial_end_date FROM users WHERE id = ?', [req.session.userId]);
+        const [users] = await db.execute('SELECT id, name, email, role, subscription_status, trial_end_date FROM users WHERE id = ?', [req.session.userId]);
         
         if (users.length === 0) {
             return res.json({ authenticated: false });

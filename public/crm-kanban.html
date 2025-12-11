@@ -55,19 +55,19 @@
                     <i class="fas fa-columns w-5"></i>
                     <span class="ml-3">CRM Kanban</span>
                 </a>
-                <a href="/whatsapp.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                <a href="/whatsapp.html" class="nav-item admin-only flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
                     <i class="fab fa-whatsapp w-5"></i>
                     <span class="ml-3">WhatsApp</span>
                 </a>
-                <a href="/bot-config.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                <a href="/bot-config.html" class="nav-item admin-only flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
                     <i class="fas fa-robot w-5"></i>
                     <span class="ml-3">Configurar Bot</span>
                 </a>
-                <a href="/webhooks.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                <a href="/webhooks.html" class="nav-item admin-only flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
                     <i class="fas fa-link w-5"></i>
                     <span class="ml-3">Webhooks</span>
                 </a>
-                <div class="pt-6 mt-6 border-t border-white border-opacity-10">
+                <div class="pt-6 mt-6 border-t border-white border-opacity-10 admin-only">
                     <a href="/settings.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
                         <i class="fas fa-cog w-5"></i>
                         <span class="ml-3">Configurações</span>
@@ -238,6 +238,14 @@
                 }
                 
                 console.log('User authenticated:', data.user);
+                
+                // Ocultar menus para vendedores
+                if (data.user && data.user.role === 'seller') {
+                    document.querySelectorAll('.admin-only').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                }
+                
                 return true;
             } catch (error) {
                 console.error('Auth check error:', error);

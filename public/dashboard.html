@@ -103,7 +103,7 @@
             </div>
             
             <!-- Navigation -->
-            <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+            <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto" id="mainNavigation">
                 <a href="/dashboard.html" class="nav-item active flex items-center px-4 py-3 text-white rounded-lg">
                     <i class="fas fa-home w-5"></i>
                     <span class="ml-3">Dashboard</span>
@@ -114,22 +114,22 @@
                     <span class="ml-3">CRM Kanban</span>
                 </a>
                 
-                <a href="/whatsapp.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                <a href="/whatsapp.html" class="nav-item admin-only flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
                     <i class="fab fa-whatsapp w-5"></i>
                     <span class="ml-3">WhatsApp</span>
                 </a>
                 
-                <a href="/bot-config.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                <a href="/bot-config.html" class="nav-item admin-only flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
                     <i class="fas fa-robot w-5"></i>
                     <span class="ml-3">Configurar Bot</span>
                 </a>
                 
-                <a href="/webhooks.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                <a href="/webhooks.html" class="nav-item admin-only flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
                     <i class="fas fa-link w-5"></i>
                     <span class="ml-3">Webhooks</span>
                 </a>
                 
-                <div class="pt-6 mt-6 border-t border-white border-opacity-10">
+                <div class="pt-6 mt-6 border-t border-white border-opacity-10 admin-only">
                     <a href="/settings.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
                         <i class="fas fa-cog w-5"></i>
                         <span class="ml-3">Configurações</span>
@@ -187,8 +187,8 @@
                         <!-- User Menu -->
                         <div class="flex items-center space-x-3 pl-3 border-l border-gray-200">
                             <div class="text-right hidden md:block">
-                                <p class="text-sm font-semibold text-gray-800" id="userName">Leandro Berti</p>
-                                <p class="text-xs text-gray-500">Administrador</p>
+                                <p class="text-sm font-semibold text-gray-800" id="topUserName">Leandro Berti</p>
+                                <p class="text-xs text-gray-500" id="userRoleLabel">Administrador</p>
                             </div>
                             <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white font-semibold shadow-lg">
                                 <span id="userInitials">LB</span>
@@ -348,7 +348,35 @@
                 });
                 if (!response.ok) {
                     window.location.href = '/login.html';
+                    return;
                 }
+                
+                const data = await response.json();
+                if (!data.authenticated) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
+                // Atualizar informações do usuário
+                const user = data.user;
+                const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                
+                // Atualizar sidebar
+                document.getElementById('userName').textContent = user.name;
+                document.getElementById('userEmail').textContent = user.email;
+                document.getElementById('userInitials').textContent = initials;
+                
+                // Atualizar top bar
+                document.getElementById('topUserName').textContent = user.name;
+                document.getElementById('userRoleLabel').textContent = user.role === 'seller' ? 'Vendedor' : 'Administrador';
+                
+                // Ocultar menus para vendedores
+                if (user.role === 'seller') {
+                    document.querySelectorAll('.admin-only').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                }
+                
             } catch (error) {
                 window.location.href = '/login.html';
             }
