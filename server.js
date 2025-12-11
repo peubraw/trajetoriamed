@@ -60,6 +60,7 @@ app.use('/api/bot', require('./routes/bot.routes'));
 app.use('/api/bot-control', require('./routes/bot-control.routes')); // Controle Bot + Distribuição
 app.use('/api/dashboard', require('./routes/dashboard.routes'));
 app.use('/api/crm', require('./routes/crm.routes')); // CRM Kanban
+app.use('/api/sellers', require('./routes/sellers.routes')); // Gestão de Vendedores
 app.use('/api/webhooks', require('./routes/webhook.routes')); // Webhooks pagamento
 app.use('/api/meta', require('./routes/meta-webhook.routes')); // Meta WhatsApp Business API Webhook
 

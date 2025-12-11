@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Vendedores - TrajetóriaMed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+        
+        .sidebar-gradient { background: linear-gradient(180deg, #667eea 0%, #764ba2 100%); }
+        .nav-item { transition: all 0.2s ease; border-left: 3px solid transparent; }
+        .nav-item:hover { background: rgba(255, 255, 255, 0.1); border-left-color: #ffffff; }
+        .nav-item.active { background: rgba(255, 255, 255, 0.15); border-left-color: #ffffff; }
+        .content-container { background: #f7f9fc; }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3); }
+        
+        .seller-card { transition: all 0.2s ease; }
+        .seller-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="content-container">
+    
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- Sidebar -->
+        <aside class="sidebar-gradient w-64 flex-shrink-0 hidden md:flex flex-col shadow-2xl">
+            <div class="p-6 border-b border-white border-opacity-10">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-purple-600 text-xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h1 class="text-white font-bold text-lg">TrajetóriaMed</h1>
+                        <p class="text-white text-opacity-60 text-xs">Sistema CRM</p>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+                <a href="/dashboard.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-home w-5"></i>
+                    <span class="ml-3">Dashboard</span>
+                </a>
+                <a href="/crm-kanban.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-columns w-5"></i>
+                    <span class="ml-3">CRM Kanban</span>
+                </a>
+                <a href="/sellers.html" class="nav-item active flex items-center px-4 py-3 text-white rounded-lg">
+                    <i class="fas fa-users w-5"></i>
+                    <span class="ml-3">Vendedores</span>
+                </a>
+                <a href="/whatsapp.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fab fa-whatsapp w-5"></i>
+                    <span class="ml-3">WhatsApp</span>
+                </a>
+                <a href="/bot-config.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-robot w-5"></i>
+                    <span class="ml-3">Configurar Bot</span>
+                </a>
+                <a href="/webhooks.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-link w-5"></i>
+                    <span class="ml-3">Webhooks</span>
+                </a>
+                <div class="pt-6 mt-6 border-t border-white border-opacity-10">
+                    <a href="/settings.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                        <i class="fas fa-cog w-5"></i>
+                        <span class="ml-3">Configurações</span>
+                    </a>
+                </div>
+            </nav>
+            
+            <div class="p-4 border-t border-white border-opacity-10">
+                <div class="flex items-center px-4 py-3 bg-white bg-opacity-10 rounded-lg">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-700 flex items-center justify-center text-white font-semibold">
+                        <span id="userInitials">LB</span>
+                    </div>
+                    <div class="ml-3 flex-1 min-w-0">
+                        <p class="text-sm font-medium text-white truncate" id="userName">Leandro Berti</p>
+                        <p class="text-xs text-white text-opacity-60 truncate">Admin</p>
+                    </div>
+                    <button onclick="logout()" class="text-white text-opacity-60 hover:text-opacity-100">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            
+            <!-- Top Bar -->
+            <header class="bg-white border-b border-gray-200 px-8 py-4 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">Gestão de Vendedores</h1>
+                            <p class="text-sm text-gray-500 mt-1">Gerencie sua equipe de vendas</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center space-x-3">
+                        <button class="relative p-2.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition">
+                            <i class="fas fa-bell text-lg"></i>
+                            <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                        </button>
+                        
+                        <div class="flex items-center space-x-3 pl-3 border-l border-gray-200">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white font-semibold shadow-lg">
+                                <span id="userInitials2">LB</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Content Area -->
+            <main class="flex-1 overflow-y-auto content-container p-8">
+                
+                <!-- Action Bar -->
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+                        <div class="flex items-center space-x-3">
+                            <button onclick="openAddSellerModal()" class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2.5 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                                <i class="fas fa-plus mr-2"></i>
+                                Novo Vendedor
+                            </button>
+                            <button onclick="window.location.href='crm-kanban.html'" class="bg-white border-2 border-gray-200 text-gray-700 px-5 py-2.5 rounded-lg font-medium hover:border-purple-300 hover:text-purple-600 transition">
+                                <i class="fas fa-arrow-left mr-2"></i>
+                                Voltar ao CRM
+                            </button>
+                        </div>
+                        
+                        <div class="flex items-center space-x-2">
+                            <span class="text-sm text-gray-500">Total: <strong class="text-gray-800" id="sellerCount">0</strong> vendedores</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lista de Vendedores -->
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <div id="sellersContainer" class="space-y-4">
+                        <!-- Vendedores serão carregados aqui -->
+                    </div>
+                    
+                    <div id="emptyState" class="text-center py-16" style="display: none;">
+                        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-users text-4xl text-gray-300"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2">Nenhum vendedor cadastrado</h3>
+                        <p class="text-gray-500">Clique em "Novo Vendedor" para adicionar membros à sua equipe</p>
+                    </div>
+                </div>
+                
+            </main>
+            
+        </div>
+        
+    </div>
+
+    <!-- Modal Adicionar Vendedor -->
+    <div id="addSellerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-xl font-bold text-gray-800">Adicionar Novo Vendedor</h3>
+            </div>
+            <form id="addSellerForm" class="p-6" onsubmit="event.preventDefault(); createSeller();">
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nome Completo *</label>
+                    <input type="text" id="sellerName" required
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+                    <input type="email" id="sellerEmail" required
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Senha *</label>
+                    <input type="password" id="sellerPassword" required minlength="6"
+                           placeholder="Mínimo 6 caracteres"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Telefone</label>
+                    <input type="tel" id="sellerPhone"
+                           placeholder="(31) 99999-9999"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition">
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeAddSellerModal()"
+                            class="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-700 rounded-lg font-semibold hover:border-gray-300 transition">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                            class="flex-1 btn-primary text-white px-6 py-3 rounded-lg font-semibold shadow-lg">
+                        <i class="fas fa-check mr-2"></i>
+                        Criar Vendedor
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Vendedor -->
+    <div id="editSellerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-xl font-bold text-gray-800">Editar Vendedor</h3>
+            </div>
+            <form id="editSellerForm" class="p-6" onsubmit="event.preventDefault(); updateSeller();">
+                <input type="hidden" id="editSellerId">
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nome Completo</label>
+                    <input type="text" id="editSellerName"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                    <input type="email" id="editSellerEmail"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Telefone</label>
+                    <input type="tel" id="editSellerPhone"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                    <select id="editSellerActive"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition">
+                        <option value="true">Ativo</option>
+                        <option value="false">Inativo</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeEditSellerModal()"
+                            class="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-700 rounded-lg font-semibold hover:border-gray-300 transition">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                            class="flex-1 btn-primary text-white px-6 py-3 rounded-lg font-semibold shadow-lg">
+                        <i class="fas fa-save mr-2"></i>
+                        Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Inicializar
+        async function init() {
+            await checkAuth();
+            await loadSellers();
+        }
+
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/auth/check', { credentials: 'include' });
+                if (!response.ok) window.location.href = '/login.html';
+            } catch (error) {
+                window.location.href = '/login.html';
+            }
+        }
+
+        function logout() {
+            fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+                .then(() => window.location.href = '/login.html');
+        }
+
+        // Carregar vendedores
+        async function loadSellers() {
+            try {
+                const response = await fetch('/api/sellers', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 403) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Acesso Negado',
+                            text: 'Apenas administradores podem gerenciar vendedores',
+                            confirmButtonColor: '#667eea'
+                        }).then(() => {
+                            window.location.href = 'crm-kanban.html';
+                        });
+                        return;
+                    }
+                    throw new Error('Erro ao carregar vendedores');
+                }
+
+                const data = await response.json();
+                renderSellers(data.sellers);
+            } catch (error) {
+                console.error('Erro ao carregar vendedores:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: 'Não foi possível carregar os vendedores',
+                    confirmButtonColor: '#667eea'
+                });
+            }
+        }
+
+        // Renderizar vendedores
+        function renderSellers(sellers) {
+            const container = document.getElementById('sellersContainer');
+            const emptyState = document.getElementById('emptyState');
+            const sellerCount = document.getElementById('sellerCount');
+
+            sellerCount.textContent = sellers.length;
+
+            if (sellers.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            container.innerHTML = sellers.map(seller => `
+                <div class="seller-card bg-white border-2 border-gray-100 rounded-xl p-6 ${!seller.is_active ? 'opacity-60' : ''}">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4 flex-1">
+                            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-purple-700 flex items-center justify-center text-white font-bold text-xl">
+                                ${seller.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h3 class="text-lg font-bold text-gray-800">${seller.name}</h3>
+                                    ${!seller.is_active ? '<span class="px-3 py-1 bg-gray-200 text-gray-600 text-xs font-semibold rounded-full">Inativo</span>' : '<span class="px-3 py-1 bg-green-100 text-green-600 text-xs font-semibold rounded-full">Ativo</span>'}
+                                </div>
+                                <div class="flex items-center text-gray-600 text-sm mb-1">
+                                    <i class="fas fa-envelope mr-2"></i>
+                                    <span>${seller.email}</span>
+                                </div>
+                                ${seller.phone ? `
+                                    <div class="flex items-center text-gray-600 text-sm mb-1">
+                                        <i class="fas fa-phone mr-2"></i>
+                                        <span>${seller.phone}</span>
+                                    </div>
+                                ` : ''}
+                                <div class="flex items-center text-gray-400 text-xs mt-2">
+                                    <i class="fas fa-calendar mr-2"></i>
+                                    <span>Cadastrado em ${new Date(seller.created_at).toLocaleDateString('pt-BR')}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="openEditSellerModal(${seller.id})"
+                                    class="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <button onclick="deleteSeller(${seller.id}, '${seller.name.replace(/'/g, "\\'")}')"
+                                    class="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Modais
+        function openAddSellerModal() {
+            document.getElementById('addSellerForm').reset();
+            document.getElementById('addSellerModal').classList.remove('hidden');
+        }
+
+        function closeAddSellerModal() {
+            document.getElementById('addSellerModal').classList.add('hidden');
+        }
+
+        function openEditSellerModal(sellerId) {
+            fetch('/api/sellers', { credentials: 'include' })
+                .then(res => res.json())
+                .then(data => {
+                    const seller = data.sellers.find(s => s.id === sellerId);
+                    if (!seller) throw new Error('Vendedor não encontrado');
+                    
+                    document.getElementById('editSellerId').value = seller.id;
+                    document.getElementById('editSellerName').value = seller.name;
+                    document.getElementById('editSellerEmail').value = seller.email;
+                    document.getElementById('editSellerPhone').value = seller.phone || '';
+                    document.getElementById('editSellerActive').value = seller.is_active ? 'true' : 'false';
+                    
+                    document.getElementById('editSellerModal').classList.remove('hidden');
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro',
+                        text: error.message,
+                        confirmButtonColor: '#667eea'
+                    });
+                });
+        }
+
+        function closeEditSellerModal() {
+            document.getElementById('editSellerModal').classList.add('hidden');
+        }
+
+        // Criar vendedor
+        async function createSeller() {
+            const name = document.getElementById('sellerName').value.trim();
+            const email = document.getElementById('sellerEmail').value.trim();
+            const password = document.getElementById('sellerPassword').value;
+            const phone = document.getElementById('sellerPhone').value.trim();
+
+            if (!name || !email || !password) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campos Obrigatórios',
+                    text: 'Preencha nome, email e senha',
+                    confirmButtonColor: '#667eea'
+                });
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/sellers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ name, email, password, phone })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erro ao criar vendedor');
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Vendedor Criado!',
+                    text: data.message,
+                    confirmButtonColor: '#10b981'
+                });
+
+                closeAddSellerModal();
+                loadSellers();
+            } catch (error) {
+                console.error('Erro ao criar vendedor:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: error.message,
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        }
+
+        // Atualizar vendedor
+        async function updateSeller() {
+            const sellerId = document.getElementById('editSellerId').value;
+            const name = document.getElementById('editSellerName').value.trim();
+            const email = document.getElementById('editSellerEmail').value.trim();
+            const phone = document.getElementById('editSellerPhone').value.trim();
+            const is_active = document.getElementById('editSellerActive').value === 'true';
+
+            try {
+                const response = await fetch(`/api/sellers/${sellerId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ name, email, phone, is_active })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erro ao atualizar vendedor');
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Vendedor Atualizado!',
+                    text: data.message,
+                    confirmButtonColor: '#10b981'
+                });
+
+                closeEditSellerModal();
+                loadSellers();
+            } catch (error) {
+                console.error('Erro ao atualizar vendedor:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: error.message,
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        }
+
+        // Deletar vendedor
+        async function deleteSeller(sellerId, sellerName) {
+            const result = await Swal.fire({
+                title: 'Confirmar Exclusão',
+                html: `Deseja realmente excluir o vendedor <strong>${sellerName}</strong>?<br><br>
+                       <small class="text-gray-500">Os leads atribuídos a este vendedor serão desvinculados.</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sim, excluir',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const response = await fetch(`/api/sellers/${sellerId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erro ao deletar vendedor');
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Vendedor Excluído!',
+                    text: data.message,
+                    confirmButtonColor: '#10b981'
+                });
+
+                loadSellers();
+            } catch (error) {
+                console.error('Erro ao deletar vendedor:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: error.message,
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        }
+
+        // Inicializar página
+        init();
+    </script>
+</body>
+</html>
+            document.getElementById('addSellerForm').reset();
+            addSellerModalInstance.show();
+        }
+
+        // Criar vendedor
+        async function createSeller() {
+            const name = document.getElementById('sellerName').value.trim();
+            const email = document.getElementById('sellerEmail').value.trim();
+            const password = document.getElementById('sellerPassword').value;
+            const phone = document.getElementById('sellerPhone').value.trim();
+
+            if (!name || !email || !password) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campos Obrigatórios',
+                    text: 'Preencha nome, email e senha',
+                    confirmButtonColor: '#2563eb'
+                });
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/sellers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ name, email, password, phone })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erro ao criar vendedor');
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Vendedor Criado!',
+                    text: data.message,
+                    confirmButtonColor: '#10b981'
+                });
+
+                addSellerModalInstance.hide();
+                loadSellers();
+            } catch (error) {
+                console.error('Erro ao criar vendedor:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: error.message,
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        }
+
+        // Abrir modal de editar
+        async function openEditSellerModal(sellerId) {
+            try {
+                const response = await fetch('/api/sellers', {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                const seller = data.sellers.find(s => s.id === sellerId);
+
+                if (!seller) {
+                    throw new Error('Vendedor não encontrado');
+                }
+
+                document.getElementById('editSellerId').value = seller.id;
+                document.getElementById('editSellerName').value = seller.name;
+                document.getElementById('editSellerEmail').value = seller.email;
+                document.getElementById('editSellerPhone').value = seller.phone || '';
+                document.getElementById('editSellerActive').value = seller.is_active ? 'true' : 'false';
+
+                editSellerModalInstance.show();
+            } catch (error) {
+                console.error('Erro ao abrir modal:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: error.message,
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        }
+
+        // Atualizar vendedor
+        async function updateSeller() {
+            const sellerId = document.getElementById('editSellerId').value;
+            const name = document.getElementById('editSellerName').value.trim();
+            const email = document.getElementById('editSellerEmail').value.trim();
+            const phone = document.getElementById('editSellerPhone').value.trim();
+            const is_active = document.getElementById('editSellerActive').value === 'true';
+
+            try {
+                const response = await fetch(`/api/sellers/${sellerId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ name, email, phone, is_active })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erro ao atualizar vendedor');
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Vendedor Atualizado!',
+                    text: data.message,
+                    confirmButtonColor: '#10b981'
+                });
+
+                editSellerModalInstance.hide();
+                loadSellers();
+            } catch (error) {
+                console.error('Erro ao atualizar vendedor:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: error.message,
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        }
+
+        // Deletar vendedor
+        async function deleteSeller(sellerId, sellerName) {
+            const result = await Swal.fire({
+                title: 'Confirmar Exclusão',
+                html: `Deseja realmente excluir o vendedor <strong>${sellerName}</strong>?<br><br>
+                       <small class="text-muted">Os leads atribuídos a este vendedor serão desvinculados.</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sim, excluir',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const response = await fetch(`/api/sellers/${sellerId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erro ao deletar vendedor');
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Vendedor Excluído!',
+                    text: data.message,
+                    confirmButtonColor: '#10b981'
+                });
+
+                loadSellers();
+            } catch (error) {
+                console.error('Erro ao deletar vendedor:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: error.message,
+                    confirmButtonColor: '#ef4444'
+                });
+            }
+        }
+    </script>
+</body>
+</html>

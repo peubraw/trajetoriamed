@@ -1,4 +1,5 @@
 const db = require('../config/database');
+const authService = require('./auth.service');
 
 /**
  * CRM Service - Lógica de Negócio do Kanban
@@ -137,9 +138,12 @@ class CRMService {
     }
 
     /**
-     * Buscar todos os leads do Kanban
+     * Buscar todos os leads do Kanban (com filtro de permissão)
      */
     async getLeadsByStage(userId, filters = {}) {
+        // Obter filtro de acesso baseado no role
+        const accessFilter = await authService.getLeadAccessFilter(userId);
+        
         let query = `
             SELECT l.*, s.name as stage_name, s.color as stage_color,
                    u.name as assigned_name,
@@ -147,12 +151,16 @@ class CRMService {
             FROM crm_leads l
             INNER JOIN crm_stages s ON l.stage_id = s.id
             LEFT JOIN users u ON l.assigned_to = u.id
-            WHERE l.user_id = ?
+            WHERE ${accessFilter.condition}
         `;
         
-        const params = [userId];
+        const params = [...accessFilter.params];
 
         // Filtros adicionais
+        if (filters.leadId) {
+            query += ' AND l.id = ?';
+            params.push(filters.leadId);
+        }
         if (filters.stageId) {
             query += ' AND l.stage_id = ?';
             params.push(filters.stageId);

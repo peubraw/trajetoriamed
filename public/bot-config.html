@@ -238,44 +238,31 @@
 
                 <!-- Tab: Vendedores -->
                 <div id="tab-vendedores" class="tab-content">
-                    <div class="bg-white rounded-xl shadow-sm p-6">
-                        <h2 class="text-xl font-bold text-gray-800 mb-2">Vendedores para Notificação</h2>
-                        <p class="text-sm text-gray-500 mb-6 pb-4 border-b border-gray-200">Esses vendedores receberão notificações quando um lead demonstrar interesse ou solicitar assinatura</p>
+                    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-800 mb-1">Gestão de Vendedores</h2>
+                                <p class="text-sm text-gray-500">Gerencie sua equipe de vendas e atribuição de leads</p>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <button onclick="openAddSellerModal()" class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2.5 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    Novo Vendedor
+                                </button>
+                                <span class="text-sm text-gray-500">Total: <strong class="text-gray-800" id="sellerCount">0</strong> vendedores</span>
+                            </div>
+                        </div>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Vendedor 1 - Nome</label>
-                                <input type="text" id="vendor1_name" class="form-input" placeholder="Nome">
+                        <div id="sellersContainer" class="space-y-4">
+                            <!-- Vendedores serão carregados aqui -->
+                        </div>
+                        
+                        <div id="emptyState" class="text-center py-16" style="display: none;">
+                            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-users text-4xl text-gray-300"></i>
                             </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Vendedor 1 - Telefone</label>
-                                <input type="text" id="vendor1_phone" class="form-input" placeholder="5531999999999">
-                                <p class="text-xs text-gray-500 mt-1">Formato: 5531999999999 (sem espaços ou caracteres)</p>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Vendedor 2 - Nome</label>
-                                <input type="text" id="vendor2_name" class="form-input" placeholder="Nome">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Vendedor 2 - Telefone</label>
-                                <input type="text" id="vendor2_phone" class="form-input" placeholder="5531999999999">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Vendedor 3 - Nome</label>
-                                <input type="text" id="vendor3_name" class="form-input" placeholder="Nome">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Vendedor 3 - Telefone</label>
-                                <input type="text" id="vendor3_phone" class="form-input" placeholder="5531999999999">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Vendedor 4 - Nome</label>
-                                <input type="text" id="vendor4_name" class="form-input" placeholder="Nome">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Vendedor 4 - Telefone</label>
-                                <input type="text" id="vendor4_phone" class="form-input" placeholder="5531999999999">
-                            </div>
+                            <h3 class="text-xl font-semibold text-gray-700 mb-2">Nenhum vendedor cadastrado</h3>
+                            <p class="text-gray-500">Clique em "Novo Vendedor" para adicionar membros à sua equipe</p>
                         </div>
                     </div>
                 </div>
@@ -663,7 +650,308 @@
             });
             
             loadConfig();
+            loadSellers(); // Carregar vendedores na aba
         });
+
+        // ========================================
+        // GESTÃO DE VENDEDORES
+        // ========================================
+
+        async function loadSellers() {
+            try {
+                const response = await fetch('/api/sellers', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 403) {
+                        document.getElementById('sellersContainer').innerHTML = `
+                            <div class="text-center py-8">
+                                <i class="fas fa-lock text-4xl text-gray-300 mb-3"></i>
+                                <p class="text-gray-600">Apenas administradores podem gerenciar vendedores</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    throw new Error('Erro ao carregar vendedores');
+                }
+
+                const data = await response.json();
+                renderSellers(data.sellers);
+            } catch (error) {
+                console.error('Erro ao carregar vendedores:', error);
+            }
+        }
+
+        function renderSellers(sellers) {
+            const container = document.getElementById('sellersContainer');
+            const emptyState = document.getElementById('emptyState');
+            const sellerCount = document.getElementById('sellerCount');
+
+            sellerCount.textContent = sellers.length;
+
+            if (sellers.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            container.innerHTML = sellers.map(seller => `
+                <div class="seller-card bg-white border-2 border-gray-100 rounded-xl p-6 ${!seller.is_active ? 'opacity-60' : ''}" style="transition: all 0.2s ease;">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4 flex-1">
+                            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-purple-700 flex items-center justify-center text-white font-bold text-xl">
+                                ${seller.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h3 class="text-lg font-bold text-gray-800">${seller.name}</h3>
+                                    ${!seller.is_active ? '<span class="px-3 py-1 bg-gray-200 text-gray-600 text-xs font-semibold rounded-full">Inativo</span>' : '<span class="px-3 py-1 bg-green-100 text-green-600 text-xs font-semibold rounded-full">Ativo</span>'}
+                                </div>
+                                <div class="flex items-center text-gray-600 text-sm mb-1">
+                                    <i class="fas fa-envelope mr-2"></i>
+                                    <span>${seller.email}</span>
+                                </div>
+                                ${seller.phone ? `
+                                    <div class="flex items-center text-gray-600 text-sm mb-1">
+                                        <i class="fas fa-phone mr-2"></i>
+                                        <span>${seller.phone}</span>
+                                    </div>
+                                ` : ''}
+                                <div class="flex items-center text-gray-400 text-xs mt-2">
+                                    <i class="fas fa-calendar mr-2"></i>
+                                    <span>Cadastrado em ${new Date(seller.created_at).toLocaleDateString('pt-BR')}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="openEditSellerModal(${seller.id})"
+                                    class="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <button onclick="deleteSeller(${seller.id}, '${seller.name.replace(/'/g, "\\'")}')"
+                                    class="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openAddSellerModal() {
+            document.getElementById('addSellerForm').reset();
+            document.getElementById('addSellerModal').classList.remove('hidden');
+        }
+
+        function closeAddSellerModal() {
+            document.getElementById('addSellerModal').classList.add('hidden');
+        }
+
+        function openEditSellerModal(sellerId) {
+            fetch('/api/sellers', { credentials: 'include' })
+                .then(res => res.json())
+                .then(data => {
+                    const seller = data.sellers.find(s => s.id === sellerId);
+                    if (!seller) throw new Error('Vendedor não encontrado');
+                    
+                    document.getElementById('editSellerId').value = seller.id;
+                    document.getElementById('editSellerName').value = seller.name;
+                    document.getElementById('editSellerEmail').value = seller.email;
+                    document.getElementById('editSellerPhone').value = seller.phone || '';
+                    document.getElementById('editSellerActive').value = seller.is_active ? 'true' : 'false';
+                    
+                    document.getElementById('editSellerModal').classList.remove('hidden');
+                })
+                .catch(error => {
+                    alert('Erro: ' + error.message);
+                });
+        }
+
+        function closeEditSellerModal() {
+            document.getElementById('editSellerModal').classList.add('hidden');
+        }
+
+        async function createSeller() {
+            const name = document.getElementById('sellerName').value.trim();
+            const email = document.getElementById('sellerEmail').value.trim();
+            const password = document.getElementById('sellerPassword').value;
+            const phone = document.getElementById('sellerPhone').value.trim();
+
+            if (!name || !email || !password) {
+                alert('Preencha nome, email e senha');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/sellers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ name, email, password, phone })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erro ao criar vendedor');
+                }
+
+                alert('Vendedor criado com sucesso!');
+                closeAddSellerModal();
+                loadSellers();
+            } catch (error) {
+                console.error('Erro ao criar vendedor:', error);
+                alert('Erro: ' + error.message);
+            }
+        }
+
+        async function updateSeller() {
+            const sellerId = document.getElementById('editSellerId').value;
+            const name = document.getElementById('editSellerName').value.trim();
+            const email = document.getElementById('editSellerEmail').value.trim();
+            const phone = document.getElementById('editSellerPhone').value.trim();
+            const is_active = document.getElementById('editSellerActive').value === 'true';
+
+            try {
+                const response = await fetch(`/api/sellers/${sellerId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ name, email, phone, is_active })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erro ao atualizar vendedor');
+                }
+
+                alert('Vendedor atualizado com sucesso!');
+                closeEditSellerModal();
+                loadSellers();
+            } catch (error) {
+                console.error('Erro ao atualizar vendedor:', error);
+                alert('Erro: ' + error.message);
+            }
+        }
+
+        async function deleteSeller(sellerId, sellerName) {
+            if (!confirm(`Deseja realmente excluir o vendedor ${sellerName}?\n\nOs leads atribuídos a este vendedor serão desvinculados.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/sellers/${sellerId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Erro ao deletar vendedor');
+                }
+
+                alert('Vendedor excluído com sucesso!');
+                loadSellers();
+            } catch (error) {
+                console.error('Erro ao deletar vendedor:', error);
+                alert('Erro: ' + error.message);
+            }
+        }
     </script>
+
+    <!-- Modal Adicionar Vendedor -->
+    <div id="addSellerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-xl font-bold text-gray-800">Adicionar Novo Vendedor</h3>
+            </div>
+            <form id="addSellerForm" class="p-6" onsubmit="event.preventDefault(); createSeller();">
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nome Completo *</label>
+                    <input type="text" id="sellerName" required
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+                    <input type="email" id="sellerEmail" required
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Senha *</label>
+                    <input type="password" id="sellerPassword" required minlength="6"
+                           placeholder="Mínimo 6 caracteres"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Telefone</label>
+                    <input type="tel" id="sellerPhone"
+                           placeholder="(31) 99999-9999"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition">
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeAddSellerModal()"
+                            class="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-700 rounded-lg font-semibold hover:border-gray-300 transition">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                            class="flex-1 btn-primary text-white px-6 py-3 rounded-lg font-semibold shadow-lg">
+                        <i class="fas fa-check mr-2"></i>
+                        Criar Vendedor
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Vendedor -->
+    <div id="editSellerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-xl font-bold text-gray-800">Editar Vendedor</h3>
+            </div>
+            <form id="editSellerForm" class="p-6" onsubmit="event.preventDefault(); updateSeller();">
+                <input type="hidden" id="editSellerId">
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Nome Completo</label>
+                    <input type="text" id="editSellerName"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                    <input type="email" id="editSellerEmail"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Telefone</label>
+                    <input type="tel" id="editSellerPhone"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                    <select id="editSellerActive"
+                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition">
+                        <option value="true">Ativo</option>
+                        <option value="false">Inativo</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeEditSellerModal()"
+                            class="flex-1 px-6 py-3 border-2 border-gray-200 text-gray-700 rounded-lg font-semibold hover:border-gray-300 transition">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                            class="flex-1 btn-primary text-white px-6 py-3 rounded-lg font-semibold shadow-lg">
+                        <i class="fas fa-save mr-2"></i>
+                        Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </body>
 </html>

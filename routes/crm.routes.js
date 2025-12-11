@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const crmService = require('../services/crm.service');
+const { requireAuth, requireAdmin, canAccessLead, attachUserInfo } = require('../middleware/auth.middleware');
 
 // Middleware de autenticação (reutilizar o existente)
-const requireAuth = (req, res, next) => {
+const requireAuthLegacy = (req, res, next) => {
     if (!req.session.userId) {
         return res.status(401).json({ success: false, message: 'Não autenticado' });
     }
@@ -38,7 +39,7 @@ router.get('/leads', requireAuth, async (req, res) => {
 /**
  * GET /api/crm/leads/:id - Buscar lead específico
  */
-router.get('/leads/:id', requireAuth, async (req, res) => {
+router.get('/leads/:id', requireAuth, canAccessLead, async (req, res) => {
     try {
         const leadId = req.params.id;
         const [lead] = await crmService.getLeadsByStage(req.session.userId, { leadId });
@@ -125,7 +126,7 @@ router.delete('/leads/:id', requireAuth, async (req, res) => {
 /**
  * POST /api/crm/leads/:id/move - Mover lead para outro estágio
  */
-router.post('/leads/:id/move', requireAuth, async (req, res) => {
+router.post('/leads/:id/move', requireAuth, canAccessLead, async (req, res) => {
     try {
         const leadId = req.params.id;
         const { stageId } = req.body;
@@ -143,9 +144,9 @@ router.post('/leads/:id/move', requireAuth, async (req, res) => {
 });
 
 /**
- * POST /api/crm/leads/:id/assign - Atribuir lead a vendedor
+ * POST /api/crm/leads/:id/assign - Atribuir lead a vendedor (apenas admin)
  */
-router.post('/leads/:id/assign', requireAuth, async (req, res) => {
+router.post('/leads/:id/assign', requireAdmin, async (req, res) => {
     try {
         const leadId = req.params.id;
         const { sellerId } = req.body;
@@ -161,7 +162,7 @@ router.post('/leads/:id/assign', requireAuth, async (req, res) => {
 /**
  * POST /api/crm/leads/:id/bot-toggle - Pausar/Reativar Bot
  */
-router.post('/leads/:id/bot-toggle', requireAuth, async (req, res) => {
+router.post('/leads/:id/bot-toggle', requireAuth, canAccessLead, async (req, res) => {
     try {
         const leadId = req.params.id;
         const { active } = req.body;
@@ -181,7 +182,7 @@ router.post('/leads/:id/bot-toggle', requireAuth, async (req, res) => {
 /**
  * POST /api/crm/leads/:id/send-message - Enviar mensagem manual (pausa bot automaticamente)
  */
-router.post('/leads/:id/send-message', requireAuth, async (req, res) => {
+router.post('/leads/:id/send-message', requireAuth, canAccessLead, async (req, res) => {
     try {
         const leadId = req.params.id;
         const { message, phone } = req.body;
