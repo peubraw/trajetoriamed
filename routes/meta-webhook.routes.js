@@ -96,8 +96,15 @@ router.post('/webhook', async (req, res) => {
             return;
         }
 
-        // Processar com o chatbot flow
-        await chatbotFlowService.handleMessage(userId, adaptedMessage, metaWhatsAppService);
+        // Processar com o chatbot flow usando processMessage
+        const leadId = leads.length > 0 ? leads[0].id : null;
+        await chatbotFlowService.processMessage(
+            userId, 
+            messageData.from, 
+            messageData.text, 
+            {}, 
+            leadId
+        );
 
     } catch (error) {
         console.error('❌ Erro ao processar webhook:', error);
