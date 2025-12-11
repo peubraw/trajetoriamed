@@ -183,7 +183,7 @@ class CRMKanbanAdvanced {
                     <input type="text" value="${stage.name}" 
                            onchange="crmAdvanced.updateStageName(${stage.id}, this.value)"
                            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                    <span class="text-sm text-gray-500">${stage.order_position}</span>
+                    <span class="text-sm text-gray-500">#${stage.position}</span>
                 </div>
                 <div class="flex items-center space-x-2">
                     <button onclick="crmAdvanced.deleteStage(${stage.id})" 
@@ -214,7 +214,7 @@ class CRMKanbanAdvanced {
         const stageElements = document.querySelectorAll('.stage-item');
         const order = Array.from(stageElements).map((el, index) => ({
             id: el.dataset.stageId,
-            order_position: index
+            order_position: index + 1
         }));
 
         try {
@@ -240,7 +240,7 @@ class CRMKanbanAdvanced {
                 body: JSON.stringify({
                     name,
                     color: '#' + Math.floor(Math.random()*16777215).toString(16),
-                    order_position: this.stages.length
+                    position: this.stages.length + 1
                 })
             });
 

@@ -398,7 +398,7 @@ router.put('/stages/order', requireAuth, async (req, res) => {
         // Atualizar ordem de cada stage
         for (const stage of stages) {
             await db.execute(
-                'UPDATE crm_stages SET order_position = ? WHERE id = ? AND user_id = ?',
+                'UPDATE crm_stages SET position = ? WHERE id = ? AND user_id = ?',
                 [stage.order_position, stage.id, userId]
             );
         }
