@@ -96,15 +96,49 @@ router.post('/webhook', async (req, res) => {
             return;
         }
 
-        // Processar com o chatbot flow usando processMessage
+        // Criar adapter Meta API para enviar mensagens
+        const MetaWhatsAppAdapter = require('../services/meta-adapter.service');
+        const client = new MetaWhatsAppAdapter(userId);
+
+        // Buscar configuração do bot
+        const db = require('../config/database');
+        const [configs] = await db.execute(
+            'SELECT * FROM bot_configurations WHERE user_id = ?',
+            [userId]
+        );
+        
+        const flowConfig = {};
+        if (configs.length > 0) {
+            const config = configs[0];
+            try {
+                const coursesConfig = JSON.parse(config.courses_config || '[]');
+                coursesConfig.forEach(course => {
+                    if (course.instagram_link) {
+                        flowConfig[`link_${course.id}`] = course.instagram_link;
+                    }
+                });
+            } catch (e) {
+                console.log('⚠️ Erro ao parsear courses_config:', e.message);
+            }
+        }
+
+        // Processar com o chatbot flow
         const leadId = leads.length > 0 ? leads[0].id : null;
-        await chatbotFlowService.processMessage(
+        const flowResponse = await chatbotFlowService.processMessage(
             userId, 
-            messageData.from, 
+            messageData.from + '@c.us', 
             messageData.text, 
-            {}, 
+            flowConfig, 
             leadId
         );
+
+        // Enviar resposta se houver
+        if (flowResponse && flowResponse.message) {
+            await client.sendText(messageData.from + '@c.us', flowResponse.message);
+            console.log(`✅ Resposta enviada para ${messageData.from}`);
+        } else if (flowResponse) {
+            console.log('⏸️ Resposta processada mas sem mensagem para enviar');
+        }
 
     } catch (error) {
         console.error('❌ Erro ao processar webhook:', error);
