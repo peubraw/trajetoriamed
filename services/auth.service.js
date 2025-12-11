@@ -267,7 +267,7 @@ class AuthService {
             // Admin vê tudo da conta dele
             if (user.role === 'admin') {
                 return { 
-                    condition: 'user_id = ?', 
+                    condition: 'l.user_id = ?', 
                     params: [userId] 
                 };
             }
@@ -277,7 +277,7 @@ class AuthService {
                 // Buscar o admin pai para garantir que só vê leads da conta correta
                 const parentAdmin = await this.getParentAdmin(userId);
                 return { 
-                    condition: 'user_id = ? AND assigned_to = ?', 
+                    condition: 'l.user_id = ? AND l.assigned_to = ?', 
                     params: [parentAdmin.id, userId] 
                 };
             }
