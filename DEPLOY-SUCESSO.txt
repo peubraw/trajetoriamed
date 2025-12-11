@@ -1,0 +1,219 @@
+╔════════════════════════════════════════════════════════════════╗
+║          DEPLOY CONCLUÍDO - META WHATSAPP API                  ║
+║                  TrajetóriaMED WPPBOT                          ║
+╚════════════════════════════════════════════════════════════════╝
+
+✅ STATUS DO DEPLOY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Código atualizado no servidor
+✅ Dependências instaladas
+✅ Aplicação reiniciada (PM2)
+✅ Webhook funcionando
+✅ Meta API inicializada
+
+🔧 CONFIGURAÇÕES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📱 WhatsApp Business
+   Número: +55 61 9903-3732
+   Nome: TrajetoriaMED
+   Status: ✅ VERIFIED
+   Quality: 🟢 GREEN
+   Limite: 1000 conversas/mês (TIER_1K)
+
+🔗 API Oficial Meta
+   App ID: 1115367907182650
+   Phone ID: 858789420659191
+   WABA ID: 4211071149107697
+
+🌐 Servidor
+   IP: 165.22.158.58
+   Porta: 3001
+   Status: ✅ ONLINE (PM2)
+
+📡 Webhook
+   URL: http://165.22.158.58:3001/api/meta/webhook
+   Token: TrajetoriaMed_Webhook_2025
+   Status: ✅ CONFIGURADO no Facebook
+
+🧪 TESTAR AGORA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣  TESTE BÁSICO DE RECEBIMENTO
+
+   📱 Do seu celular, envie uma mensagem WhatsApp para:
+      +55 61 9903-3732
+   
+   💬 Pode enviar qualquer mensagem, exemplo:
+      "Olá, quero saber sobre os cursos"
+   
+   ✅ O que deve acontecer:
+      • Webhook recebe a mensagem
+      • Sistema processa automaticamente
+      • Lead é criado/atualizado no CRM
+      • Bot responde (se estiver configurado)
+
+2️⃣  VERIFICAR LOGS EM TEMPO REAL
+
+   Execute no terminal:
+   ssh root@165.22.158.58 "pm2 logs wppbot"
+   
+   Você verá:
+   📩 Webhook de mensagem recebido
+   📨 Mensagem de [Nome] ([Número]): "[Texto]"
+   
+   Para sair dos logs: Ctrl + C
+
+3️⃣  ACESSAR DASHBOARD WEB
+
+   http://165.22.158.58:3001
+   
+   Login padrão:
+   • Email: admin@exemplo.com
+   • Senha: (a que você configurou)
+
+4️⃣  GERENCIAR CRM
+
+   http://165.22.158.58:3001/crm-kanban.html
+   
+   Aqui você verá:
+   • Todos os leads que enviaram mensagem
+   • Status da conversa
+   • Histórico completo
+   • Opção de pausar/ativar bot
+
+📊 MONITORAMENTO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ver status:
+   ssh root@165.22.158.58 "pm2 status"
+
+Ver logs:
+   ssh root@165.22.158.58 "pm2 logs wppbot --lines 50"
+
+Reiniciar:
+   ssh root@165.22.158.58 "pm2 restart wppbot"
+
+Parar:
+   ssh root@165.22.158.58 "pm2 stop wppbot"
+
+Iniciar:
+   ssh root@165.22.158.58 "pm2 start wppbot"
+
+📝 PRÓXIMOS PASSOS (OPCIONAL)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Criar Templates Personalizados em Português
+   
+   Acesse: https://business.facebook.com/wa/manage/message-templates/
+   
+   Exemplos de templates úteis:
+   
+   📝 Template: boas_vindas
+   Categoria: MARKETING
+   Idioma: pt_BR
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Olá {{1}}! 👋
+   
+   Bem-vindo à TrajetóriaMed! 
+   
+   Somos especialistas em cursos preparatórios para 
+   concursos médicos. Como posso ajudar você?
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   
+   📝 Template: lembrete_curso
+   Categoria: UTILITY
+   Idioma: pt_BR
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Olá {{1}}!
+   
+   Seu curso {{2}} está com matrícula aberta!
+   
+   Garanta sua vaga: {{3}}
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+2. Configurar Respostas Automáticas do Bot
+   
+   Acesse: http://165.22.158.58:3001/bot-config.html
+   
+   Configure:
+   • Mensagem de boas-vindas
+   • Palavras-chave e respostas
+   • Fluxo de qualificação de leads
+   • Horário de atendimento
+
+3. Personalizar Prompts de IA
+   
+   Edite o arquivo:
+   /var/www/wppbot/prompt-templates/MASTER-Bot-Trajetoria-Med.txt
+   
+   Personalize:
+   • Tom de voz
+   • Informações sobre cursos
+   • Perguntas de qualificação
+   • Gatilhos de vendas
+
+📞 IMPORTANTE - JANELA DE 24 HORAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+A Meta WhatsApp API tem uma regra importante:
+
+🟢 CONVERSA INICIADA PELO USUÁRIO (Gratuita)
+   • Usuário envia mensagem primeiro
+   • Você tem 24 horas para responder livremente
+   • ✅ Use para atendimento e vendas
+
+🟡 CONVERSA INICIADA PELA EMPRESA (Precisa template)
+   • Para iniciar conversa, use template aprovado
+   • Templates levam ~15 min para aprovar
+   • ✅ Use para campanhas e lembretes
+
+🆘 SOLUÇÃO DE PROBLEMAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ Mensagem não chega
+   → Verificar se webhook está configurado
+   → Ver logs: pm2 logs wppbot
+   → Verificar se o número está correto
+
+❌ Webhook não verifica
+   → URL: http://165.22.158.58:3001/api/meta/webhook
+   → Token: TrajetoriaMed_Webhook_2025
+   → Verificar se servidor está online
+
+❌ Erro ao enviar mensagem
+   → Erro 131047: Usuário precisa mandar msg primeiro OU use template
+   → Erro 401/403: Token inválido - renovar no Facebook
+   → Erro 100: Parâmetro inválido - verificar formato
+
+❌ Bot não responde
+   → Verificar se bot está ativo no CRM
+   → Ver configuração em /bot-config.html
+   → Verificar prompt de IA configurado
+
+📚 DOCUMENTAÇÃO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Meta WhatsApp Cloud API:
+https://developers.facebook.com/docs/whatsapp/cloud-api
+
+Webhooks:
+https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks
+
+Templates:
+https://developers.facebook.com/docs/whatsapp/message-templates
+
+Pricing:
+https://developers.facebook.com/docs/whatsapp/pricing
+
+🎉 TUDO PRONTO!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Seu sistema TrajetóriaMed está 100% funcional com a API oficial 
+do WhatsApp!
+
+Envie uma mensagem agora para testar:
+📱 +55 61 9903-3732
+
+E veja a mágica acontecer! ✨

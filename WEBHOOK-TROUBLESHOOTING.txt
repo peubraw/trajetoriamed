@@ -1,0 +1,162 @@
+╔════════════════════════════════════════════════════════════════╗
+║     PROBLEMA: MENSAGENS NÃO ESTÃO CHEGANDO NO WEBHOOK         ║
+╚════════════════════════════════════════════════════════════════╝
+
+DIAGNÓSTICO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Servidor está rodando (porta 3001)
+✅ Meta API configurada corretamente
+✅ Login funcionando
+❌ Webhook NÃO está recebendo mensagens
+
+POSSÍVEIS CAUSAS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. ❌ Webhook não está inscrito no número de telefone
+2. ❌ URL do webhook incorreta no Facebook
+3. ❌ Webhook fields não estão marcados
+4. ❌ Firewall bloqueando requisições da Meta
+
+SOLUÇÃO PASSO A PASSO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+PASSO 1: Verificar Configuração do Webhook
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Acesse:
+https://developers.facebook.com/apps/1115367907182650/whatsapp-business/wa-settings/
+
+Verifique:
+
+1. URL de Retorno de Chamada:
+   ✅ Deve estar: http://165.22.158.58/api/meta/webhook
+   
+2. Token de Verificação:
+   ✅ Deve estar: TrajetoriaMed_Webhook_2025
+
+3. Webhook Fields (Campos):
+   ✅ messages - Deve estar MARCADO
+   ✅ message_status - Deve estar MARCADO
+   
+4. Status da Verificação:
+   ✅ Deve mostrar um ✓ verde
+
+PASSO 2: Inscrever Webhook no Número
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CRÍTICO: O webhook precisa estar INSCRITO no número de telefone!
+
+1. Acesse a mesma página:
+   https://developers.facebook.com/apps/1115367907182650/whatsapp-business/wa-settings/
+
+2. Role até a seção "Webhooks"
+
+3. Procure por "Phone number" ou "Número de telefone"
+
+4. Clique em "Gerenciar" ou "Manage"
+
+5. Certifique-se de que o webhook está INSCRITO no número:
+   📱 +55 61 9903-3732 (ID: 858789420659191)
+
+6. Se não estiver, clique em "Inscrever" ou "Subscribe"
+
+PASSO 3: Testar Verificação do Webhook
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+No Facebook Developers, há um botão "Test" ou "Testar"
+
+Clique nele e veja se aparece:
+✅ "Webhook verified successfully"
+
+Se der erro:
+❌ Verifique se a URL está acessível
+❌ Verifique se o token está correto
+
+PASSO 4: URL Correta do Webhook
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️ IMPORTANTE: A URL deve ser acessível pela internet!
+
+URL CORRETA (HTTP):
+http://165.22.158.58/api/meta/webhook
+
+OU se tiver HTTPS configurado:
+https://165.22.158.58/api/meta/webhook
+
+⚠️ NÃO use:
+❌ http://localhost:3001/api/meta/webhook
+❌ http://165.22.158.58:3001/api/meta/webhook (com porta)
+
+PASSO 5: Testar se o Webhook está Acessível
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Abra no navegador:
+http://165.22.158.58/api/meta/webhook-test
+
+Deve mostrar:
+{
+  "status": "OK",
+  "message": "Meta Webhook está funcionando!",
+  "verifyToken": "Configurado"
+}
+
+Se não funcionar:
+❌ Nginx não está redirecionando corretamente
+❌ Servidor não está acessível externamente
+
+PASSO 6: Verificar Logs do Webhook
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Execute no terminal:
+ssh root@165.22.158.58 "pm2 logs wppbot --lines 0"
+
+Depois envie uma mensagem WhatsApp para:
++55 61 9903-3732
+
+Você DEVE ver nos logs:
+📩 Webhook de mensagem recebido
+📨 Mensagem de [Nome] ([Número]): "[Texto]"
+
+Se NÃO aparecer nada:
+❌ Webhook não está inscrito no número
+❌ Meta não está conseguindo chamar sua URL
+
+COMANDO PARA TESTAR (no seu PC):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Abra PowerShell e execute:
+Invoke-WebRequest -Uri "http://165.22.158.58/api/meta/webhook-test"
+
+Deve retornar status 200 e o JSON acima.
+
+CHECKLIST FINAL:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[ ] Webhook URL configurada: http://165.22.158.58/api/meta/webhook
+[ ] Token de verificação: TrajetoriaMed_Webhook_2025
+[ ] Webhook fields marcados: messages, message_status
+[ ] Webhook INSCRITO no número 858789420659191
+[ ] URL acessível pela internet (teste no navegador)
+[ ] Nginx configurado para porta 3001
+[ ] PM2 rodando na porta 3001
+
+TESTE RÁPIDO:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Acesse: http://165.22.158.58/api/meta/webhook-test
+2. Veja logs: ssh root@165.22.158.58 "pm2 logs wppbot --lines 0"  
+3. Envie mensagem WhatsApp para: +55 61 9903-3732
+4. Veja se aparece nos logs
+
+Se AINDA não funcionar:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Vá em:
+https://developers.facebook.com/apps/1115367907182650/webhooks/
+
+E clique em "Test" para ver se a Meta consegue chamar seu webhook.
+
+IMPORTANTE:
+O problema mais comum é o webhook não estar INSCRITO no número!
+Certifique-se de fazer a inscrição no painel do Facebook.

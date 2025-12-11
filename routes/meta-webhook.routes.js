@@ -96,9 +96,7 @@ router.post('/webhook', async (req, res) => {
             return;
         }
 
-        // Criar adapter Meta API para enviar mensagens
-        const MetaWhatsAppAdapter = require('../services/meta-adapter.service');
-        const client = new MetaWhatsAppAdapter(userId);
+        // Usar serviço Meta API direto (não precisa de adapter aqui)
 
         // Buscar configuração do bot
         const db = require('../config/database');
