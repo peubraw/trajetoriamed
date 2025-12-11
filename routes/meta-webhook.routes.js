@@ -150,6 +150,14 @@ router.post('/webhook', async (req, res) => {
                 );
                 
                 messageToSend = aiResponse;
+                
+                // Sincronizar com CRM após resposta da IA
+                try {
+                    const conversationHistory = whatsappService.conversationHistory.get(`${userId}-${messageData.from}@c.us`) || [];
+                    await chatbotFlowService.syncSessionToCRM(userId, messageData.from + '@c.us', conversationHistory);
+                } catch (syncError) {
+                    console.error('⚠️ Erro ao sincronizar CRM (não bloqueante):', syncError.message);
+                }
             }
             // Se resposta é string, enviar direto
             else if (typeof flowResponse === 'string') {
@@ -169,6 +177,29 @@ router.post('/webhook', async (req, res) => {
             } else {
                 console.log('⏸️ Resposta processada mas sem mensagem para enviar (useAI ou null)');
             }
+        }
+        
+        // Sincronizar lead com CRM (sempre que houver mensagem)
+        try {
+            const sessionInfo = chatbotFlowService.getSessionInfo(userId, messageData.from + '@c.us');
+            if (sessionInfo && sessionInfo.nome) {
+                const crmService = require('../services/crm.service');
+                const cleanPhone = messageData.from.replace('@c.us', '');
+                
+                await crmService.upsertLead({
+                    userId: userId,
+                    phone: cleanPhone,
+                    name: sessionInfo.nome,
+                    interestedCourse: sessionInfo.produto,
+                    isFormerStudent: sessionInfo.exAluno,
+                    channel: 'whatsapp_meta',
+                    source: 'meta_api'
+                });
+                
+                console.log(`✅ Lead sincronizado com CRM: ${sessionInfo.nome} (${cleanPhone})`);
+            }
+        } catch (crmError) {
+            console.error('⚠️ Erro ao sincronizar lead com CRM:', crmError.message);
         }
 
     } catch (error) {
