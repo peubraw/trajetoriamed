@@ -261,27 +261,35 @@ class AuthService {
         try {
             const user = await this.getUserById(userId);
             if (!user) {
+                console.log('🔍 getLeadAccessFilter: Usuário não encontrado');
                 return { condition: '1 = 0', params: [] }; // Nenhum acesso
             }
 
+            console.log('🔍 getLeadAccessFilter: userId=', userId, 'role=', user.role);
+
             // Admin vê tudo da conta dele
             if (user.role === 'admin') {
-                return { 
+                const filter = { 
                     condition: 'l.user_id = ?', 
                     params: [userId] 
                 };
+                console.log('🔍 Admin filter:', filter);
+                return filter;
             }
 
             // Vendedor só vê leads atribuídos a ele
             if (user.role === 'seller') {
                 // Buscar o admin pai para garantir que só vê leads da conta correta
                 const parentAdmin = await this.getParentAdmin(userId);
-                return { 
+                const filter = { 
                     condition: 'l.user_id = ? AND l.assigned_to = ?', 
                     params: [parentAdmin.id, userId] 
                 };
+                console.log('🔍 Seller filter:', filter);
+                return filter;
             }
 
+            console.log('🔍 getLeadAccessFilter: Role desconhecido, sem acesso');
             return { condition: '1 = 0', params: [] };
         } catch (error) {
             console.error('❌ Erro ao obter filtro de acesso:', error);
