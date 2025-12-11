@@ -499,20 +499,21 @@
                     console.log('courses_config type:', typeof config.courses_config);
 
                     // Persona
-                    document.getElementById('bot_name').value = config.bot_name || 'Mia';
-                    document.getElementById('temperature').value = config.temperature || 0.7;
-                    document.getElementById('max_tokens').value = config.max_tokens || 500;
-                    document.getElementById('is_active').checked = config.is_active;
+                    if (document.getElementById('bot_name')) {
+                        document.getElementById('bot_name').value = config.bot_name || 'Mia';
+                    }
+                    if (document.getElementById('temperature')) {
+                        document.getElementById('temperature').value = config.temperature || 0.7;
+                    }
+                    if (document.getElementById('max_tokens')) {
+                        document.getElementById('max_tokens').value = config.max_tokens || 500;
+                    }
+                    if (document.getElementById('is_active')) {
+                        document.getElementById('is_active').checked = config.is_active;
+                    }
 
-                    // Vendedores
-                    document.getElementById('vendor1_name').value = config.vendor1_name || '';
-                    document.getElementById('vendor1_phone').value = config.vendor1_phone || '';
-                    document.getElementById('vendor2_name').value = config.vendor2_name || '';
-                    document.getElementById('vendor2_phone').value = config.vendor2_phone || '';
-                    document.getElementById('vendor3_name').value = config.vendor3_name || '';
-                    document.getElementById('vendor3_phone').value = config.vendor3_phone || '';
-                    document.getElementById('vendor4_name').value = config.vendor4_name || '';
-                    document.getElementById('vendor4_phone').value = config.vendor4_phone || '';
+                    // Vendedores antigos (removidos - agora usa sistema de sellers)
+                    // Os campos vendor1_name, etc não existem mais no HTML
 
                     // Carregar courses_config se existir
                     if (config.courses_config) {
