@@ -49,6 +49,84 @@ class CRMKanbanAdvanced {
         `).join('');
 
         this.initializeSortable();
+        this.loadLeads();
+    }
+
+    // Carregar e renderizar leads
+    async loadLeads() {
+        try {
+            const response = await fetch('/api/crm/leads', { credentials: 'include' });
+            if (!response.ok) return;
+            
+            const data = await response.json();
+            const leads = Array.isArray(data) ? data : (data.leads || []);
+            
+            // Limpar colunas
+            this.stages.forEach(stage => {
+                const column = document.getElementById(`stage-${stage.id}`);
+                if (column) column.innerHTML = '';
+            });
+            
+            // Adicionar leads
+            leads.forEach(lead => this.addLeadCard(lead));
+            
+            // Atualizar total
+            const totalEl = document.getElementById('totalLeads');
+            if (totalEl) totalEl.textContent = leads.length;
+        } catch (error) {
+            console.error('Erro ao carregar leads:', error);
+        }
+    }
+
+    // Adicionar card de lead
+    addLeadCard(lead) {
+        const column = document.getElementById(`stage-${lead.stage_id}`);
+        if (!column) {
+            console.warn('Coluna não encontrada para stage_id:', lead.stage_id);
+            return;
+        }
+        
+        const card = document.createElement('div');
+        card.className = 'lead-card bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md cursor-pointer';
+        card.dataset.leadId = lead.id;
+        card.onclick = () => this.openLeadModal(lead.id);
+        
+        card.innerHTML = `
+            <div class="flex items-start justify-between mb-2">
+                <h4 class="font-semibold text-gray-800 text-sm">${lead.name || 'Sem nome'}</h4>
+                <button onclick="event.stopPropagation(); crmAdvanced.deleteLead(${lead.id})" 
+                        class="text-gray-400 hover:text-red-500">
+                    <i class="fas fa-trash text-xs"></i>
+                </button>
+            </div>
+            ${lead.phone ? `<p class="text-xs text-gray-500 mb-1"><i class="fas fa-phone mr-1"></i> ${lead.phone}</p>` : ''}
+            ${lead.email ? `<p class="text-xs text-gray-500 mb-1"><i class="fas fa-envelope mr-1"></i> ${lead.email}</p>` : ''}
+            ${lead.interested_course ? `<span class="inline-block mt-2 px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">${lead.interested_course}</span>` : ''}
+        `;
+        
+        column.appendChild(card);
+        
+        // Atualizar contador
+        const count = column.querySelectorAll('.lead-card').length;
+        const countEl = document.getElementById(`count-${lead.stage_id}`);
+        if (countEl) countEl.textContent = count;
+    }
+
+    // Deletar lead
+    async deleteLead(leadId) {
+        if (!confirm('Deseja realmente excluir este lead?')) return;
+        
+        try {
+            await fetch(`/api/crm/leads/${leadId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            this.loadLeads();
+            showToast('Lead excluído com sucesso!', 'success');
+        } catch (error) {
+            console.error('Erro ao deletar lead:', error);
+            showToast('Erro ao excluir lead', 'error');
+        }
     }
 
     // Inicializar drag & drop
@@ -147,7 +225,7 @@ class CRMKanbanAdvanced {
 
             if (response.ok) {
                 this.closeLeadModal();
-                this.loadStages();
+                this.loadLeads();
                 showToast('Lead salvo com sucesso!', 'success');
             }
         } catch (error) {
@@ -309,8 +387,12 @@ class CRMKanbanAdvanced {
     // Conectar WebSocket
     connectSocket() {
         this.socket = io();
-        this.socket.on('lead:updated', (data) => {
-            this.loadStages();
+        this.socket.emit('join-crm', 1); // userId
+        this.socket.on('lead:updated', () => {
+            this.loadLeads();
+        });
+        this.socket.on('crm-update', () => {
+            this.loadLeads();
         });
     }
 
