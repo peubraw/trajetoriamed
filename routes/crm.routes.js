@@ -383,6 +383,34 @@ router.delete('/stages/:id', requireAuth, async (req, res) => {
 });
 
 /**
+ * PUT /api/crm/stages/order - Atualizar ordem dos estágios
+ */
+router.put('/stages/order', requireAuth, async (req, res) => {
+    try {
+        const { stages } = req.body; // Array [{id, order_position}]
+        const userId = req.session.userId;
+        const db = require('../config/database');
+
+        if (!Array.isArray(stages)) {
+            return res.status(400).json({ success: false, message: 'stages deve ser um array' });
+        }
+
+        // Atualizar ordem de cada stage
+        for (const stage of stages) {
+            await db.execute(
+                'UPDATE crm_stages SET order_position = ? WHERE id = ? AND user_id = ?',
+                [stage.order_position, stage.id, userId]
+            );
+        }
+
+        res.json({ success: true, message: 'Ordem atualizada com sucesso' });
+    } catch (error) {
+        console.error('❌ Erro ao atualizar ordem:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+/**
  * PUT /api/crm/stages/reorder - Reordenar estágios
  */
 router.put('/stages/reorder', requireAuth, async (req, res) => {

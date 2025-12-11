@@ -1,0 +1,193 @@
+<!-- Modal de Edição de Lead -->
+<div id="lead-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="bg-gradient-to-r from-purple-600 to-purple-800 px-6 py-4 rounded-t-xl">
+            <div class="flex items-center justify-between">
+                <h2 id="lead-modal-title" class="text-xl font-bold text-white">Editar Lead</h2>
+                <button onclick="crmAdvanced.closeLeadModal()" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <form id="lead-form" class="p-6 space-y-6">
+            <!-- Informações Básicas -->
+            <div class="border-b border-gray-200 pb-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Informações Básicas</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-user mr-1"></i> Nome Completo *
+                        </label>
+                        <input type="text" id="lead-name" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-phone mr-1"></i> Telefone *
+                        </label>
+                        <input type="tel" id="lead-phone" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                               placeholder="(00) 00000-0000">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-envelope mr-1"></i> E-mail
+                        </label>
+                        <input type="email" id="lead-email"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-map-marker-alt mr-1"></i> Estado
+                        </label>
+                        <select id="lead-state" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option value="">Selecione...</option>
+                            <option value="AC">Acre</option>
+                            <option value="AL">Alagoas</option>
+                            <option value="AP">Amapá</option>
+                            <option value="AM">Amazonas</option>
+                            <option value="BA">Bahia</option>
+                            <option value="CE">Ceará</option>
+                            <option value="DF">Distrito Federal</option>
+                            <option value="ES">Espírito Santo</option>
+                            <option value="GO">Goiás</option>
+                            <option value="MA">Maranhão</option>
+                            <option value="MT">Mato Grosso</option>
+                            <option value="MS">Mato Grosso do Sul</option>
+                            <option value="MG">Minas Gerais</option>
+                            <option value="PA">Pará</option>
+                            <option value="PB">Paraíba</option>
+                            <option value="PR">Paraná</option>
+                            <option value="PE">Pernambuco</option>
+                            <option value="PI">Piauí</option>
+                            <option value="RJ">Rio de Janeiro</option>
+                            <option value="RN">Rio Grande do Norte</option>
+                            <option value="RS">Rio Grande do Sul</option>
+                            <option value="RO">Rondônia</option>
+                            <option value="RR">Roraima</option>
+                            <option value="SC">Santa Catarina</option>
+                            <option value="SP">São Paulo</option>
+                            <option value="SE">Sergipe</option>
+                            <option value="TO">Tocantins</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações Profissionais -->
+            <div class="border-b border-gray-200 pb-4">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Informações Profissionais</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-stethoscope mr-1"></i> Especialidade
+                        </label>
+                        <input type="text" id="lead-specialty"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                               placeholder="Ex: Medicina do Trabalho">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-certificate mr-1"></i> RQE
+                        </label>
+                        <input type="text" id="lead-rqe"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-graduation-cap mr-1"></i> Curso de Interesse
+                        </label>
+                        <select id="lead-interested-course" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option value="">Selecione...</option>
+                            <option value="auditoria">Pós em Auditoria em Saúde</option>
+                            <option value="medicina">Pós em Medicina do Trabalho</option>
+                            <option value="pericia">Pós em Perícia Médica Federal e Judicial</option>
+                            <option value="combo">Combo Perícia + Medicina do Trabalho</option>
+                            <option value="provatitulos">Prova de Título em Medicina Legal</option>
+                            <option value="missao">Missão Médico Legista (PC/PF)</option>
+                            <option value="sos">SOS Médico Legista (Reta Final)</option>
+                            <option value="caixa">CAIXA (Médico do Trabalho)</option>
+                            <option value="tcemg">TCE MG (Tribunal de Contas)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observações -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-sticky-note mr-1"></i> Observações
+                </label>
+                <textarea id="lead-notes" rows="4"
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          placeholder="Anotações sobre o lead..."></textarea>
+            </div>
+
+            <!-- Botões -->
+            <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <button type="button" onclick="crmAdvanced.closeLeadModal()"
+                        class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition shadow-lg">
+                    <i class="fas fa-save mr-2"></i> Salvar Lead
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de Gerenciamento de Stages -->
+<div id="stages-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="bg-gradient-to-r from-purple-600 to-purple-800 px-6 py-4 rounded-t-xl">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-bold text-white">
+                    <i class="fas fa-columns mr-2"></i>
+                    Gerenciar Estágios do Pipeline
+                </h2>
+                <button onclick="crmAdvanced.closeStagesModal()" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <!-- Instruções -->
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-blue-500"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-blue-700">
+                            Arraste para reordenar os estágios. Clique na cor ou no nome para editar.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Stages -->
+            <div id="stages-list" class="space-y-3 mb-6">
+                <!-- Stages serão renderizados aqui via JavaScript -->
+            </div>
+
+            <!-- Botão Adicionar Stage -->
+            <button onclick="crmAdvanced.createStage()"
+                    class="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-purple-500 hover:text-purple-600 transition">
+                <i class="fas fa-plus mr-2"></i>
+                Adicionar Novo Estágio
+            </button>
+
+            <!-- Botões -->
+            <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-6">
+                <button onclick="crmAdvanced.closeStagesModal()"
+                        class="px-6 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition shadow-lg">
+                    <i class="fas fa-check mr-2"></i> Concluído
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
