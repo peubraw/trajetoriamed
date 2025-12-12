@@ -73,6 +73,18 @@ router.post('/webhook', async (req, res) => {
         // TODO: Implementar lógica de múltiplos usuários
         const userId = 1;
 
+        // VERIFICAR SE O LEAD JÁ EXISTE NO CRM
+        const crmService = require('../services/crm.service');
+        const cleanPhone = messageData.from.replace('@c.us', '');
+        const existingLead = await crmService.getLeadByPhone(cleanPhone, userId);
+
+        if (existingLead) {
+            console.log(`🚫 Lead ${existingLead.name} (${cleanPhone}) já existe no CRM - bot não responderá`);
+            return;
+        }
+
+        console.log(`✅ Lead ${cleanPhone} não existe no CRM - bot responderá normalmente`);
+
         // Processar mensagem no fluxo do chatbot
         // Adaptar o formato para o chatbot-flow.service
         const adaptedMessage = {
@@ -85,7 +97,7 @@ router.post('/webhook', async (req, res) => {
             type: messageData.type
         };
 
-        // Verificar se o bot está ativo para este lead
+        // Verificar se o bot está ativo para este lead (redundante agora, mas mantendo por segurança)
         const [leads] = await require('../config/database').execute(
             'SELECT bot_active FROM crm_leads WHERE phone = ? AND user_id = ?',
             [messageData.from, userId]
@@ -174,6 +186,42 @@ router.post('/webhook', async (req, res) => {
                 const cleanPhone = messageData.from.replace('@c.us', '');
                 await metaWhatsAppService.sendTextMessage(cleanPhone, messageToSend);
                 console.log(`✅ Resposta enviada para ${messageData.from}: "${messageToSend.substring(0, 50)}..."`);
+                
+                // VERIFICAR SE ENVIOU LINK DE PAGAMENTO E MOVER PARA "LINK ENVIADO"
+                if (messageToSend.includes('pay.kiwify.com.br')) {
+                    console.log('💳 Link de pagamento detectado na resposta!');
+                    
+                    try {
+                        const crmService = require('../services/crm.service');
+                        
+                        console.log(`🔍 Buscando lead com telefone: ${cleanPhone}`);
+                        const lead = await crmService.getLeadByPhone(cleanPhone, userId);
+                        
+                        if (lead) {
+                            console.log(`✅ Lead encontrado: ${lead.name} (ID: ${lead.id})`);
+                            
+                            const db = require('../config/database');
+                            const [linkStage] = await db.execute(
+                                'SELECT id, name FROM crm_stages WHERE user_id = ? AND (name LIKE "%Link Enviado%" OR name LIKE "%link enviado%") LIMIT 1',
+                                [userId]
+                            );
+                            
+                            console.log(`🔍 Stages encontrados:`, linkStage);
+                            
+                            if (linkStage.length > 0) {
+                                console.log(`📦 Movendo lead ${lead.id} para stage ${linkStage[0].id} (${linkStage[0].name})`);
+                                await crmService.moveLeadToStage(lead.id, linkStage[0].id, userId);
+                                console.log(`✅ Lead ${lead.name} movido para coluna "${linkStage[0].name}"`);
+                            } else {
+                                console.log('⚠️ Coluna "Link Enviado" não encontrada no CRM');
+                            }
+                        } else {
+                            console.log(`⚠️ Lead não encontrado no CRM com telefone: ${cleanPhone}`);
+                        }
+                    } catch (moveError) {
+                        console.error('⚠️ Erro ao mover lead (não bloqueante):', moveError.message);
+                    }
+                }
             } else {
                 console.log('⏸️ Resposta processada mas sem mensagem para enviar (useAI ou null)');
             }

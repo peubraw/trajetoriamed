@@ -294,6 +294,17 @@ class WhatsAppService {
                 return;
             }
 
+            // VERIFICAR SE O LEAD JÁ EXISTE NO CRM
+            const crmService = require('./crm.service');
+            const existingLead = await crmService.getLeadByPhone(senderPhone, userId);
+
+            if (existingLead) {
+                console.log(`🚫 Lead ${existingLead.name} (${senderPhone}) já existe no CRM - bot não responderá`);
+                return;
+            }
+
+            console.log(`✅ Lead ${senderPhone} não existe no CRM - bot responderá normalmente`);
+
             // Verificar se o bot está pausado para este contato
             const pauseKey = `pause-${message.from}`;
             if (this.conversationHistory.get(pauseKey)) {
@@ -543,6 +554,41 @@ class WhatsAppService {
 
             if (sentPaymentLink || isExStudent) {
                 console.log('💳 Link de pagamento detectado na resposta!');
+
+                // MOVER LEAD PARA COLUNA "LINK ENVIADO"
+                try {
+                    const crmService = require('./crm.service');
+                    const contactPhone = message.from.replace('@c.us', '');
+                    
+                    console.log(`🔍 Buscando lead com telefone: ${contactPhone}`);
+                    
+                    // Buscar lead pelo telefone
+                    const lead = await crmService.getLeadByPhone(contactPhone, userId);
+                    
+                    if (lead) {
+                        console.log(`✅ Lead encontrado: ${lead.name} (ID: ${lead.id})`);
+                        
+                        // Buscar estágio "Link Enviado" (com ou sem emoji)
+                        const [linkStage] = await db.execute(
+                            'SELECT id, name FROM crm_stages WHERE user_id = ? AND (name LIKE "%Link Enviado%" OR name LIKE "%link enviado%") LIMIT 1',
+                            [userId]
+                        );
+                        
+                        console.log(`🔍 Stages encontrados:`, linkStage);
+                        
+                        if (linkStage.length > 0) {
+                            console.log(`📦 Movendo lead ${lead.id} para stage ${linkStage[0].id} (${linkStage[0].name})`);
+                            await crmService.moveLeadToStage(lead.id, linkStage[0].id, userId);
+                            console.log(`✅ Lead ${lead.name} movido para coluna "${linkStage[0].name}"`);
+                        } else {
+                            console.log('⚠️ Coluna "Link Enviado" não encontrada no CRM');
+                        }
+                    } else {
+                        console.log(`⚠️ Lead não encontrado no CRM com telefone: ${contactPhone}`);
+                    }
+                } catch (moveError) {
+                    console.error('⚠️ Erro ao mover lead (não bloqueante):', moveError.message);
+                }
 
                 // Buscar vendedores do banco de dados
                 const [configs] = await db.execute(
