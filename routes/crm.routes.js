@@ -158,6 +158,26 @@ router.post('/leads/:id/move', requireAuth, canAccessLead, async (req, res) => {
 });
 
 /**
+ * PUT /api/crm/leads/:id/stage - Atualizar stage do lead (drag & drop)
+ */
+router.put('/leads/:id/stage', requireAuth, async (req, res) => {
+    try {
+        const leadId = req.params.id;
+        const { stageId } = req.body;
+
+        if (!stageId) {
+            return res.status(400).json({ success: false, message: 'stageId é obrigatório' });
+        }
+
+        await crmService.moveLeadToStage(leadId, stageId, req.session.userId);
+        res.json({ success: true, message: 'Lead movido com sucesso' });
+    } catch (error) {
+        console.error('❌ Erro ao mover lead:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+/**
  * POST /api/crm/leads/:id/assign - Atribuir lead a vendedor (apenas admin)
  */
 router.post('/leads/:id/assign', requireAdmin, async (req, res) => {
