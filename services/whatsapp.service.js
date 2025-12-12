@@ -294,16 +294,20 @@ class WhatsAppService {
                 return;
             }
 
-            // VERIFICAR SE O LEAD JÁ EXISTE NO CRM
+            // VERIFICAR SE O LEAD JÁ EXISTE NO CRM E SE O BOT ESTÁ ATIVO
             const crmService = require('./crm.service');
             const existingLead = await crmService.getLeadByPhone(senderPhone, userId);
 
-            if (existingLead) {
-                console.log(`🚫 Lead ${existingLead.name} (${senderPhone}) já existe no CRM - bot não responderá`);
+            if (existingLead && existingLead.bot_active === 0) {
+                console.log(`🚫 Lead ${existingLead.name} (${senderPhone}) existe no CRM com bot DESATIVADO - bot não responderá`);
                 return;
             }
 
-            console.log(`✅ Lead ${senderPhone} não existe no CRM - bot responderá normalmente`);
+            if (existingLead && existingLead.bot_active === 1) {
+                console.log(`✅ Lead ${existingLead.name} (${senderPhone}) existe no CRM com bot ATIVO - bot responderá normalmente`);
+            } else if (!existingLead) {
+                console.log(`✅ Lead ${senderPhone} não existe no CRM - bot responderá normalmente`);
+            }
 
             // Verificar se o bot está pausado para este contato
             const pauseKey = `pause-${message.from}`;

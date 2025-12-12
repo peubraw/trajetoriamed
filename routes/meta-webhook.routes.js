@@ -73,17 +73,21 @@ router.post('/webhook', async (req, res) => {
         // TODO: Implementar lógica de múltiplos usuários
         const userId = 1;
 
-        // VERIFICAR SE O LEAD JÁ EXISTE NO CRM
+        // VERIFICAR SE O LEAD JÁ EXISTE NO CRM E SE O BOT ESTÁ ATIVO
         const crmService = require('../services/crm.service');
         const cleanPhone = messageData.from.replace('@c.us', '');
         const existingLead = await crmService.getLeadByPhone(cleanPhone, userId);
 
-        if (existingLead) {
-            console.log(`🚫 Lead ${existingLead.name} (${cleanPhone}) já existe no CRM - bot não responderá`);
+        if (existingLead && existingLead.bot_active === 0) {
+            console.log(`🚫 Lead ${existingLead.name} (${cleanPhone}) existe no CRM com bot DESATIVADO - bot não responderá`);
             return;
         }
 
-        console.log(`✅ Lead ${cleanPhone} não existe no CRM - bot responderá normalmente`);
+        if (existingLead && existingLead.bot_active === 1) {
+            console.log(`✅ Lead ${existingLead.name} (${cleanPhone}) existe no CRM com bot ATIVO - bot responderá normalmente`);
+        } else if (!existingLead) {
+            console.log(`✅ Lead ${cleanPhone} não existe no CRM - bot responderá normalmente`);
+        }
 
         // Processar mensagem no fluxo do chatbot
         // Adaptar o formato para o chatbot-flow.service
