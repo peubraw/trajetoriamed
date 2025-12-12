@@ -376,6 +376,11 @@
             console.log('addCourse() called');
             console.log('Current coursesData:', coursesData);
             
+            if (!coursesData) {
+                console.error('coursesData não está definido! Inicializando...');
+                coursesData = [];
+            }
+            
             const course = {
                 id: `course_${Date.now()}`,
                 name: '',
@@ -395,6 +400,7 @@
 
             coursesData.push(course);
             console.log('Course added, new coursesData:', coursesData);
+            console.log('Calling renderCourses()...');
             renderCourses();
         }
 
@@ -650,6 +656,11 @@
 
         function renderCourses() {
             const container = document.getElementById('courses-list');
+            if (!container) {
+                console.error('Container courses-list não encontrado!');
+                return;
+            }
+            
             container.innerHTML = '';
 
             if (coursesData.length === 0) {
@@ -921,6 +932,9 @@
                     showTab(tabName, this);
                 });
             });
+            
+            // Renderizar cursos vazio inicialmente (será preenchido por loadConfig se houver)
+            renderCourses();
             
             loadConfig();
             loadSellers(); // Carregar vendedores na aba
