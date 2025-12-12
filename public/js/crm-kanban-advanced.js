@@ -359,6 +359,7 @@ class CRMKanbanAdvanced {
             if (response.ok) {
                 await this.loadStages();
                 this.renderStagesList();
+                this.renderKanbanColumns(); // Atualizar Kanban também
                 showToast('Stage criado com sucesso!', 'success');
             }
         } catch (error) {
@@ -375,6 +376,7 @@ class CRMKanbanAdvanced {
                 body: JSON.stringify({ color })
             });
             await this.loadStages();
+            this.renderKanbanColumns(); // Atualizar Kanban
         } catch (error) {
             console.error('Erro ao atualizar cor:', error);
         }
@@ -389,6 +391,7 @@ class CRMKanbanAdvanced {
                 body: JSON.stringify({ name })
             });
             await this.loadStages();
+            this.renderKanbanColumns(); // Atualizar Kanban
         } catch (error) {
             console.error('Erro ao atualizar nome:', error);
         }
@@ -406,6 +409,7 @@ class CRMKanbanAdvanced {
             });
             await this.loadStages();
             this.renderStagesList();
+            this.renderKanbanColumns(); // Atualizar Kanban também
             showToast('Stage removido com sucesso!', 'success');
         } catch (error) {
             console.error('Erro ao deletar stage:', error);
