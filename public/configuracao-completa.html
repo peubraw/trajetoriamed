@@ -872,6 +872,12 @@ Digite o número da opção desejada:
                         <div><strong>Link New:</strong> ${course.payment_link_new ? '✅' : '❌'}</div>
                         <div><strong>Link Alumni:</strong> ${course.payment_link_alumni ? '✅' : '❌'}</div>
                     </div>
+                    ${course.teachers ? `
+                        <div class="mt-3 pt-3 border-t border-gray-200">
+                            <strong class="text-sm text-gray-700">👨‍🏫 Professores:</strong>
+                            <div class="text-sm text-gray-600 mt-1">${course.teachers.split('\n').filter(t => t.trim()).join(', ')}</div>
+                        </div>
+                    ` : ''}
                 </div>
             `).join('');
         }
@@ -977,6 +983,7 @@ Digite o número da opção desejada:
                 subjects: '',
                 payment_link_new: '',
                 payment_link_alumni: '',
+                teachers: '',
                 flow_instructions: '',
                 intro_script: '',
                 closing_script: ''
@@ -1033,6 +1040,17 @@ Digite o número da opção desejada:
                         </div>
                         
                         <div class="border-t pt-4 mt-4">
+                            <h4 class="text-lg font-bold mb-3">👨‍🏫 Professores do Curso</h4>
+                            <div class="grid grid-cols-1 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Lista de Professores</label>
+                                    <textarea id="edit_course_teachers" rows="4" class="w-full px-4 py-2 border rounded-lg" placeholder="Dr. João Silva&#10;Dra. Maria Santos&#10;Dr. Pedro Oliveira">${course.teachers || ''}</textarea>
+                                    <small class="text-gray-500">Digite um professor por linha. Exemplo: Dr. João Silva, Dra. Maria Santos</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t pt-4 mt-4">
                             <h4 class="text-lg font-bold mb-3">💰 Preços do Curso</h4>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
@@ -1075,6 +1093,7 @@ Digite o número da opção desejada:
                 payment_link_new: document.getElementById('edit_course_link_new').value,
                 payment_link_alumni: document.getElementById('edit_course_link_alumni').value,
                 instagram_link: document.getElementById('edit_course_instagram').value,
+                teachers: document.getElementById('edit_course_teachers').value,
                 installment: document.getElementById('edit_course_installment').value,
                 cash: document.getElementById('edit_course_cash').value,
                 coupon: document.getElementById('edit_course_coupon').value
