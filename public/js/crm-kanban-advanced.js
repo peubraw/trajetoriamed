@@ -137,7 +137,15 @@ class CRMKanbanAdvanced {
     addLeadCard(lead) {
         const column = document.getElementById(`stage-${lead.stage_id}`);
         if (!column) {
-            console.warn('Coluna não encontrada para stage_id:', lead.stage_id);
+            console.warn('⚠️ Coluna não encontrada para stage_id:', lead.stage_id, '- Lead:', lead.name);
+            // Tentar adicionar na primeira stage disponível
+            if (this.stages.length > 0) {
+                console.log('🔄 Movendo lead para primeira stage disponível:', this.stages[0].id);
+                lead.stage_id = this.stages[0].id;
+                // Atualizar no banco também
+                this.moveLeadToStage(lead.id, this.stages[0].id);
+                return this.addLeadCard(lead); // Tentar novamente com nova stage
+            }
             return;
         }
         

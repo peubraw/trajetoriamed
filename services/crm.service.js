@@ -495,6 +495,17 @@ class CRMService {
     // ===================================
 
     async getStages(userId) {
+        // Vendedores devem ver os stages do admin pai
+        const authService = require('./auth.service');
+        const user = await authService.getUserById(userId);
+        
+        let targetUserId = userId;
+        if (user && user.role === 'seller') {
+            const parentAdmin = await authService.getParentAdmin(userId);
+            targetUserId = parentAdmin.id;
+            console.log(`🔍 Vendedor ${userId} usando stages do admin ${targetUserId}`);
+        }
+        
         const [stages] = await db.query(`
             SELECT s.*, 
                    COUNT(l.id) as lead_count,
@@ -504,7 +515,7 @@ class CRMService {
             WHERE s.user_id = ?
             GROUP BY s.id
             ORDER BY s.position
-        `, [userId]);
+        `, [targetUserId]);
         return stages;
     }
 
