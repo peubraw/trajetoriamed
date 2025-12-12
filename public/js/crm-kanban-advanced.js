@@ -5,14 +5,42 @@ class CRMKanbanAdvanced {
         this.currentLead = null;
         this.stages = [];
         this.sellers = [];
+        this.currentUserId = null;
     }
 
     // Inicializar sistema
-    init() {
+    async init() {
+        await this.checkAuth();
         this.loadStages();
         this.loadSellers();
         this.setupEventListeners();
         this.connectSocket();
+    }
+
+    // Verificar autenticação
+    async checkAuth() {
+        try {
+            const response = await fetch('/api/auth/check', {
+                credentials: 'include'
+            });
+            if (!response.ok) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            const data = await response.json();
+            if (!data.authenticated) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // Salvar userId para usar no socket
+            this.currentUserId = data.user.id;
+            console.log('🔐 Autenticado como:', data.user.name, 'userId:', this.currentUserId);
+            
+        } catch (error) {
+            window.location.href = '/login.html';
+        }
     }
 
     // Carregar vendedores do banco
@@ -435,7 +463,7 @@ class CRMKanbanAdvanced {
     // Conectar WebSocket
     connectSocket() {
         this.socket = io();
-        this.socket.emit('join-crm', 1); // userId
+        this.socket.emit('join-crm', this.currentUserId);
         this.socket.on('lead:updated', () => {
             this.loadLeads();
         });

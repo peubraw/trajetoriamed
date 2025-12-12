@@ -78,11 +78,11 @@
             <div class="p-4 border-t border-white border-opacity-10">
                 <div class="flex items-center px-4 py-3 bg-white bg-opacity-10 rounded-lg">
                     <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-700 flex items-center justify-center text-white font-semibold">
-                        <span>LB</span>
+                        <span id="userInitials">LB</span>
                     </div>
                     <div class="ml-3 flex-1 min-w-0">
-                        <p class="text-sm font-medium text-white truncate">Leandro Berti</p>
-                        <p class="text-xs text-white text-opacity-60 truncate">Admin</p>
+                        <p class="text-sm font-medium text-white truncate" id="userName">Leandro Berti</p>
+                        <p class="text-xs text-white text-opacity-60 truncate" id="userRole">Admin</p>
                     </div>
                     <button onclick="logout()" class="text-white text-opacity-60 hover:text-opacity-100">
                         <i class="fas fa-sign-out-alt"></i>
@@ -497,16 +497,65 @@
             }
         }
         
+        let currentUserId = null;
+
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/auth/check', {
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
+                const data = await response.json();
+                if (!data.authenticated) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
+                // Atualizar informações do usuário
+                const user = data.user;
+                currentUserId = user.id;
+                const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                
+                // Atualizar sidebar
+                document.getElementById('userName').textContent = user.name;
+                document.getElementById('userInitials').textContent = initials;
+                document.getElementById('userRole').textContent = user.role === 'seller' ? 'Vendedor' : 'Administrador';
+                
+                // Ocultar menus para vendedores
+                if (user.role === 'seller') {
+                    document.querySelectorAll('.admin-only').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                }
+                
+                // Inicializar socket com userId correto
+                initSocket();
+                
+            } catch (error) {
+                window.location.href = '/login.html';
+            }
+        }
+
         function initSocket() {
             socket = io();
-            socket.emit('join-crm', 1); // userId
+            socket.emit('join-crm', currentUserId);
             
             socket.on('crm-update', () => {
                 loadLeads();
             });
         }
         
-        init();
+        function logout() {
+            fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+                .then(() => window.location.href = '/login.html');
+        }
+        
+        // Chamar checkAuth antes de init
+        checkAuth().then(() => init());
     </script>
     
     <!-- Modals -->
