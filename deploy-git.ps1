@@ -61,14 +61,14 @@ ssh $REMOTE_USER@$REMOTE_HOST @"
 "@
 
 Write-Host ""
-Write-Host "╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "║                    DEPLOY CONCLUÍDO!                           ║" -ForegroundColor Green
-Write-Host "╚════════════════════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Host "================================================================" -ForegroundColor Green
+Write-Host "                    DEPLOY CONCLUIDO!                           " -ForegroundColor Green
+Write-Host "================================================================" -ForegroundColor Green
 Write-Host ""
 
-Write-Host "🧪 TESTAR AGORA:" -ForegroundColor Cyan
+Write-Host "TESTAR AGORA:" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "1. Envie uma mensagem WhatsApp para: +55 61 9903-3732" -ForegroundColor White
 Write-Host "2. Acesse: https://165.22.158.58:3001" -ForegroundColor White
-Write-Host "3. Ver logs: ssh root@165.22.158.58 'pm2 logs wppbot'" -ForegroundColor White
+Write-Host "3. Ver logs no servidor" -ForegroundColor White
 Write-Host ""
