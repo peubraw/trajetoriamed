@@ -4,13 +4,29 @@ class CRMKanbanAdvanced {
         this.socket = null;
         this.currentLead = null;
         this.stages = [];
+        this.sellers = [];
     }
 
     // Inicializar sistema
     init() {
         this.loadStages();
+        this.loadSellers();
         this.setupEventListeners();
         this.connectSocket();
+    }
+
+    // Carregar vendedores do banco
+    async loadSellers() {
+        try {
+            const response = await fetch('/api/sellers', { credentials: 'include' });
+            if (!response.ok) return;
+            
+            const data = await response.json();
+            this.sellers = data.sellers || [];
+            console.log('📋 Vendedores carregados:', this.sellers.length);
+        } catch (error) {
+            console.error('Erro ao carregar vendedores:', error);
+        }
     }
 
     // Carregar stages do banco
@@ -160,6 +176,9 @@ class CRMKanbanAdvanced {
 
     // Abrir modal de edição de lead
     openLeadModal(leadId = null) {
+        // Popular select de vendedores
+        this.populateSellersSelect();
+        
         if (leadId) {
             this.loadLeadData(leadId);
         } else {
@@ -168,6 +187,23 @@ class CRMKanbanAdvanced {
             document.getElementById('lead-form').reset();
         }
         document.getElementById('lead-modal').classList.remove('hidden');
+    }
+
+    // Popular select de vendedores
+    populateSellersSelect() {
+        const select = document.getElementById('lead-assigned-to');
+        if (!select) return;
+        
+        // Limpar opções antigas (exceto "Não atribuído")
+        select.innerHTML = '<option value="">Não atribuído</option>';
+        
+        // Adicionar vendedores
+        this.sellers.forEach(seller => {
+            const option = document.createElement('option');
+            option.value = seller.id;
+            option.textContent = seller.name;
+            select.appendChild(option);
+        });
     }
 
     // Carregar dados do lead
@@ -182,6 +218,7 @@ class CRMKanbanAdvanced {
             document.getElementById('lead-phone').value = data.lead.phone || '';
             document.getElementById('lead-email').value = data.lead.email || '';
             document.getElementById('lead-state').value = data.lead.state || '';
+            document.getElementById('lead-assigned-to').value = data.lead.assigned_to || '';
             document.getElementById('lead-interested-course').value = data.lead.interested_course || '';
             document.getElementById('lead-specialty').value = data.lead.specialty || '';
             document.getElementById('lead-rqe').value = data.lead.rqe || '';
@@ -200,6 +237,7 @@ class CRMKanbanAdvanced {
             phone: document.getElementById('lead-phone').value,
             email: document.getElementById('lead-email').value,
             state: document.getElementById('lead-state').value,
+            assigned_to: document.getElementById('lead-assigned-to').value || null,
             interested_course: document.getElementById('lead-interested-course').value,
             specialty: document.getElementById('lead-specialty').value,
             rqe: document.getElementById('lead-rqe').value,

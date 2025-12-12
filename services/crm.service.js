@@ -18,7 +18,7 @@ class CRMService {
         try {
             const { 
                 userId, phone, name, email, state, rqe, specialty,
-                interestedCourse, channel, source, isFormerStudent
+                interestedCourse, channel, source, isFormerStudent, assignedTo
             } = data;
 
             // Buscar estágio inicial
@@ -55,9 +55,10 @@ class CRMService {
                         specialty = COALESCE(?, specialty),
                         interested_course = COALESCE(?, interested_course),
                         is_former_student = COALESCE(?, is_former_student),
+                        assigned_to = COALESCE(?, assigned_to),
                         last_contact_at = CURRENT_TIMESTAMP
                     WHERE id = ?
-                `, [name, email, state, rqe, specialty, interestedCourse, isFormerStudent, leadId]);
+                `, [name, email, state, rqe, specialty, interestedCourse, isFormerStudent, assignedTo, leadId]);
 
                 // Log de atividade
                 await this.logActivity(leadId, userId, 'message_received', 'Nova mensagem recebida');
@@ -67,15 +68,17 @@ class CRMService {
                     INSERT INTO crm_leads (
                         user_id, phone, name, email, state, rqe, specialty,
                         stage_id, channel, source, interested_course, is_former_student,
-                        bot_active, last_contact_at, temperature
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE, CURRENT_TIMESTAMP, 'warm')
+                        assigned_to, bot_active, last_contact_at, temperature
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, TRUE, CURRENT_TIMESTAMP, 'warm')
                 `, [userId, phone, name, email, state, rqe, specialty, initialStageId, 
-                    channel || 'whatsapp', source, interestedCourse, isFormerStudent || false]);
+                    channel || 'whatsapp', source, interestedCourse, isFormerStudent || false, assignedTo]);
 
                 leadId = result.insertId;
 
-                // Distribuir lead se configurado
-                await this.distributeLeadIfNeeded(leadId, userId);
+                // Distribuir lead se configurado (apenas se assignedTo não foi especificado)
+                if (!assignedTo) {
+                    await this.distributeLeadIfNeeded(leadId, userId);
+                }
 
                 // Log de criação
                 await this.logActivity(leadId, userId, 'message_received', 'Novo lead criado');

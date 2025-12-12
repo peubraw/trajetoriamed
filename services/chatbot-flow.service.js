@@ -789,9 +789,8 @@ Estamos com poucas vagas nesse lote!`;
             }
         }
 
-        // Extrair estado (siglas)
-        const stateMatch = fullConversation.match(/\b([A-Z]{2})\b/);
-        if (stateMatch) extractedData.state = stateMatch[1];
+        // Estado deve ser preenchido manualmente - remoção da extração automática
+        // Motivo: siglas de 2 letras podem ser confundidas (ex: "TCE MG" → MG incorretamente detectado)
 
         // Extrair email
         const emailMatch = fullConversation.match(/[\w.-]+@[\w.-]+\.\w+/);

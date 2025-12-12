@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const db = require('../config/database');
 const crmService = require('../services/crm.service');
 const { requireAuth, requireAdmin, canAccessLead, attachUserInfo } = require('../middleware/auth.middleware');
 
@@ -64,7 +65,7 @@ router.get('/leads/:id', requireAuth, canAccessLead, async (req, res) => {
  */
 router.post('/leads', requireAuth, async (req, res) => {
     try {
-        const { phone, name, email, state, interestedCourse, source } = req.body;
+        const { phone, name, email, state, interestedCourse, source, assigned_to } = req.body;
         
         if (!phone) {
             return res.status(400).json({ success: false, message: 'Telefone é obrigatório' });
@@ -77,6 +78,7 @@ router.post('/leads', requireAuth, async (req, res) => {
             email,
             state,
             interestedCourse,
+            assignedTo: assigned_to,
             channel: 'manual',
             source
         });
@@ -94,12 +96,24 @@ router.post('/leads', requireAuth, async (req, res) => {
 router.put('/leads/:id', requireAuth, async (req, res) => {
     try {
         const leadId = req.params.id;
-        const updates = req.body;
+        const { name, email, state, rqe, specialty, interested_course, notes, assigned_to } = req.body;
 
-        // TODO: Implementar update específico
-        // Por enquanto, usar upsertLead para atualizar
+        // Atualizar campos do lead
+        await db.query(`
+            UPDATE crm_leads SET
+                name = ?,
+                email = ?,
+                state = ?,
+                rqe = ?,
+                specialty = ?,
+                interested_course = ?,
+                notes = ?,
+                assigned_to = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ? AND user_id = ?
+        `, [name, email, state, rqe, specialty, interested_course, notes, assigned_to || null, leadId, req.session.userId]);
 
-        res.json({ success: true, message: 'Lead atualizado' });
+        res.json({ success: true, message: 'Lead atualizado com sucesso' });
     } catch (error) {
         console.error('❌ Erro ao atualizar lead:', error);
         res.status(500).json({ success: false, message: error.message });
