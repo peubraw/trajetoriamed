@@ -60,12 +60,16 @@ class CRMKanbanAdvanced {
     // Carregar stages do banco
     async loadStages() {
         try {
+            console.log('🔄 Carregando stages...');
             const response = await fetch('/api/crm/stages');
             const data = await response.json();
             this.stages = data.stages || [];
-            this.renderKanbanColumns();
+            console.log('✅ Stages carregadas:', this.stages.length);
+            
+            // Aguardar um pouco para garantir que DOM está pronto
+            setTimeout(() => this.renderKanbanColumns(), 100);
         } catch (error) {
-            console.error('Erro ao carregar stages:', error);
+            console.error('❌ Erro ao carregar stages:', error);
         }
     }
 
@@ -73,7 +77,15 @@ class CRMKanbanAdvanced {
     renderKanbanColumns() {
         const container = document.getElementById('kanban-container');
         if (!container) {
-            console.warn('⚠️ Elemento kanban-container não encontrado');
+            console.error('❌ ERRO: Elemento kanban-container não encontrado! Verifique se o HTML está carregado.');
+            // Tentar novamente após 500ms
+            setTimeout(() => {
+                const retry = document.getElementById('kanban-container');
+                if (retry) {
+                    console.log('✅ Elemento encontrado na segunda tentativa');
+                    this.renderKanbanColumns();
+                }
+            }, 500);
             return;
         }
 
@@ -84,7 +96,8 @@ class CRMKanbanAdvanced {
         }
 
         console.log('📊 Renderizando', this.stages.length, 'colunas');
-        container.innerHTML = this.stages.map(stage => `
+        try {
+            container.innerHTML = this.stages.map(stage => `
             <div class="kanban-column bg-gray-50 rounded-lg p-4" style="min-width: 320px;" data-stage-id="${stage.id}">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center space-x-2">
@@ -99,8 +112,12 @@ class CRMKanbanAdvanced {
             </div>
         `).join('');
 
-        this.initializeSortable();
-        this.loadLeads();
+            this.initializeSortable();
+            this.loadLeads();
+            console.log('✅ Colunas renderizadas com sucesso');
+        } catch (error) {
+            console.error('❌ Erro ao renderizar colunas:', error);
+        }
     }
 
     // Carregar e renderizar leads
