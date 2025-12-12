@@ -247,8 +247,8 @@ class CRMKanbanAdvanced {
                 </span>` : '<span></span>'}
                 ${lead.assigned_to ? `
                 <div class="flex items-center text-xs text-gray-400">
-                    <i class="fas fa-user mr-1"></i>
-                    <span>${lead.seller_name || 'Vendedor'}</span>
+                    <i class="fas fa-user-tie mr-1"></i>
+                    <span class="truncate" title="${lead.assigned_name || 'Vendedor'}">${lead.assigned_name || 'Vendedor'}</span>
                 </div>` : ''}
             </div>
         `;
