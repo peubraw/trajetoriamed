@@ -185,8 +185,13 @@ class CRMKanbanAdvanced {
         }
         
         const card = document.createElement('div');
-        card.className = 'lead-card rounded-xl p-4 mb-3 group';
+        card.className = 'lead-card rounded-xl p-4 mb-3 group cursor-pointer';
         card.dataset.leadId = lead.id;
+        card.onclick = (e) => {
+            // Não abrir se clicou no botão de deletar
+            if (e.target.closest('button')) return;
+            crmAdvanced.openLeadModal(lead.id);
+        };
         
         // Determinar cor do avatar baseado no nome
         const avatarColors = [
@@ -218,9 +223,7 @@ class CRMKanbanAdvanced {
                     ${initials}
                 </div>
                 <div class="flex-1 min-w-0">
-                    <h4 class="font-semibold text-gray-900 text-sm truncate mb-1 cursor-pointer hover:text-indigo-600 transition-colors" 
-                        onclick="crmAdvanced.openLeadModal(${lead.id})" 
-                        title="${lead.name || 'Sem nome'}">
+                    <h4 class="font-semibold text-gray-900 text-sm truncate mb-1" title="${lead.name || 'Sem nome'}">
                         ${lead.name || 'Sem nome'}
                     </h4>
                     ${lead.phone ? `
