@@ -226,10 +226,16 @@
                                 <h2 class="text-xl font-bold text-gray-800">Configuração dos Cursos</h2>
                                 <p class="text-sm text-gray-500 mt-1">Configure todos os cursos disponíveis, incluindo informações da prova, preços e instruções para a IA</p>
                             </div>
-                            <button onclick="addCourse()" class="btn-primary text-white px-6 py-2.5 rounded-lg font-semibold flex items-center shadow-lg">
-                                <i class="fas fa-plus mr-2"></i>
-                                Adicionar Curso
-                            </button>
+                            <div class="flex gap-2">
+                                <button onclick="manageTemplates()" class="bg-purple-500 text-white px-6 py-2.5 rounded-lg font-semibold flex items-center shadow-lg hover:bg-purple-600 transition">
+                                    <i class="fas fa-folder mr-2"></i>
+                                    Gerenciar Templates
+                                </button>
+                                <button onclick="addCourse()" class="btn-primary text-white px-6 py-2.5 rounded-lg font-semibold flex items-center shadow-lg">
+                                    <i class="fas fa-plus mr-2"></i>
+                                    Adicionar Curso
+                                </button>
+                            </div>
                         </div>
                         
                         <div id="courses-list"></div>
@@ -399,6 +405,249 @@
             }
         }
 
+        // Sistema de Templates
+        function saveAsTemplate(courseIndex) {
+            const course = coursesData[courseIndex];
+            const templateName = prompt('Digite um nome para este template:', course.name || 'Template Sem Nome');
+            
+            if (!templateName) return;
+            
+            // Criar template (sem o ID para não duplicar)
+            const template = {
+                name: templateName,
+                data: {
+                    salary: course.salary,
+                    exam_date: course.exam_date,
+                    registration_deadline: course.registration_deadline,
+                    registration_fee: course.registration_fee,
+                    registration_fee_due: course.registration_fee_due,
+                    subjects: course.subjects,
+                    teachers: course.teachers,
+                    payment_link_new: course.payment_link_new,
+                    payment_link_alumni: course.payment_link_alumni,
+                    price_installment: course.price_installment,
+                    price_cash: course.price_cash,
+                    ai_instructions: course.ai_instructions
+                },
+                createdAt: new Date().toISOString()
+            };
+            
+            // Salvar no localStorage
+            let templates = JSON.parse(localStorage.getItem('courseTemplates') || '[]');
+            templates.push(template);
+            localStorage.setItem('courseTemplates', JSON.stringify(templates));
+            
+            showAlert(`Template "${templateName}" salvo com sucesso!`, 'success');
+        }
+
+        function loadTemplate(courseIndex) {
+            const templates = JSON.parse(localStorage.getItem('courseTemplates') || '[]');
+            
+            if (templates.length === 0) {
+                showAlert('Nenhum template disponível. Salve um curso como template primeiro.', 'error');
+                return;
+            }
+            
+            // Criar modal de seleção de template
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+            
+            const templateOptions = templates.map((t, i) => `
+                <div class="p-4 border rounded-lg hover:bg-purple-50 cursor-pointer transition" onclick="applyTemplate(${courseIndex}, ${i}); document.querySelector('.fixed.inset-0').remove();">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="font-bold text-gray-800">${t.name}</h4>
+                            <p class="text-xs text-gray-500">Criado em: ${new Date(t.createdAt).toLocaleString('pt-BR')}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="event.stopPropagation(); deleteTemplate(${i})" class="text-red-500 hover:text-red-700 px-2">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-folder-open text-purple-600 mr-2"></i>
+                            Selecionar Template
+                        </h3>
+                        <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        ${templateOptions}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        function applyTemplate(courseIndex, templateIndex) {
+            const templates = JSON.parse(localStorage.getItem('courseTemplates') || '[]');
+            const template = templates[templateIndex];
+            
+            if (!template) {
+                showAlert('Template não encontrado!', 'error');
+                return;
+            }
+            
+            // Aplicar dados do template ao curso (mantendo ID e name do curso atual)
+            const currentId = coursesData[courseIndex].id;
+            const currentName = coursesData[courseIndex].name;
+            
+            coursesData[courseIndex] = {
+                ...coursesData[courseIndex],
+                ...template.data,
+                id: currentId,
+                name: currentName
+            };
+            
+            renderCourses();
+            showAlert(`Template "${template.name}" aplicado com sucesso!`, 'success');
+        }
+
+        function deleteTemplate(templateIndex) {
+            if (!confirm('Tem certeza que deseja excluir este template?')) return;
+            
+            let templates = JSON.parse(localStorage.getItem('courseTemplates') || '[]');
+            const deletedName = templates[templateIndex].name;
+            templates.splice(templateIndex, 1);
+            localStorage.setItem('courseTemplates', JSON.stringify(templates));
+            
+            showAlert(`Template "${deletedName}" excluído!`, 'success');
+            
+            // Fechar modal se estiver aberto
+            const modal = document.querySelector('.fixed.inset-0');
+            if (modal) modal.remove();
+        }
+
+        function manageTemplates() {
+            const templates = JSON.parse(localStorage.getItem('courseTemplates') || '[]');
+            
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+            modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+            
+            const templatesList = templates.length > 0 ? templates.map((t, i) => `
+                <div class="p-4 border rounded-lg bg-gray-50 hover:bg-gray-100 transition">
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-800">${t.name}</h4>
+                            <p class="text-xs text-gray-500 mt-1">Criado em: ${new Date(t.createdAt).toLocaleString('pt-BR')}</p>
+                            <div class="mt-2 text-xs text-gray-600">
+                                <span class="bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                                    ${t.data.subjects ? 'Com matérias' : 'Sem matérias'}
+                                </span>
+                                <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded ml-1">
+                                    ${t.data.teachers ? 'Com professores' : 'Sem professores'}
+                                </span>
+                                <span class="bg-green-100 text-green-700 px-2 py-1 rounded ml-1">
+                                    ${t.data.payment_link_new ? 'Com links' : 'Sem links'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2 ml-4">
+                            <button onclick="exportTemplate(${i})" class="text-blue-500 hover:text-blue-700 px-3 py-2 rounded hover:bg-blue-50" title="Exportar">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            <button onclick="deleteTemplateFromManager(${i})" class="text-red-500 hover:text-red-700 px-3 py-2 rounded hover:bg-red-50" title="Excluir">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('') : '<div class="text-center py-8 text-gray-500"><i class="fas fa-inbox text-4xl mb-3 opacity-20"></i><p>Nenhum template salvo ainda.</p></div>';
+            
+            modal.innerHTML = `
+                <div class="bg-white rounded-xl p-6 max-w-4xl w-full max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-folder-open text-purple-600 mr-2"></i>
+                            Gerenciar Templates de Cursos
+                        </h3>
+                        <div class="flex gap-2">
+                            <button onclick="importTemplate()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
+                                <i class="fas fa-upload mr-1"></i>
+                                Importar
+                            </button>
+                            <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                                <i class="fas fa-times text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">
+                        Templates salvos: <strong>${templates.length}</strong>
+                    </p>
+                    <div class="space-y-3">
+                        ${templatesList}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+
+        function deleteTemplateFromManager(templateIndex) {
+            deleteTemplate(templateIndex);
+            manageTemplates(); // Reabrir o gerenciador
+        }
+
+        function exportTemplate(templateIndex) {
+            const templates = JSON.parse(localStorage.getItem('courseTemplates') || '[]');
+            const template = templates[templateIndex];
+            
+            const dataStr = JSON.stringify(template, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `template-${template.name.replace(/\s+/g, '-').toLowerCase()}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            showAlert(`Template "${template.name}" exportado!`, 'success');
+        }
+
+        function importTemplate() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const template = JSON.parse(event.target.result);
+                        
+                        // Validar estrutura do template
+                        if (!template.name || !template.data) {
+                            throw new Error('Formato de template inválido');
+                        }
+                        
+                        let templates = JSON.parse(localStorage.getItem('courseTemplates') || '[]');
+                        templates.push(template);
+                        localStorage.setItem('courseTemplates', JSON.stringify(templates));
+                        
+                        showAlert(`Template "${template.name}" importado com sucesso!`, 'success');
+                        manageTemplates(); // Reabrir o gerenciador
+                    } catch (error) {
+                        showAlert('Erro ao importar template: ' + error.message, 'error');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
         function renderCourses() {
             const container = document.getElementById('courses-list');
             container.innerHTML = '';
@@ -417,10 +666,20 @@
                             <i class="fas fa-book text-purple-600 mr-2"></i>
                             Curso ${index + 1}
                         </h3>
-                        <button onclick="removeCourse(${index})" class="btn-danger px-4 py-2 rounded-lg font-semibold text-sm">
-                            <i class="fas fa-trash mr-1"></i>
-                            Remover
-                        </button>
+                        <div class="flex gap-2">
+                            <button onclick="saveAsTemplate(${index})" class="bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-blue-600 transition">
+                                <i class="fas fa-save mr-1"></i>
+                                Salvar como Template
+                            </button>
+                            <button onclick="loadTemplate(${index})" class="bg-green-500 text-white px-4 py-2 rounded-lg font-semibold text-sm hover:bg-green-600 transition">
+                                <i class="fas fa-download mr-1"></i>
+                                Carregar Template
+                            </button>
+                            <button onclick="removeCourse(${index})" class="btn-danger px-4 py-2 rounded-lg font-semibold text-sm">
+                                <i class="fas fa-trash mr-1"></i>
+                                Remover
+                            </button>
+                        </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div>
