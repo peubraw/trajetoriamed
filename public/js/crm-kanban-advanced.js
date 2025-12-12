@@ -399,20 +399,30 @@ class CRMKanbanAdvanced {
 
     // Deletar stage
     async deleteStage(stageId) {
-        if (!confirm('Tem certeza que deseja excluir este stage? Os leads serão movidos para "Triagem".')) {
+        if (!confirm('Tem certeza que deseja excluir este stage? Os leads serão movidos para o primeiro estágio.')) {
             return;
         }
 
         try {
-            await fetch(`/api/crm/stages/${stageId}`, {
+            // Encontrar o primeiro stage disponível (diferente do que está sendo deletado)
+            const targetStage = this.stages.find(s => s.id != stageId);
+            
+            if (!targetStage) {
+                showToast('Erro: Precisa ter pelo menos um estágio no sistema', 'error');
+                return;
+            }
+
+            await fetch(`/api/crm/stages/${stageId}?moveLeadsToStageId=${targetStage.id}`, {
                 method: 'DELETE'
             });
+            
             await this.loadStages();
             this.renderStagesList();
             this.renderKanbanColumns(); // Atualizar Kanban também
             showToast('Stage removido com sucesso!', 'success');
         } catch (error) {
             console.error('Erro ao deletar stage:', error);
+            showToast('Erro ao deletar stage', 'error');
         }
     }
 
