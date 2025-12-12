@@ -3,9 +3,11 @@ class CRMKanbanAdvanced {
     constructor() {
         this.socket = null;
         this.currentLead = null;
+        this.currentStageId = null;
         this.stages = [];
         this.sellers = [];
         this.currentUserId = null;
+        this.allLeads = [];
     }
 
     // Inicializar sistema
@@ -15,6 +17,7 @@ class CRMKanbanAdvanced {
         this.loadSellers();
         this.setupEventListeners();
         this.connectSocket();
+        this.setupSearch();
     }
 
     // Verificar autenticação
@@ -98,15 +101,30 @@ class CRMKanbanAdvanced {
         console.log('📊 Renderizando', this.stages.length, 'colunas');
         try {
             container.innerHTML = this.stages.map(stage => `
-            <div class="kanban-column bg-gray-50 rounded-lg p-4" style="min-width: 320px;" data-stage-id="${stage.id}">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center space-x-2">
-                        <div class="w-3 h-3 rounded-full" style="background-color: ${stage.color}"></div>
-                        <h3 class="font-semibold text-gray-800">${stage.name}</h3>
-                        <span class="text-sm text-gray-500" id="count-${stage.id}">0</span>
+            <div class="kanban-column p-0 overflow-hidden" style="min-width: 340px; max-width: 340px;" data-stage-id="${stage.id}">
+                <div class="kanban-column-header px-4 py-3.5 sticky top-0 z-10">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center space-x-2.5">
+                            <div class="w-2.5 h-2.5 rounded-full shadow-sm" style="background-color: ${stage.color}"></div>
+                            <h3 class="font-bold text-gray-800 text-sm">${stage.name}</h3>
+                        </div>
+                        <button class="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-all">
+                            <i class="fas fa-ellipsis-h text-xs"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="badge bg-gray-100 text-gray-600 text-xs">
+                            <i class="fas fa-layer-group mr-1"></i>
+                            <span id="count-${stage.id}">0</span> leads
+                        </span>
+                        <button onclick="crmAdvanced.openLeadModalForStage(${stage.id})" 
+                                class="text-gray-400 hover:text-indigo-600 transition-all p-1" 
+                                title="Adicionar lead neste estágio">
+                            <i class="fas fa-plus text-xs"></i>
+                        </button>
                     </div>
                 </div>
-                <div id="stage-${stage.id}" class="lead-container space-y-3" style="min-height: 400px;">
+                <div id="stage-${stage.id}" class="lead-container px-4 py-3 overflow-y-auto" style="max-height: calc(100vh - 350px);">
                     <!-- Cards dos leads serão inseridos aqui -->
                 </div>
             </div>
@@ -138,21 +156,11 @@ class CRMKanbanAdvanced {
             const leads = Array.isArray(data) ? data : (data.leads || []);
             console.log('📋 Total de leads:', leads.length);
             
-            // Limpar colunas
-            this.stages.forEach(stage => {
-                const column = document.getElementById(`stage-${stage.id}`);
-                if (column) column.innerHTML = '';
-            });
+            // Salvar todos os leads para busca
+            this.allLeads = leads;
             
-            // Adicionar leads
-            leads.forEach(lead => {
-                console.log('📄 Adicionando lead:', lead.name, 'stage:', lead.stage_id);
-                this.addLeadCard(lead);
-            });
-            
-            // Atualizar total
-            const totalEl = document.getElementById('totalLeads');
-            if (totalEl) totalEl.textContent = leads.length;
+            // Renderizar leads
+            this.renderLeadsInColumns(leads);
             
             console.log('✅ Leads carregados com sucesso!');
         } catch (error) {
@@ -177,20 +185,72 @@ class CRMKanbanAdvanced {
         }
         
         const card = document.createElement('div');
-        card.className = 'lead-card bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md cursor-move';
+        card.className = 'lead-card rounded-xl p-4 mb-3 group';
         card.dataset.leadId = lead.id;
         
+        // Determinar cor do avatar baseado no nome
+        const avatarColors = [
+            'from-blue-500 to-blue-600',
+            'from-green-500 to-green-600',
+            'from-purple-500 to-purple-600',
+            'from-pink-500 to-pink-600',
+            'from-orange-500 to-orange-600',
+            'from-teal-500 to-teal-600'
+        ];
+        const colorIndex = (lead.name || '').charCodeAt(0) % avatarColors.length;
+        const avatarColor = avatarColors[colorIndex];
+        
+        // Iniciais do nome
+        const initials = (lead.name || 'SN').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        
+        // Badge do curso com cores específicas
+        const courseBadges = {
+            'Perícia Médica': 'bg-blue-100 text-blue-700',
+            'Auditoria': 'bg-green-100 text-green-700',
+            'Medicina do Trabalho': 'bg-purple-100 text-purple-700',
+            'Combo': 'bg-orange-100 text-orange-700'
+        };
+        const badgeClass = courseBadges[lead.interested_course] || 'bg-gray-100 text-gray-700';
+        
         card.innerHTML = `
-            <div class="flex items-start justify-between mb-2">
-                <h4 class="font-semibold text-gray-800 text-sm cursor-pointer hover:text-blue-600" onclick="crmAdvanced.openLeadModal(${lead.id})">${lead.name || 'Sem nome'}</h4>
+            <div class="flex items-start space-x-3 mb-3">
+                <div class="avatar w-10 h-10 text-white text-xs shadow-md bg-gradient-to-br ${avatarColor} flex-shrink-0">
+                    ${initials}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h4 class="font-semibold text-gray-900 text-sm truncate mb-1 cursor-pointer hover:text-indigo-600 transition-colors" 
+                        onclick="crmAdvanced.openLeadModal(${lead.id})" 
+                        title="${lead.name || 'Sem nome'}">
+                        ${lead.name || 'Sem nome'}
+                    </h4>
+                    ${lead.phone ? `
+                    <div class="flex items-center text-xs text-gray-500 mb-1">
+                        <i class="fas fa-phone w-3.5 mr-1.5 text-gray-400"></i>
+                        <span class="truncate">${lead.phone}</span>
+                    </div>` : ''}
+                    ${lead.email ? `
+                    <div class="flex items-center text-xs text-gray-500 mb-1">
+                        <i class="fas fa-envelope w-3.5 mr-1.5 text-gray-400"></i>
+                        <span class="truncate">${lead.email}</span>
+                    </div>` : ''}
+                </div>
                 <button onclick="event.stopPropagation(); crmAdvanced.deleteLead(${lead.id})" 
-                        class="text-gray-400 hover:text-red-500">
+                        class="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-1">
                     <i class="fas fa-trash text-xs"></i>
                 </button>
             </div>
-            ${lead.phone ? `<p class="text-xs text-gray-500 mb-1"><i class="fas fa-phone mr-1"></i> ${lead.phone}</p>` : ''}
-            ${lead.email ? `<p class="text-xs text-gray-500 mb-1"><i class="fas fa-envelope mr-1"></i> ${lead.email}</p>` : ''}
-            ${lead.interested_course ? `<span class="inline-block mt-2 px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">${lead.interested_course}</span>` : ''}
+            
+            <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                ${lead.interested_course ? `
+                <span class="badge ${badgeClass} text-xs">
+                    <i class="fas fa-graduation-cap mr-1"></i>${lead.interested_course}
+                </span>` : '<span></span>'}
+                ${lead.assigned_to ? `
+                <div class="flex items-center text-xs text-gray-400">
+                    <i class="fas fa-user mr-1"></i>
+                    <span>${lead.seller_name || 'Vendedor'}</span>
+                </div>` : ''}
+            </div>
         `;
         
         column.appendChild(card);
@@ -260,10 +320,17 @@ class CRMKanbanAdvanced {
             this.loadLeadData(leadId);
         } else {
             this.currentLead = null;
+            this.currentStageId = null;
             document.getElementById('lead-modal-title').textContent = 'Novo Lead';
             document.getElementById('lead-form').reset();
         }
         document.getElementById('lead-modal').classList.remove('hidden');
+    }
+    
+    // Abrir modal de lead para estágio específico
+    openLeadModalForStage(stageId) {
+        this.currentStageId = stageId;
+        this.openLeadModal();
     }
 
     // Popular select de vendedores
@@ -318,6 +385,11 @@ class CRMKanbanAdvanced {
             rqe: document.getElementById('lead-rqe').value,
             notes: document.getElementById('lead-notes').value
         };
+        
+        // Se foi criado a partir de uma coluna específica, define o stage
+        if (!this.currentLead && this.currentStageId) {
+            formData.stage_id = this.currentStageId;
+        }
 
         try {
             const url = this.currentLead 
@@ -528,23 +600,103 @@ class CRMKanbanAdvanced {
     setupEventListeners() {
         document.getElementById('lead-form')?.addEventListener('submit', (e) => this.saveLead(e));
     }
+    
+    // Configurar busca
+    setupSearch() {
+        const searchInput = document.getElementById('searchInput');
+        if (!searchInput) return;
+        
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.filterLeads(e.target.value);
+            }, 300);
+        });
+    }
+    
+    // Filtrar leads pela busca
+    filterLeads(searchTerm) {
+        const term = searchTerm.toLowerCase().trim();
+        
+        if (!term) {
+            // Mostrar todos os leads
+            this.renderLeadsInColumns(this.allLeads);
+            return;
+        }
+        
+        // Filtrar leads
+        const filtered = this.allLeads.filter(lead => {
+            return (
+                (lead.name || '').toLowerCase().includes(term) ||
+                (lead.phone || '').toLowerCase().includes(term) ||
+                (lead.email || '').toLowerCase().includes(term) ||
+                (lead.interested_course || '').toLowerCase().includes(term)
+            );
+        });
+        
+        this.renderLeadsInColumns(filtered);
+    }
+    
+    // Renderizar leads nas colunas (separado para permitir filtragem)
+    renderLeadsInColumns(leads) {
+        // Limpar todas as colunas
+        this.stages.forEach(stage => {
+            const container = document.getElementById(`stage-${stage.id}`);
+            if (container) {
+                container.innerHTML = '';
+            }
+        });
+        
+        // Adicionar leads filtrados
+        leads.forEach(lead => this.addLeadCard(lead));
+        
+        // Atualizar contador total
+        const totalLeadsEl = document.getElementById('totalLeads');
+        if (totalLeadsEl) totalLeadsEl.textContent = leads.length;
+    }
 }
 
-// Toast notifications
+// Toast notifications melhorado
 function showToast(message, type = 'info') {
-    const colors = {
-        success: 'bg-green-500',
-        error: 'bg-red-500',
-        info: 'bg-blue-500'
+    const config = {
+        success: {
+            bg: 'bg-gradient-to-r from-green-500 to-green-600',
+            icon: 'fa-check-circle',
+            iconColor: 'text-white'
+        },
+        error: {
+            bg: 'bg-gradient-to-r from-red-500 to-red-600',
+            icon: 'fa-exclamation-circle',
+            iconColor: 'text-white'
+        },
+        info: {
+            bg: 'bg-gradient-to-r from-blue-500 to-blue-600',
+            icon: 'fa-info-circle',
+            iconColor: 'text-white'
+        }
     };
 
+    const settings = config[type] || config.info;
+    
     const toast = document.createElement('div');
-    toast.className = `fixed bottom-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transform transition-all duration-300`;
-    toast.textContent = message;
+    toast.className = `fixed bottom-6 right-6 ${settings.bg} text-white px-5 py-4 rounded-xl shadow-2xl z-50 transform transition-all duration-300 flex items-center space-x-3 max-w-md`;
+    toast.style.transform = 'translateX(400px)';
+    toast.innerHTML = `
+        <i class="fas ${settings.icon} ${settings.iconColor} text-lg"></i>
+        <span class="font-medium">${message}</span>
+    `;
+    
     document.body.appendChild(toast);
 
+    // Animar entrada
     setTimeout(() => {
-        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(0)';
+    }, 10);
+
+    // Animar saída
+    setTimeout(() => {
+        toast.style.transform = 'translateX(400px)';
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }

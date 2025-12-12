@@ -9,23 +9,177 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        * { font-family: 'Inter', sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         
-        .sidebar-gradient { background: linear-gradient(180deg, #667eea 0%, #764ba2 100%); }
-        .nav-item { transition: all 0.2s ease; border-left: 3px solid transparent; }
-        .nav-item:hover { background: rgba(255, 255, 255, 0.1); border-left-color: #ffffff; }
-        .nav-item.active { background: rgba(255, 255, 255, 0.15); border-left-color: #ffffff; }
-        .content-container { background: #f7f9fc; }
-        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3); }
+        * { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
         
-        .kanban-column { min-height: 600px; }
-        .lead-card { transition: all 0.2s ease; cursor: grab; }
-        .lead-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-        .lead-card:active { cursor: grabbing; }
-        .sortable-ghost { opacity: 0.4; }
-        .sortable-chosen { transform: rotate(2deg); }
+        :root {
+            --primary-purple: #6366f1;
+            --primary-purple-dark: #4f46e5;
+            --primary-purple-light: #818cf8;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        body { 
+            background: var(--bg-secondary); 
+            color: var(--text-primary);
+        }
+        
+        /* Sidebar Styling */
+        .sidebar-gradient { 
+            background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%); 
+        }
+        .nav-item { 
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+            border-left: 3px solid transparent; 
+        }
+        .nav-item:hover { 
+            background: rgba(255, 255, 255, 0.12); 
+            border-left-color: #ffffff; 
+        }
+        .nav-item.active { 
+            background: rgba(255, 255, 255, 0.18); 
+            border-left-color: #ffffff;
+            font-weight: 600;
+        }
+        
+        /* Button Styles */
+        .btn-primary { 
+            background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-purple-dark) 100%); 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            box-shadow: 0 2px 4px rgba(99, 102, 241, 0.15);
+        }
+        .btn-primary:hover { 
+            transform: translateY(-1px); 
+            box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3); 
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-secondary {
+            background: white;
+            border: 1.5px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+        .btn-secondary:hover {
+            border-color: var(--primary-purple-light);
+            color: var(--primary-purple);
+            background: #f8f9ff;
+        }
+        
+        /* Header Styles */
+        .page-header {
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        /* Search Bar */
+        .search-container {
+            background: var(--bg-tertiary);
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .search-container:focus-within {
+            background: white;
+            border-color: var(--primary-purple-light);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        /* Kanban Columns */
+        .kanban-column { 
+            min-height: calc(100vh - 280px);
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        .kanban-column-header {
+            background: white;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        /* Lead Cards */
+        .lead-card { 
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+            cursor: grab;
+            background: white;
+            border: 1px solid var(--border-color);
+        }
+        .lead-card:hover { 
+            transform: translateY(-3px) scale(1.01); 
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+            border-color: var(--primary-purple-light);
+        }
+        .lead-card:active { 
+            cursor: grabbing;
+            transform: scale(0.98);
+        }
+        
+        /* Drag & Drop States */
+        .sortable-ghost { 
+            opacity: 0.5;
+            background: var(--bg-tertiary);
+            border: 2px dashed var(--primary-purple-light);
+        }
+        .sortable-chosen { 
+            transform: rotate(3deg);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+        .sortable-drag {
+            opacity: 1 !important;
+        }
+        
+        /* Badges */
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.625rem;
+            border-radius: 9999px;
+            letter-spacing: 0.025em;
+        }
+        
+        /* Avatar Styles */
+        .avatar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-purple-dark) 100%);
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-tertiary); }
+        ::-webkit-scrollbar-thumb { 
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Loading Animation */
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite;
+        }
     </style>
 </head>
 <body class="content-container">
@@ -95,28 +249,28 @@
         <div class="flex-1 flex flex-col overflow-hidden">
             
             <!-- Top Bar -->
-            <header class="bg-white border-b border-gray-200 px-8 py-4 shadow-sm">
+            <header class="page-header px-6 py-4">
                 <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-6">
                         <div>
-                            <h1 class="text-2xl font-bold text-gray-800">CRM Kanban</h1>
-                            <p class="text-sm text-gray-500 mt-1">Pipeline de vendas visual</p>
+                            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">CRM Kanban</h1>
+                            <p class="text-sm text-gray-500 mt-0.5 font-medium">Gerencie seu pipeline de vendas</p>
                         </div>
                     </div>
                     
                     <div class="flex items-center space-x-3">
-                        <button class="hidden md:flex items-center bg-gray-100 rounded-lg px-4 py-2">
+                        <div class="search-container hidden md:flex items-center rounded-xl px-4 py-2.5">
                             <i class="fas fa-search text-gray-400 text-sm"></i>
-                            <input type="text" placeholder="Buscar lead..." class="ml-2 bg-transparent outline-none text-sm text-gray-700 w-64">
-                        </button>
+                            <input type="text" id="searchInput" placeholder="Buscar por nome, telefone ou email..." class="ml-3 bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400 w-80" style="border: none;">
+                        </div>
                         
-                        <button class="relative p-2.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition">
+                        <button class="relative p-2.5 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 transition-all">
                             <i class="fas fa-bell text-lg"></i>
-                            <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
                         </button>
                         
-                        <div class="flex items-center space-x-3 pl-3 border-l border-gray-200">
-                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white font-semibold shadow-lg">
+                        <div class="flex items-center space-x-3 pl-3 ml-2 border-l border-gray-200">
+                            <div class="avatar w-10 h-10 text-white text-sm shadow-md">
                                 <span>LB</span>
                             </div>
                         </div>
@@ -125,34 +279,43 @@
             </header>
             
             <!-- Content Area -->
-            <main class="flex-1 overflow-x-auto overflow-y-hidden content-container p-8">
+            <main class="flex-1 overflow-x-auto overflow-y-hidden p-6" style="background: #f8fafc;">
                 
                 <!-- Action Bar -->
-                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 mb-6">
                     <div class="flex items-center justify-between flex-wrap gap-4">
                         <div class="flex items-center space-x-3">
-                            <button onclick="crmAdvanced.openLeadModal()" class="btn-primary text-white px-6 py-2.5 rounded-lg font-semibold flex items-center shadow-lg">
+                            <button onclick="crmAdvanced.openLeadModal()" class="btn-primary text-white px-5 py-2.5 rounded-xl font-semibold flex items-center text-sm">
                                 <i class="fas fa-plus mr-2"></i>
                                 Novo Lead
                             </button>
-                            <button onclick="crmAdvanced.openStagesModal()" class="bg-white border-2 border-gray-200 text-gray-700 px-5 py-2.5 rounded-lg font-medium hover:border-purple-300 hover:text-purple-600 transition">
-                                <i class="fas fa-cog mr-2"></i>
-                                Gerenciar Estágios
+                            <button onclick="crmAdvanced.openStagesModal()" class="btn-secondary text-gray-700 px-4 py-2.5 rounded-xl font-medium flex items-center text-sm">
+                                <i class="fas fa-sliders-h mr-2"></i>
+                                Gerenciar Pipeline
                             </button>
-                            <button class="bg-white border-2 border-gray-200 text-gray-700 px-5 py-2.5 rounded-lg font-medium hover:border-purple-300 hover:text-purple-600 transition">
-                                <i class="fas fa-filter mr-2"></i>
-                                Filtros
-                            </button>
+                            <div class="relative">
+                                <button class="btn-secondary text-gray-700 px-4 py-2.5 rounded-xl font-medium flex items-center text-sm">
+                                    <i class="fas fa-filter mr-2"></i>
+                                    Filtros
+                                    <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                                </button>
+                            </div>
                         </div>
                         
-                        <div class="flex items-center space-x-2">
-                            <span class="text-sm text-gray-500">Total: <strong class="text-gray-800" id="totalLeads">0</strong> leads</span>
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-100">
+                                <i class="fas fa-users text-indigo-600 text-sm"></i>
+                                <span class="text-sm font-semibold text-gray-700">Total: <span class="text-indigo-600" id="totalLeads">0</span> leads</span>
+                            </div>
+                            <button class="p-2.5 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-100 transition-all">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Kanban Board -->
-                <div id="kanban-container" class="flex gap-6 pb-6" style="min-width: max-content;">
+                <div id="kanban-container" class="flex gap-4 pb-6" style="min-width: max-content;">
                     <!-- Colunas serão renderizadas via JavaScript -->
                 </div>
                 
