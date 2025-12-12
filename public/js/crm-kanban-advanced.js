@@ -72,8 +72,18 @@ class CRMKanbanAdvanced {
     // Renderizar colunas do Kanban
     renderKanbanColumns() {
         const container = document.getElementById('kanban-container');
-        if (!container) return;
+        if (!container) {
+            console.warn('⚠️ Elemento kanban-container não encontrado');
+            return;
+        }
 
+        if (!this.stages || this.stages.length === 0) {
+            console.warn('⚠️ Nenhuma stage disponível para renderizar');
+            container.innerHTML = '<p class="text-gray-500 p-8">Nenhum estágio configurado. Clique em "Gerenciar Estágios" para criar.</p>';
+            return;
+        }
+
+        console.log('📊 Renderizando', this.stages.length, 'colunas');
         container.innerHTML = this.stages.map(stage => `
             <div class="kanban-column bg-gray-50 rounded-lg p-4" style="min-width: 320px;" data-stage-id="${stage.id}">
                 <div class="flex items-center justify-between mb-4">
@@ -331,6 +341,11 @@ class CRMKanbanAdvanced {
     // Renderizar lista de stages
     renderStagesList() {
         const container = document.getElementById('stages-list');
+        if (!container) {
+            console.warn('⚠️ Elemento stages-list não encontrado');
+            return;
+        }
+        
         container.innerHTML = this.stages.map((stage, index) => `
             <div class="stage-item bg-white p-4 rounded-lg border border-gray-200 flex items-center justify-between" data-stage-id="${stage.id}">
                 <div class="flex items-center space-x-4 flex-1">

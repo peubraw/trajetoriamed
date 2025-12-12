@@ -520,6 +520,15 @@ class CRMService {
     }
 
     async createDefaultStages(userId) {
+        // Vendedores não podem criar stages próprios
+        const authService = require('./auth.service');
+        const user = await authService.getUserById(userId);
+        
+        if (user && user.role === 'seller') {
+            console.log(`⚠️ Vendedor ${userId} não pode criar stages - usar stages do admin`);
+            return;
+        }
+        
         // Verificar se já existem estágios para este usuário
         const [existing] = await db.query(
             'SELECT COUNT(*) as count FROM crm_stages WHERE user_id = ?',
