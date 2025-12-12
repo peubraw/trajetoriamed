@@ -96,11 +96,20 @@ class CRMKanbanAdvanced {
     // Carregar e renderizar leads
     async loadLeads() {
         try {
+            console.log('🔄 Carregando leads... userId:', this.currentUserId);
             const response = await fetch('/api/crm/leads', { credentials: 'include' });
-            if (!response.ok) return;
+            console.log('📡 Response status:', response.status);
+            
+            if (!response.ok) {
+                console.error('❌ Falha ao carregar leads:', response.status);
+                return;
+            }
             
             const data = await response.json();
+            console.log('📦 Data recebida:', data);
+            
             const leads = Array.isArray(data) ? data : (data.leads || []);
+            console.log('📋 Total de leads:', leads.length);
             
             // Limpar colunas
             this.stages.forEach(stage => {
@@ -109,13 +118,18 @@ class CRMKanbanAdvanced {
             });
             
             // Adicionar leads
-            leads.forEach(lead => this.addLeadCard(lead));
+            leads.forEach(lead => {
+                console.log('📄 Adicionando lead:', lead.name, 'stage:', lead.stage_id);
+                this.addLeadCard(lead);
+            });
             
             // Atualizar total
             const totalEl = document.getElementById('totalLeads');
             if (totalEl) totalEl.textContent = leads.length;
+            
+            console.log('✅ Leads carregados com sucesso!');
         } catch (error) {
-            console.error('Erro ao carregar leads:', error);
+            console.error('❌ Erro ao carregar leads:', error);
         }
     }
 
@@ -245,7 +259,6 @@ class CRMKanbanAdvanced {
             document.getElementById('lead-name').value = data.lead.name || '';
             document.getElementById('lead-phone').value = data.lead.phone || '';
             document.getElementById('lead-email').value = data.lead.email || '';
-            document.getElementById('lead-state').value = data.lead.state || '';
             document.getElementById('lead-assigned-to').value = data.lead.assigned_to || '';
             document.getElementById('lead-interested-course').value = data.lead.interested_course || '';
             document.getElementById('lead-specialty').value = data.lead.specialty || '';
@@ -264,7 +277,6 @@ class CRMKanbanAdvanced {
             name: document.getElementById('lead-name').value,
             phone: document.getElementById('lead-phone').value,
             email: document.getElementById('lead-email').value,
-            state: document.getElementById('lead-state').value,
             assigned_to: document.getElementById('lead-assigned-to').value || null,
             interested_course: document.getElementById('lead-interested-course').value,
             specialty: document.getElementById('lead-specialty').value,
