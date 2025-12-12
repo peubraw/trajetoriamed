@@ -367,6 +367,9 @@
         }
 
         function addCourse() {
+            console.log('addCourse() called');
+            console.log('Current coursesData:', coursesData);
+            
             const course = {
                 id: `course_${Date.now()}`,
                 name: '',
@@ -376,6 +379,7 @@
                 registration_fee: '',
                 registration_fee_due: '',
                 subjects: '',
+                teachers: '',
                 payment_link_new: '',
                 payment_link_alumni: '',
                 price_installment: '',
@@ -384,6 +388,7 @@
             };
 
             coursesData.push(course);
+            console.log('Course added, new coursesData:', coursesData);
             renderCourses();
         }
 
@@ -461,6 +466,14 @@
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Matérias da Prova</label>
                             <textarea onchange="coursesData[${index}].subjects = this.value" class="form-input" placeholder="Ex: P1 - Português, Matemática, Raciocínio Lógico&#10;P2 - Conhecimentos Específicos">${course.subjects || ''}</textarea>
                             <p class="text-xs text-gray-500 mt-1">Separe as provas/matérias por linha</p>
+                        </div>
+                        <div class="md:col-span-2 lg:col-span-3">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-chalkboard-teacher text-purple-600 mr-1"></i>
+                                Professores do Curso
+                            </label>
+                            <textarea onchange="coursesData[${index}].teachers = this.value" class="form-input" placeholder="Dr. João Silva&#10;Dra. Maria Santos&#10;Dr. Pedro Oliveira">${course.teachers || ''}</textarea>
+                            <p class="text-xs text-gray-500 mt-1">Digite um professor por linha</p>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Link Pagamento (Novo Aluno)</label>
