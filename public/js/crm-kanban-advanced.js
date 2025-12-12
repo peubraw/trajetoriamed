@@ -31,18 +31,15 @@ class CRMKanbanAdvanced {
         if (!container) return;
 
         container.innerHTML = this.stages.map(stage => `
-            <div class="kanban-column bg-gray-50 rounded-lg p-4 min-w-80" data-stage-id="${stage.id}">
+            <div class="kanban-column bg-gray-50 rounded-lg p-4" style="min-width: 320px;" data-stage-id="${stage.id}">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center space-x-2">
                         <div class="w-3 h-3 rounded-full" style="background-color: ${stage.color}"></div>
                         <h3 class="font-semibold text-gray-800">${stage.name}</h3>
                         <span class="text-sm text-gray-500" id="count-${stage.id}">0</span>
                     </div>
-                    <button onclick="crmAdvanced.editStage(${stage.id})" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
                 </div>
-                <div id="stage-${stage.id}" class="lead-container space-y-3 min-h-96">
+                <div id="stage-${stage.id}" class="lead-container space-y-3" style="min-height: 400px;">
                     <!-- Cards dos leads serão inseridos aqui -->
                 </div>
             </div>
@@ -87,13 +84,12 @@ class CRMKanbanAdvanced {
         }
         
         const card = document.createElement('div');
-        card.className = 'lead-card bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md cursor-pointer';
+        card.className = 'lead-card bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md cursor-move';
         card.dataset.leadId = lead.id;
-        card.onclick = () => this.openLeadModal(lead.id);
         
         card.innerHTML = `
             <div class="flex items-start justify-between mb-2">
-                <h4 class="font-semibold text-gray-800 text-sm">${lead.name || 'Sem nome'}</h4>
+                <h4 class="font-semibold text-gray-800 text-sm cursor-pointer hover:text-blue-600" onclick="crmAdvanced.openLeadModal(${lead.id})">${lead.name || 'Sem nome'}</h4>
                 <button onclick="event.stopPropagation(); crmAdvanced.deleteLead(${lead.id})" 
                         class="text-gray-400 hover:text-red-500">
                     <i class="fas fa-trash text-xs"></i>
