@@ -10,10 +10,98 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { font-family: 'Inter', sans-serif; }
         
-        .sidebar-gradient { background: linear-gradient(180deg, #667eea 0%, #764ba2 100%); }
-        .nav-item { transition: all 0.2s ease; border-left: 3px solid transparent; }
-        .nav-item:hover { background: rgba(255, 255, 255, 0.1); border-left-color: #ffffff; }
-        .nav-item.active { background: rgba(255, 255, 255, 0.15); border-left-color: #ffffff; }
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Sidebar Menu */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 1000;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+            overflow-y: auto;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .sidebar-logo {
+            padding: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-user {
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 24px;
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-left-color: white;
+        }
+
+        .menu-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-left-color: white;
+        }
+
+        .menu-item i {
+            width: 24px;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .menu-section {
+            padding: 20px 24px 8px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .main-content {
+            margin-left: 280px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
         .content-container { background: #f7f9fc; }
         .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); transition: all 0.3s ease; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3); }
@@ -32,62 +120,80 @@
 </head>
 <body class="content-container">
     
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex">
         
-        <!-- Sidebar -->
-        <aside class="sidebar-gradient w-64 flex-shrink-0 hidden md:flex flex-col shadow-2xl">
-            <div class="p-6 border-b border-white border-opacity-10">
-                <div class="flex items-center">
-                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                        <i class="fas fa-graduation-cap text-purple-600 text-xl"></i>
+        <!-- Sidebar Menu -->
+        <aside class="sidebar">
+            <!-- Logo -->
+            <div class="sidebar-logo">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-purple-600 text-2xl"></i>
                     </div>
-                    <div class="ml-3">
-                        <h1 class="text-white font-bold text-lg">TrajetóriaMed</h1>
-                        <p class="text-white text-opacity-60 text-xs">Sistema CRM</p>
+                    <div>
+                        <h2 class="text-white font-bold text-lg">TrajetóriaMed</h2>
+                        <p class="text-white text-opacity-70 text-xs">Sistema CRM</p>
                     </div>
                 </div>
             </div>
-            
-            <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-                <a href="/dashboard.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
-                    <i class="fas fa-home w-5"></i><span class="ml-3">Dashboard</span>
-                </a>
-                <a href="/crm-kanban.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
-                    <i class="fas fa-columns w-5"></i><span class="ml-3">CRM Kanban</span>
-                </a>
-                <a href="/crm-chat.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
-                    <i class="fab fa-whatsapp w-5"></i><span class="ml-3">Chat WhatsApp</span>
-                </a>
-                <a href="/whatsapp.html" class="nav-item active flex items-center px-4 py-3 text-white rounded-lg">
-                    <i class="fas fa-qrcode w-5"></i><span class="ml-3">Conectar WhatsApp</span>
-                </a>
-                <a href="/bot-config.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
-                    <i class="fas fa-robot w-5"></i><span class="ml-3">Configurar Bot</span>
-                </a>
-                <a href="/webhooks.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
-                    <i class="fas fa-link w-5"></i><span class="ml-3">Webhooks</span>
-                </a>
-                <div class="pt-6 mt-6 border-t border-white border-opacity-10">
-                    <a href="/settings.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
-                        <i class="fas fa-cog w-5"></i><span class="ml-3">Configurações</span>
-                    </a>
+
+            <!-- User Info -->
+            <div class="sidebar-user">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-white font-semibold text-sm" id="userName">Leandro</p>
+                        <p class="text-white text-opacity-60 text-xs">Administrador</p>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Menu -->
+            <nav class="py-4">
+                <div class="menu-section">Principal</div>
+                <a href="/dashboard.html" class="menu-item">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+                <a href="/crm-kanban.html" class="menu-item">
+                    <i class="fas fa-columns"></i>
+                    CRM Kanban
+                </a>
+                <a href="/crm-chat.html" class="menu-item">
+                    <i class="fab fa-whatsapp"></i>
+                    Chat WhatsApp
+                </a>
+                <a href="/whatsapp.html" class="menu-item active admin-only">
+                    <i class="fas fa-qrcode"></i>
+                    Conectar WhatsApp
+                </a>
+
+                <div class="menu-section">Configurações</div>
+                <a href="/bot-config.html" class="menu-item admin-only">
+                    <i class="fas fa-robot"></i>
+                    Configurar Bot
+                </a>
+                <a href="/webhooks.html" class="menu-item admin-only">
+                    <i class="fas fa-link"></i>
+                    Webhooks
+                </a>
+
+                <div class="menu-section">Sistema</div>
+                <a href="/settings.html" class="menu-item admin-only">
+                    <i class="fas fa-cog"></i>
+                    Configurações
+                </a>
+                <a href="#" onclick="logout(); return false;" class="menu-item">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Sair
+                </a>
             </nav>
-            
-            <div class="p-4 border-t border-white border-opacity-10">
-                <div class="flex items-center px-4 py-3 bg-white bg-opacity-10 rounded-lg">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-purple-700 flex items-center justify-center text-white font-semibold"><span>LB</span></div>
-                    <div class="ml-3 flex-1 min-w-0">
-                        <p class="text-sm font-medium text-white truncate">Leandro Berti</p>
-                        <p class="text-xs text-white text-opacity-60 truncate">Admin</p>
-                    </div>
-                    <button onclick="logout()" class="text-white text-opacity-60 hover:text-opacity-100"><i class="fas fa-sign-out-alt"></i></button>
-                </div>
-            </div>
         </aside>
-        
+
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="main-content flex-1">
             
             <!-- Top Bar -->
             <header class="bg-white border-b border-gray-200 px-8 py-4 shadow-sm">
@@ -493,7 +599,71 @@
                 alert('❌ Erro: ' + error.message);
             }
         }
+
+        // Função de logout
+        function logout() {
+            if (confirm('Deseja realmente sair do sistema?')) {
+                fetch('/api/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                })
+                .then(() => {
+                    window.location.href = '/login.html';
+                })
+                .catch(err => {
+                    console.error('Erro ao fazer logout:', err);
+                    window.location.href = '/login.html';
+                });
+            }
+        }
+
+        // Carregar informações do usuário
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/auth/me', { credentials: 'include' });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.user) {
+                        document.getElementById('userName').textContent = data.user.name || data.user.email;
+                        
+                        // Ocultar itens admin se não for admin
+                        if (data.user.role !== 'admin') {
+                            document.querySelectorAll('.admin-only').forEach(el => {
+                                el.style.display = 'none';
+                            });
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Erro ao carregar informações do usuário:', err);
+            }
+        }
+
+        // Verificar autenticação ao carregar
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/auth/me', { credentials: 'include' });
+                if (!response.ok) {
+                    window.location.href = '/login.html';
+                }
+            } catch (err) {
+                window.location.href = '/login.html';
+            }
+        }
+
+        // Toggle sidebar mobile
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('open');
+        }
+
+        // Inicializar verificação de autenticação
+        checkAuth();
+        loadUserInfo();
     </script>
+
+    </div><!-- Fecha main-content -->
+    </div><!-- Fecha flex container -->
     
 </body>
 </html>
