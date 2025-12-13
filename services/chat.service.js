@@ -216,7 +216,8 @@ class ChatService {
                     savedMessage.message_id = metaResult.messageId;
                 }
             } catch (metaError) {
-                console.log('⚠️ Meta API falhou, tentando wppconnect...');
+                console.error('⚠️ Meta API falhou:', metaError.message || metaError);
+                console.log('Tentando wppconnect...');
             }
 
             // Se Meta falhou, tentar wppconnect
