@@ -1478,6 +1478,11 @@
         // Handler de nova mensagem (Socket.IO)
         function handleNewMessage(message) {
             console.log('📨 handleNewMessage chamado:', message);
+            console.log('🔍 Verificando conversa atual:', {
+                currentPhone: currentConversation?.phone,
+                messagePhone: message.phone,
+                match: currentConversation && message.phone === currentConversation.phone
+            });
             
             // Se a conversa está aberta, adicionar mensagem
             if (currentConversation && message.phone === currentConversation.phone) {
