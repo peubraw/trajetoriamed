@@ -874,18 +874,22 @@
 
         // Socket.IO
         function initializeSocket() {
+            console.log('🔄 Iniciando Socket.IO...');
             socket = io();
             
             socket.on('connect', async () => {
                 console.log('✅ Socket.IO conectado');
                 const userId = sessionStorage.getItem('userId');
+                console.log('👤 User ID:', userId);
                 if (userId) {
                     socket.emit('join-room', `user-${userId}`);
+                    console.log(`📤 Tentando entrar no room: user-${userId}`);
                     
                     // Se for vendedor, também entrar no room do parent para receber mensagens
                     try {
                         const response = await fetch('/api/auth/check', { credentials: 'include' });
                         const data = await response.json();
+                        console.log('👥 Dados do usuário:', data.user);
                         if (data.user && data.user.parent_user_id) {
                             socket.emit('join-room', `user-${data.user.parent_user_id}`);
                             console.log(`✅ Vendedor entrou no room do parent: user-${data.user.parent_user_id}`);
@@ -894,6 +898,14 @@
                         console.error('Erro ao verificar parent_user_id:', error);
                     }
                 }
+            });
+
+            socket.on('connect_error', (error) => {
+                console.error('❌ Erro de conexão Socket.IO:', error);
+            });
+
+            socket.on('disconnect', (reason) => {
+                console.warn('⚠️ Socket.IO desconectado:', reason);
             });
 
             socket.on('new-message', (message) => {
