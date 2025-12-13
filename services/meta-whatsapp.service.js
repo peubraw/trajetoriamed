@@ -262,6 +262,35 @@ class MetaWhatsAppService {
     /**
      * Processar webhook de mensagem recebida
      */
+    /**
+     * Download de mídia da Meta API
+     */
+    async downloadMedia(mediaId) {
+        try {
+            // 1. Obter URL da mídia
+            const mediaInfo = await this.api.get(`/${mediaId}`);
+            const mediaUrl = mediaInfo.data.url;
+            const mimeType = mediaInfo.data.mime_type;
+
+            // 2. Download da mídia
+            const mediaResponse = await axios.get(mediaUrl, {
+                headers: {
+                    'Authorization': `Bearer ${this.accessToken}`
+                },
+                responseType: 'arraybuffer'
+            });
+
+            return {
+                data: mediaResponse.data,
+                mimeType: mimeType,
+                url: mediaUrl
+            };
+        } catch (error) {
+            console.error('❌ Erro ao fazer download de mídia:', error.response?.data || error.message);
+            return null;
+        }
+    }
+
     async processWebhookMessage(webhookData) {
         try {
             const entry = webhookData.entry?.[0];
@@ -278,17 +307,23 @@ class MetaWhatsAppService {
             const messageId = message.id;
             const timestamp = message.timestamp;
 
-            // Extrair texto da mensagem
+            // Extrair conteúdo da mensagem
             let messageText = '';
             let messageType = message.type;
+            let mediaUrl = null;
+            let mediaMimetype = null;
+            let caption = null;
+            let fileName = null;
 
             switch (messageType) {
                 case 'text':
                     messageText = message.text.body;
                     break;
+
                 case 'button':
                     messageText = message.button.text;
                     break;
+
                 case 'interactive':
                     if (message.interactive.type === 'button_reply') {
                         messageText = message.interactive.button_reply.title;
@@ -296,6 +331,71 @@ class MetaWhatsAppService {
                         messageText = message.interactive.list_reply.title;
                     }
                     break;
+
+                case 'image':
+                    const imageId = message.image.id;
+                    caption = message.image.caption || '';
+                    messageText = caption || '📷 Imagem';
+                    const imageMedia = await this.downloadMedia(imageId);
+                    if (imageMedia) {
+                        mediaUrl = imageMedia.url;
+                        mediaMimetype = imageMedia.mimeType;
+                    }
+                    break;
+
+                case 'audio':
+                    const audioId = message.audio.id;
+                    messageText = '🎤 Áudio';
+                    const audioMedia = await this.downloadMedia(audioId);
+                    if (audioMedia) {
+                        mediaUrl = audioMedia.url;
+                        mediaMimetype = audioMedia.mimeType;
+                    }
+                    break;
+
+                case 'video':
+                    const videoId = message.video.id;
+                    caption = message.video.caption || '';
+                    messageText = caption || '🎥 Vídeo';
+                    const videoMedia = await this.downloadMedia(videoId);
+                    if (videoMedia) {
+                        mediaUrl = videoMedia.url;
+                        mediaMimetype = videoMedia.mimeType;
+                    }
+                    break;
+
+                case 'document':
+                    const docId = message.document.id;
+                    fileName = message.document.filename || 'documento';
+                    caption = message.document.caption || '';
+                    messageText = `📄 ${fileName}`;
+                    const docMedia = await this.downloadMedia(docId);
+                    if (docMedia) {
+                        mediaUrl = docMedia.url;
+                        mediaMimetype = docMedia.mimeType;
+                    }
+                    break;
+
+                case 'sticker':
+                    messageText = '🎨 Figurinha';
+                    const stickerId = message.sticker.id;
+                    const stickerMedia = await this.downloadMedia(stickerId);
+                    if (stickerMedia) {
+                        mediaUrl = stickerMedia.url;
+                        mediaMimetype = stickerMedia.mimeType;
+                    }
+                    break;
+
+                case 'location':
+                    const location = message.location;
+                    messageText = `📍 Localização: ${location.latitude}, ${location.longitude}`;
+                    break;
+
+                case 'contacts':
+                    const contacts = message.contacts;
+                    messageText = `👤 Contato: ${contacts[0]?.name?.formatted_name || 'Contato'}`;
+                    break;
+
                 default:
                     messageText = `[${messageType}]`;
             }
@@ -310,7 +410,11 @@ class MetaWhatsAppService {
                 text: messageText,
                 type: messageType,
                 timestamp: timestamp,
-                profileName: value.contacts?.[0]?.profile?.name || 'Unknown'
+                profileName: value.contacts?.[0]?.profile?.name || 'Unknown',
+                mediaUrl: mediaUrl,
+                mediaMimetype: mediaMimetype,
+                caption: caption,
+                fileName: fileName
             };
 
         } catch (error) {

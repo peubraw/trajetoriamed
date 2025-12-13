@@ -82,12 +82,16 @@ router.post('/webhook', async (req, res) => {
                 messageId: messageData.messageId,
                 type: messageData.type || 'text',
                 content: messageData.text,
+                mediaUrl: messageData.mediaUrl || null,
+                mediaMimetype: messageData.mediaMimetype || null,
+                caption: messageData.caption || null,
                 metadata: {
                     profileName: messageData.profileName,
-                    timestamp: messageData.timestamp
+                    timestamp: messageData.timestamp,
+                    fileName: messageData.fileName
                 }
             });
-            console.log(`💬 Mensagem salva no chat para ${cleanPhone}`);
+            console.log(`💬 Mensagem${messageData.mediaUrl ? ' com mídia' : ''} salva no chat para ${cleanPhone}`);
         } catch (chatError) {
             console.error('⚠️ Erro ao salvar mensagem no chat (não bloqueante):', chatError);
         }
