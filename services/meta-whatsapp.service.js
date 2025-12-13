@@ -357,15 +357,51 @@ class MetaWhatsAppService {
                 responseType: 'arraybuffer'
             });
 
+            // 3. Salvar arquivo localmente
+            const ext = this.getFileExtension(mimeType);
+            const timestamp = Date.now();
+            const fileName = `${timestamp}-${mediaId}${ext}`;
+            const uploadsDir = path.join(__dirname, '../public/uploads');
+            const filePath = path.join(uploadsDir, fileName);
+
+            // Criar diretório se não existir
+            if (!fs.existsSync(uploadsDir)) {
+                fs.mkdirSync(uploadsDir, { recursive: true });
+            }
+
+            // Salvar arquivo
+            fs.writeFileSync(filePath, mediaResponse.data);
+            console.log(`✅ Mídia salva localmente: ${fileName}`);
+
             return {
                 data: mediaResponse.data,
                 mimeType: mimeType,
-                url: mediaUrl
+                url: `/public/uploads/${fileName}`,
+                fileName: fileName
             };
         } catch (error) {
             console.error('❌ Erro ao fazer download de mídia:', error.response?.data || error.message);
             return null;
         }
+    }
+
+    getFileExtension(mimeType) {
+        const extensions = {
+            'image/jpeg': '.jpg',
+            'image/png': '.png',
+            'image/gif': '.gif',
+            'image/webp': '.webp',
+            'video/mp4': '.mp4',
+            'audio/ogg': '.ogg',
+            'audio/mpeg': '.mp3',
+            'audio/mp4': '.m4a',
+            'application/pdf': '.pdf',
+            'application/msword': '.doc',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+            'application/vnd.ms-excel': '.xls',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx'
+        };
+        return extensions[mimeType] || '.bin';
     }
 
     async processWebhookMessage(webhookData) {
