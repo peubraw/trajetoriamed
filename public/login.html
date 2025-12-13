@@ -238,8 +238,12 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Success - redirect to dashboard
-                    window.location.href = '/dashboard.html';
+                    // Redirecionar baseado no role do usuário
+                    if (data.user && data.user.role === 'seller') {
+                        window.location.href = '/crm-kanban.html';
+                    } else {
+                        window.location.href = '/dashboard.html';
+                    }
                 } else {
                     // Error
                     throw new Error(data.error || 'Erro ao fazer login');

@@ -6,11 +6,21 @@ class ChatService {
      */
     async getConversations(userId, filters = {}) {
         try {
+            // Verificar se o usuário é admin ou vendedor
+            const authService = require('./auth.service');
+            const isAdmin = await authService.isAdmin(userId);
+
             let query = `
                 SELECT * FROM vw_conversations_full
                 WHERE user_id = ?
             `;
             const params = [userId];
+
+            // Se for vendedor, filtrar apenas leads atribuídos a ele
+            if (!isAdmin) {
+                query += ` AND (assigned_to = ? OR assigned_to IS NULL)`;
+                params.push(userId);
+            }
 
             // Filtros opcionais
             if (filters.status) {
@@ -93,6 +103,35 @@ class ChatService {
      */
     async getMessages(userId, phone, limit = 100, offset = 0) {
         try {
+            // Verificar se o usuário é admin ou vendedor
+            const authService = require('./auth.service');
+            const isAdmin = await authService.isAdmin(userId);
+
+            // Verificar permissão: admin vê tudo, vendedor só vê seus leads
+            if (!isAdmin) {
+                // Verificar se o lead está atribuído ao vendedor
+                const [leads] = await db.query(
+                    `SELECT id FROM crm_leads 
+                     WHERE user_id = ? AND phone = ? 
+                     AND (assigned_to = ? OR assigned_to IS NULL)`,
+                    [userId, phone, userId]
+                );
+
+                if (leads.length === 0) {
+                    // Verificar se existe uma conversa atribuída a ele
+                    const [convs] = await db.query(
+                        `SELECT id FROM crm_conversations 
+                         WHERE user_id = ? AND phone = ? 
+                         AND (assigned_to = ? OR assigned_to IS NULL)`,
+                        [userId, phone, userId]
+                    );
+
+                    if (convs.length === 0) {
+                        throw new Error('Você não tem permissão para acessar esta conversa');
+                    }
+                }
+            }
+
             const [messages] = await db.query(
                 `SELECT * FROM vw_chat_messages_full
                 WHERE user_id = ? AND phone = ?
@@ -271,13 +310,31 @@ class ChatService {
                 );
 
                 if (stageResult.length > 0) {
+                    // Buscar vendedor com menos leads atribuídos (distribuição equitativa)
+                    const [sellers] = await db.query(
+                        `SELECT u.id, COUNT(l.id) as lead_count
+                         FROM users u
+                         LEFT JOIN crm_leads l ON l.assigned_to = u.id AND l.user_id = ?
+                         WHERE u.role = 'seller' AND u.parent_user_id = ?
+                         GROUP BY u.id
+                         ORDER BY lead_count ASC
+                         LIMIT 1`,
+                        [userId, userId]
+                    );
+
+                    const assignedTo = sellers.length > 0 ? sellers[0].id : null;
+
                     const [leadResult] = await db.query(
                         `INSERT INTO crm_leads 
-                        (user_id, phone, stage_id, channel, bot_active)
-                        VALUES (?, ?, ?, 'whatsapp', TRUE)`,
-                        [userId, phone, stageResult[0].id]
+                        (user_id, phone, stage_id, channel, bot_active, assigned_to)
+                        VALUES (?, ?, ?, 'whatsapp', TRUE, ?)`,
+                        [userId, phone, stageResult[0].id, assignedTo]
                     );
                     leadId = leadResult.insertId;
+
+                    if (assignedTo) {
+                        console.log(`📋 Novo lead atribuído automaticamente ao vendedor ID ${assignedTo}`);
+                    }
                 }
             } else {
                 leadId = leads[0].id;

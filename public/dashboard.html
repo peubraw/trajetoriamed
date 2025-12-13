@@ -331,7 +331,7 @@
             <!-- Menu -->
             <nav class="py-4">
                 <div class="menu-section">Principal</div>
-                <a href="/dashboard.html" class="menu-item active">
+                <a href="/dashboard.html" class="menu-item active admin-only">
                     <i class="fas fa-home"></i>
                     Dashboard
                 </a>
@@ -348,7 +348,7 @@
                     Conectar WhatsApp
                 </a>
 
-                <div class="menu-section">Configurações</div>
+                <div class="menu-section admin-only">Configurações</div>
                 <a href="/bot-config.html" class="menu-item admin-only">
                     <i class="fas fa-robot"></i>
                     Configurar Bot
@@ -358,7 +358,7 @@
                     Webhooks
                 </a>
 
-                <div class="menu-section">Sistema</div>
+                <div class="menu-section admin-only">Sistema</div>
                 <a href="/settings.html" class="menu-item admin-only">
                     <i class="fas fa-cog"></i>
                     Configurações
@@ -574,13 +574,56 @@
         let pipelineChart, lostReasonsChart, channelChart, temperatureChart;
 
         // Carregar dashboard
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar autenticação primeiro
+            const isAuthenticated = await checkAuth();
+            if (!isAuthenticated) {
+                return;
+            }
+            
             loadDashboard();
             updateTime();
             setInterval(updateTime, 1000);
             // Atualizar a cada 30 segundos
             setInterval(loadDashboard, 30000);
         });
+
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/auth/check', { credentials: 'include' });
+                const data = await response.json();
+                
+                if (!data.authenticated) {
+                    window.location.href = '/login.html';
+                    return false;
+                }
+                
+                const user = data.user;
+                
+                // Vendedores não devem acessar o dashboard - redirecionar para CRM
+                if (user.role !== 'admin') {
+                    console.log('Vendedor detectado - redirecionando para CRM Kanban');
+                    window.location.href = '/crm-kanban.html';
+                    return false;
+                }
+                
+                // Atualizar informações do usuário no sidebar
+                const userName = document.getElementById('userName');
+                if (userName) userName.textContent = user.name || 'Usuário';
+                
+                // Atualizar role no sidebar
+                const userRoleElement = document.querySelector('.sidebar-user p.text-xs');
+                if (userRoleElement) {
+                    userRoleElement.textContent = 'Administrador';
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Erro ao verificar autenticação:', error);
+                window.location.href = '/login.html';
+                return false;
+            }
+        }
 
         function updateTime() {
             const now = new Date();
