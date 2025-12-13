@@ -234,9 +234,11 @@ class MetaWhatsAppService {
             
             let mediaId = null;
             
-            // Se for um caminho local (começa com /uploads/), fazer upload primeiro
-            if (mediaUrl.startsWith('/uploads/')) {
-                const filePath = path.join(__dirname, '../public', mediaUrl);
+            // Se for um caminho local (começa com /uploads/ ou /public/uploads/), fazer upload primeiro
+            if (mediaUrl.startsWith('/uploads/') || mediaUrl.startsWith('/public/uploads/')) {
+                // Normalizar caminho removendo /public se existir
+                const normalizedPath = mediaUrl.replace('/public/', '/');
+                const filePath = path.join(__dirname, '../public', normalizedPath);
                 
                 // Determinar MIME type
                 const ext = path.extname(filePath).toLowerCase();
