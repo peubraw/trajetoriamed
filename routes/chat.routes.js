@@ -285,7 +285,7 @@ router.post('/send-media', requireAuth, upload.single('file'), async (req, res) 
         }
 
         // URL do arquivo carregado
-        const mediaUrl = `/public/uploads/${req.file.filename}`;
+        const mediaUrl = `/uploads/${req.file.filename}`;
         const mediaMimetype = req.file.mimetype;
         const fileName = req.file.originalname;
 

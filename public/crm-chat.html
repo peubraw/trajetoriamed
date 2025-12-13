@@ -1116,11 +1116,8 @@
                 // Construir URL da mídia
                 let mediaUrl = msg.media_url;
                 if (mediaUrl && mediaUrl.startsWith('/')) {
-                    // URL relativa - adicionar protocolo e host
-                    // Dividir path em partes e encodar cada uma (para lidar com espaços e parênteses)
-                    const pathParts = mediaUrl.split('/');
-                    const encodedPath = pathParts.map(part => encodeURIComponent(part)).join('/');
-                    mediaUrl = window.location.origin + encodedPath;
+                    // URL relativa - apenas adicionar origin, sem encoding complexo
+                    mediaUrl = window.location.origin + mediaUrl;
                 }
                 
                 // Renderizar mídia baseado no tipo
@@ -1407,11 +1404,8 @@
             // Construir URL da mídia
             let mediaUrl = message.media_url;
             if (mediaUrl && mediaUrl.startsWith('/')) {
-                // URL relativa - adicionar protocolo e host
-                // Dividir path em partes e encodar cada uma (para lidar com espaços e parênteses)
-                const pathParts = mediaUrl.split('/');
-                const encodedPath = pathParts.map(part => encodeURIComponent(part)).join('/');
-                mediaUrl = window.location.origin + encodedPath;
+                // URL relativa - apenas adicionar origin, sem encoding complexo
+                mediaUrl = window.location.origin + mediaUrl;
             }
             
             // Renderizar mídia se houver
