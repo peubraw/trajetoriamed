@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const chatService = require('../services/chat.service');
-const authMiddleware = require('../middleware/auth.middleware');
+const { requireAuth } = require('../middleware/auth.middleware');
 
 /**
  * GET /api/chat/conversations
  * Buscar todas as conversas do usuário
  */
-router.get('/conversations', authMiddleware, async (req, res) => {
+router.get('/conversations', requireAuth, async (req, res) => {
     try {
         const userId = req.session.userId;
         const { status, assignedTo, search } = req.query;
@@ -36,7 +36,7 @@ router.get('/conversations', authMiddleware, async (req, res) => {
  * GET /api/chat/messages/:phone
  * Buscar mensagens de uma conversa específica
  */
-router.get('/messages/:phone', authMiddleware, async (req, res) => {
+router.get('/messages/:phone', requireAuth, async (req, res) => {
     try {
         const userId = req.session.userId;
         const { phone } = req.params;
@@ -66,7 +66,7 @@ router.get('/messages/:phone', authMiddleware, async (req, res) => {
  * POST /api/chat/send
  * Enviar mensagem
  */
-router.post('/send', authMiddleware, async (req, res) => {
+router.post('/send', requireAuth, async (req, res) => {
     try {
         const userId = req.session.userId;
         const sentBy = req.session.userId;
@@ -105,7 +105,7 @@ router.post('/send', authMiddleware, async (req, res) => {
  * POST /api/chat/mark-read/:phone
  * Marcar mensagens como lidas
  */
-router.post('/mark-read/:phone', authMiddleware, async (req, res) => {
+router.post('/mark-read/:phone', requireAuth, async (req, res) => {
     try {
         const userId = req.session.userId;
         const { phone } = req.params;
@@ -128,7 +128,7 @@ router.post('/mark-read/:phone', authMiddleware, async (req, res) => {
  * POST /api/chat/archive/:phone
  * Arquivar conversa
  */
-router.post('/archive/:phone', authMiddleware, async (req, res) => {
+router.post('/archive/:phone', requireAuth, async (req, res) => {
     try {
         const userId = req.session.userId;
         const { phone } = req.params;
@@ -151,7 +151,7 @@ router.post('/archive/:phone', authMiddleware, async (req, res) => {
  * GET /api/chat/stats
  * Buscar estatísticas de chat
  */
-router.get('/stats', authMiddleware, async (req, res) => {
+router.get('/stats', requireAuth, async (req, res) => {
     try {
         const userId = req.session.userId;
         const stats = await chatService.getChatStats(userId);
@@ -173,7 +173,7 @@ router.get('/stats', authMiddleware, async (req, res) => {
  * POST /api/chat/typing
  * Atualizar indicador de digitação
  */
-router.post('/typing', authMiddleware, async (req, res) => {
+router.post('/typing', requireAuth, async (req, res) => {
     try {
         const userId = req.session.userId;
         const { conversationId, phone, isTyping } = req.body;
@@ -196,7 +196,7 @@ router.post('/typing', authMiddleware, async (req, res) => {
  * GET /api/chat/conversation/:phone
  * Buscar ou criar conversa específica
  */
-router.get('/conversation/:phone', authMiddleware, async (req, res) => {
+router.get('/conversation/:phone', requireAuth, async (req, res) => {
     try {
         const userId = req.session.userId;
         const { phone } = req.params;
