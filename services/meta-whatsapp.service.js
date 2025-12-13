@@ -1,5 +1,8 @@
 const axios = require('axios');
 const db = require('../config/database');
+const FormData = require('form-data');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 /**
@@ -186,20 +189,92 @@ class MetaWhatsAppService {
     /**
      * Enviar mídia (imagem, vídeo, documento, áudio)
      */
+    /**
+     * Upload de mídia para Meta API
+     * Retorna o media_id que pode ser usado para enviar mensagens
+     */
+    async uploadMedia(filePath, mimeType) {
+        try {
+            const fileStream = fs.createReadStream(filePath);
+            const fileName = path.basename(filePath);
+
+            const formData = new FormData();
+            formData.append('file', fileStream, {
+                filename: fileName,
+                contentType: mimeType
+            });
+            formData.append('messaging_product', 'whatsapp');
+
+            const response = await axios.post(
+                `${this.baseURL}/${this.phoneNumberId}/media`,
+                formData,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${this.accessToken}`,
+                        ...formData.getHeaders()
+                    }
+                }
+            );
+
+            console.log(`✅ Upload de mídia concluído: ${response.data.id}`);
+            return response.data.id; // Retorna o media_id
+        } catch (error) {
+            console.error('❌ Erro ao fazer upload de mídia:', error.response?.data || error.message);
+            throw error;
+        }
+    }
+
+    /**
+     * Enviar mídia via WhatsApp
+     * Aceita tanto URL pública quanto caminho local de arquivo
+     */
     async sendMedia(to, mediaType, mediaUrl, caption = null) {
         try {
             const cleanPhone = to.replace(/\D/g, '');
+            
+            let mediaId = null;
+            
+            // Se for um caminho local (começa com /uploads/), fazer upload primeiro
+            if (mediaUrl.startsWith('/uploads/')) {
+                const filePath = path.join(__dirname, '../public', mediaUrl);
+                
+                // Determinar MIME type
+                const ext = path.extname(filePath).toLowerCase();
+                const mimeTypes = {
+                    '.jpg': 'image/jpeg',
+                    '.jpeg': 'image/jpeg',
+                    '.png': 'image/png',
+                    '.gif': 'image/gif',
+                    '.webp': 'image/webp',
+                    '.mp4': 'video/mp4',
+                    '.mp3': 'audio/mpeg',
+                    '.ogg': 'audio/ogg',
+                    '.pdf': 'application/pdf',
+                    '.doc': 'application/msword',
+                    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                };
+                
+                const mimeType = mimeTypes[ext] || 'application/octet-stream';
+                
+                // Upload para Meta API
+                mediaId = await this.uploadMedia(filePath, mimeType);
+            }
             
             const payload = {
                 messaging_product: 'whatsapp',
                 recipient_type: 'individual',
                 to: cleanPhone,
-                type: mediaType, // image, video, document, audio
-                [mediaType]: {
-                    link: mediaUrl
-                }
+                type: mediaType
             };
 
+            // Usar ID se foi feito upload, senão usar link direto
+            if (mediaId) {
+                payload[mediaType] = { id: mediaId };
+            } else {
+                payload[mediaType] = { link: mediaUrl };
+            }
+
+            // Adicionar caption se aplicável
             if (caption && (mediaType === 'image' || mediaType === 'video' || mediaType === 'document')) {
                 payload[mediaType].caption = caption;
             }
