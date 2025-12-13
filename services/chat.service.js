@@ -179,10 +179,11 @@ class ChatService {
 
             const [messages] = await db.query(
                 `SELECT * FROM vw_chat_messages_full
-                WHERE user_id = ? AND phone = ?
+                WHERE phone = ? 
+                AND (user_id = ? OR sent_by = ?)
                 ORDER BY created_at DESC
                 LIMIT ? OFFSET ?`,
-                [queryUserId, phone, limit, offset]
+                [phone, queryUserId, userId, limit, offset]
             );
 
             return messages.reverse(); // Retornar em ordem cronológica
