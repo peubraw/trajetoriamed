@@ -73,9 +73,27 @@ router.post('/webhook', async (req, res) => {
         // TODO: Implementar lógica de múltiplos usuários
         const userId = 1;
 
+        // 💬 SALVAR MENSAGEM NO CHAT
+        const chatService = require('../services/chat.service');
+        const cleanPhone = messageData.from.replace('@c.us', '');
+        
+        try {
+            await chatService.processIncomingMessage(userId, cleanPhone, {
+                messageId: messageData.messageId,
+                type: messageData.type || 'text',
+                content: messageData.text,
+                metadata: {
+                    profileName: messageData.profileName,
+                    timestamp: messageData.timestamp
+                }
+            });
+            console.log(`💬 Mensagem salva no chat para ${cleanPhone}`);
+        } catch (chatError) {
+            console.error('⚠️ Erro ao salvar mensagem no chat (não bloqueante):', chatError);
+        }
+
         // VERIFICAR SE O LEAD JÁ EXISTE NO CRM E SE O BOT ESTÁ ATIVO
         const crmService = require('../services/crm.service');
-        const cleanPhone = messageData.from.replace('@c.us', '');
         const existingLead = await crmService.getLeadByPhone(cleanPhone, userId);
 
         if (existingLead && existingLead.bot_active === 0) {

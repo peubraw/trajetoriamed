@@ -209,9 +209,14 @@
                     <i class="fas fa-columns w-5"></i>
                     <span class="ml-3">CRM Kanban</span>
                 </a>
-                <a href="/whatsapp.html" class="nav-item admin-only flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                <a href="/crm-chat.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
                     <i class="fab fa-whatsapp w-5"></i>
-                    <span class="ml-3">WhatsApp</span>
+                    <span class="ml-3">Chat WhatsApp</span>
+                    <span id="chatUnreadBadge" class="ml-auto bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden">0</span>
+                </a>
+                <a href="/whatsapp.html" class="nav-item admin-only flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
+                    <i class="fas fa-qrcode w-5"></i>
+                    <span class="ml-3">Conectar WhatsApp</span>
                 </a>
                 <a href="/bot-config.html" class="nav-item admin-only flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
                     <i class="fas fa-robot w-5"></i>
@@ -573,9 +578,18 @@
             card.innerHTML = `
                 <div class="flex items-start justify-between mb-2">
                     <h4 class="font-semibold text-gray-800 text-sm">${lead.name || 'Sem nome'}</h4>
-                    <button onclick="deleteLeadConfirm(${lead.id})" class="text-gray-400 hover:text-red-500">
-                        <i class="fas fa-trash text-xs"></i>
-                    </button>
+                    <div class="flex gap-2">
+                        ${lead.phone ? `
+                            <button onclick="openChat('${lead.phone}', '${lead.name || lead.phone}', ${lead.id})" 
+                                    class="text-green-500 hover:text-green-600 transition-colors" 
+                                    title="Abrir Chat WhatsApp">
+                                <i class="fab fa-whatsapp text-sm"></i>
+                            </button>
+                        ` : ''}
+                        <button onclick="deleteLeadConfirm(${lead.id})" class="text-gray-400 hover:text-red-500">
+                            <i class="fas fa-trash text-xs"></i>
+                        </button>
+                    </div>
                 </div>
                 ${lead.phone ? `<p class="text-xs text-gray-500 mb-1"><i class="fas fa-phone mr-1"></i> ${lead.phone}</p>` : ''}
                 ${lead.email ? `<p class="text-xs text-gray-500 mb-1"><i class="fas fa-envelope mr-1"></i> ${lead.email}</p>` : ''}
@@ -710,6 +724,45 @@
             socket.on('crm-update', () => {
                 loadLeads();
             });
+
+            // Socket para chat - atualizar badge de mensagens não lidas
+            socket.on('new-message-notification', (data) => {
+                updateChatBadge();
+            });
+        }
+
+        // Abrir chat com lead
+        function openChat(phone, name, leadId) {
+            // Salvar no sessionStorage para abrir direto no chat
+            sessionStorage.setItem('openChatPhone', phone);
+            sessionStorage.setItem('openChatName', name);
+            sessionStorage.setItem('openChatLeadId', leadId);
+            
+            // Redirecionar para página de chat
+            window.location.href = '/crm-chat.html';
+        }
+
+        // Atualizar badge de mensagens não lidas
+        async function updateChatBadge() {
+            try {
+                const response = await fetch('/api/chat/stats', {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const badge = document.getElementById('chatUnreadBadge');
+                    
+                    if (data.stats && data.stats.total_unread > 0) {
+                        badge.textContent = data.stats.total_unread;
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar badge de chat:', error);
+            }
         }
         
         function logout() {
@@ -718,7 +771,11 @@
         }
         
         // Chamar checkAuth antes de init
-        checkAuth().then(() => init());
+        checkAuth().then(() => {
+            init();
+            updateChatBadge(); // Carregar badge inicial
+            setInterval(updateChatBadge, 30000); // Atualizar a cada 30 segundos
+        });
     </script>
     
     <!-- Modals -->

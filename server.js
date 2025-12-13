@@ -63,6 +63,7 @@ app.use('/api/crm', require('./routes/crm.routes')); // CRM Kanban
 app.use('/api/sellers', require('./routes/sellers.routes')); // Gestão de Vendedores
 app.use('/api/webhooks', require('./routes/webhook.routes')); // Webhooks pagamento
 app.use('/api/meta', require('./routes/meta-webhook.routes')); // Meta WhatsApp Business API Webhook
+app.use('/api/chat', require('./routes/chat.routes')); // Chat WhatsApp Integrado
 
 // Rota principal
 app.get('/', (req, res) => {
@@ -73,9 +74,43 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
     console.log('🔌 Cliente conectado ao Socket.IO:', socket.id);
 
+    // Entrar em sala do CRM
     socket.on('join-crm', (userId) => {
         socket.join(`crm-${userId}`);
         console.log(`👤 Usuário ${userId} entrou na sala CRM`);
+    });
+
+    // Entrar em sala de usuário (para chat)
+    socket.on('join-room', (room) => {
+        socket.join(room);
+        console.log(`📬 Socket ${socket.id} entrou na sala: ${room}`);
+    });
+
+    // Entrar em sala de conversa específica
+    socket.on('join-conversation', (conversationId) => {
+        socket.join(`conversation-${conversationId}`);
+        console.log(`💬 Socket ${socket.id} entrou na conversa: ${conversationId}`);
+    });
+
+    // Sair de sala de conversa
+    socket.on('leave-conversation', (conversationId) => {
+        socket.leave(`conversation-${conversationId}`);
+        console.log(`💬 Socket ${socket.id} saiu da conversa: ${conversationId}`);
+    });
+
+    // Indicador de digitação
+    socket.on('typing-start', (data) => {
+        socket.to(`conversation-${data.conversationId}`).emit('user-typing', {
+            userId: data.userId,
+            isTyping: true
+        });
+    });
+
+    socket.on('typing-stop', (data) => {
+        socket.to(`conversation-${data.conversationId}`).emit('user-typing', {
+            userId: data.userId,
+            isTyping: false
+        });
     });
 
     socket.on('disconnect', () => {
