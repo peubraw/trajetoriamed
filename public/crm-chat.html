@@ -879,24 +879,31 @@
             
             socket.on('connect', async () => {
                 console.log('✅ Socket.IO conectado');
-                const userId = sessionStorage.getItem('userId');
-                console.log('👤 User ID:', userId);
-                if (userId) {
-                    socket.emit('join-room', `user-${userId}`);
-                    console.log(`📤 Tentando entrar no room: user-${userId}`);
+                
+                // Buscar userId da sessão
+                try {
+                    const response = await fetch('/api/auth/check', { credentials: 'include' });
+                    const data = await response.json();
+                    console.log('👥 Dados do usuário:', data.user);
                     
-                    // Se for vendedor, também entrar no room do parent para receber mensagens
-                    try {
-                        const response = await fetch('/api/auth/check', { credentials: 'include' });
-                        const data = await response.json();
-                        console.log('👥 Dados do usuário:', data.user);
-                        if (data.user && data.user.parent_user_id) {
+                    if (data.user && data.user.id) {
+                        const userId = data.user.id;
+                        console.log('👤 User ID:', userId);
+                        
+                        // Entrar no próprio room
+                        socket.emit('join-room', `user-${userId}`);
+                        console.log(`📤 Entrou no room: user-${userId}`);
+                        
+                        // Se for vendedor, também entrar no room do parent
+                        if (data.user.parent_user_id) {
                             socket.emit('join-room', `user-${data.user.parent_user_id}`);
                             console.log(`✅ Vendedor entrou no room do parent: user-${data.user.parent_user_id}`);
                         }
-                    } catch (error) {
-                        console.error('Erro ao verificar parent_user_id:', error);
+                    } else {
+                        console.error('❌ Usuário não autenticado');
                     }
+                } catch (error) {
+                    console.error('❌ Erro ao buscar dados do usuário:', error);
                 }
             });
 
