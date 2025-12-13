@@ -1098,6 +1098,13 @@
                 const time = formatMessageTime(msg.created_at);
                 const statusIcon = getStatusIcon(msg.status);
                 
+                // Construir URL da mídia
+                let mediaUrl = msg.media_url;
+                if (mediaUrl && mediaUrl.startsWith('/')) {
+                    // URL relativa - adicionar protocolo e host
+                    mediaUrl = window.location.origin + mediaUrl;
+                }
+                
                 // Renderizar mídia baseado no tipo
                 let mediaHtml = '';
                 if (msg.media_url) {
@@ -1105,9 +1112,9 @@
                         case 'image':
                             mediaHtml = `
                                 <div class="message-media">
-                                    <img src="${msg.media_url}" 
+                                    <img src="${mediaUrl}" 
                                          class="message-image" 
-                                         onclick="openLightbox('${msg.media_url}')"
+                                         onclick="openLightbox('${mediaUrl}')"
                                          alt="Imagem" />
                                 </div>
                             `;
@@ -1116,7 +1123,7 @@
                             mediaHtml = `
                                 <div class="message-media">
                                     <video class="message-video" controls>
-                                        <source src="${msg.media_url}" type="${msg.media_mimetype || 'video/mp4'}">
+                                        <source src="${mediaUrl}" type="${msg.media_mimetype || 'video/mp4'}">
                                         Seu navegador não suporta vídeos.
                                     </video>
                                 </div>
@@ -1126,7 +1133,7 @@
                             mediaHtml = `
                                 <div class="message-media">
                                     <audio class="message-audio" controls>
-                                        <source src="${msg.media_url}" type="${msg.media_mimetype || 'audio/ogg'}">
+                                        <source src="${mediaUrl}" type="${msg.media_mimetype || 'audio/ogg'}">
                                         Seu navegador não suporta áudios.
                                     </audio>
                                 </div>
@@ -1135,7 +1142,7 @@
                         case 'document':
                             const fileName = msg.message_content.replace('📄 ', '') || 'Documento';
                             mediaHtml = `
-                                <div class="message-document" onclick="window.open('${msg.media_url}', '_blank')">
+                                <div class="message-document" onclick="window.open('${mediaUrl}', '_blank')">
                                     <div class="document-icon">
                                         <i class="fas fa-file-pdf"></i>
                                     </div>
