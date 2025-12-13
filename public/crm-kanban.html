@@ -16,6 +16,93 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
+
+        /* Sidebar Menu */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 1000;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+            overflow-y: auto;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .sidebar-logo {
+            padding: 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-user {
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 24px;
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-left-color: white;
+        }
+
+        .menu-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-left-color: white;
+        }
+
+        .menu-item i {
+            width: 24px;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        .menu-section {
+            padding: 20px 24px 8px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .main-content {
+            margin-left: 280px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
         
         :root {
             --primary-purple: #6366f1;
@@ -36,24 +123,6 @@
         body { 
             background: var(--bg-secondary); 
             color: var(--text-primary);
-        }
-        
-        /* Sidebar Styling */
-        .sidebar-gradient { 
-            background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%); 
-        }
-        .nav-item { 
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
-            border-left: 3px solid transparent; 
-        }
-        .nav-item:hover { 
-            background: rgba(255, 255, 255, 0.12); 
-            border-left-color: #ffffff; 
-        }
-        .nav-item.active { 
-            background: rgba(255, 255, 255, 0.18); 
-            border-left-color: #ffffff;
-            font-weight: 600;
         }
         
         /* Button Styles */
@@ -182,12 +251,84 @@
         }
     </style>
 </head>
-<body class="content-container">
-    
+<body>
+    <div class="flex">
+        <!-- Sidebar Menu -->
+        <aside class="sidebar">
+            <!-- Logo -->
+            <div class="sidebar-logo">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center">
+                        <i class="fas fa-graduation-cap text-purple-600 text-2xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-white font-bold text-lg">TrajetóriaMed</h2>
+                        <p class="text-white text-opacity-70 text-xs">Sistema CRM</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Info -->
+            <div class="sidebar-user">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-white font-semibold text-sm" id="sidebarUserName">Carregando...</p>
+                        <p class="text-white text-opacity-60 text-xs" id="sidebarUserRole">Usuário</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu -->
+            <nav class="py-4">
+                <div class="menu-section">Principal</div>
+                <a href="/dashboard.html" class="menu-item">
+                    <i class="fas fa-home"></i>
+                    Dashboard
+                </a>
+                <a href="/crm-kanban.html" class="menu-item active">
+                    <i class="fas fa-columns"></i>
+                    CRM Kanban
+                </a>
+                <a href="/crm-chat.html" class="menu-item">
+                    <i class="fab fa-whatsapp"></i>
+                    Chat WhatsApp
+                </a>
+                <a href="/whatsapp.html" class="menu-item admin-only">
+                    <i class="fas fa-qrcode"></i>
+                    Conectar WhatsApp
+                </a>
+
+                <div class="menu-section">Configurações</div>
+                <a href="/bot-config.html" class="menu-item admin-only">
+                    <i class="fas fa-robot"></i>
+                    Configurar Bot
+                </a>
+                <a href="/webhooks.html" class="menu-item admin-only">
+                    <i class="fas fa-link"></i>
+                    Webhooks
+                </a>
+
+                <div class="menu-section">Sistema</div>
+                <a href="/settings.html" class="menu-item admin-only">
+                    <i class="fas fa-cog"></i>
+                    Configurações
+                </a>
+                <a href="#" onclick="logout(); return false;" class="menu-item">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Sair
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-content flex-1">
     <div class="flex h-screen overflow-hidden">
         
-        <!-- Sidebar -->
-        <aside class="sidebar-gradient w-64 flex-shrink-0 hidden md:flex flex-col shadow-2xl">
+        <!-- Old Sidebar - REMOVIDO -->
+        <aside class="hidden">
             <div class="p-6 border-b border-white border-opacity-10">
                 <div class="flex items-center">
                     <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
@@ -251,7 +392,7 @@
         </aside>
         
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
+        <div class="main-content flex-1">
             
             <!-- Top Bar -->
             <header class="page-header px-6 py-4">
@@ -380,10 +521,12 @@
         // Initialize
         async function init() {
             console.log('Initializing CRM Kanban...');
-            await checkAuth();
-            await loadStages();
-            await loadLeads();
-            initSocket();
+            const authenticated = await checkAuth();
+            if (authenticated) {
+                await loadStages();
+                await loadLeads();
+                initSocket();
+            }
         }
         
         async function checkAuth() {
@@ -408,8 +551,27 @@
                 
                 console.log('User authenticated:', data.user);
                 
+                // Atualizar informações do usuário para o novo sidebar
+                const user = data.user;
+                currentUserId = user.id;
+                const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                
+                // Atualizar novo sidebar
+                const sidebarUserName = document.getElementById('sidebarUserName');
+                const sidebarUserRole = document.getElementById('sidebarUserRole');
+                if (sidebarUserName) sidebarUserName.textContent = user.name || 'Usuário';
+                if (sidebarUserRole) sidebarUserRole.textContent = user.role === 'admin' ? 'Administrador' : 'Vendedor';
+                
+                // Atualizar sidebar antigo (se existir)
+                const userName = document.getElementById('userName');
+                const userInitials = document.getElementById('userInitials');
+                const userRole = document.getElementById('userRole');
+                if (userName) userName.textContent = user.name;
+                if (userInitials) userInitials.textContent = initials;
+                if (userRole) userRole.textContent = user.role === 'seller' ? 'Vendedor' : 'Administrador';
+                
                 // Ocultar menus para vendedores
-                if (data.user && data.user.role === 'seller') {
+                if (data.user && data.user.role !== 'admin') {
                     document.querySelectorAll('.admin-only').forEach(el => {
                         el.style.display = 'none';
                     });
@@ -420,6 +582,13 @@
                 console.error('Auth check error:', error);
                 window.location.href = '/login.html';
                 return false;
+            }
+        }
+        
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('open');
             }
         }
         
@@ -676,47 +845,6 @@
         
         let currentUserId = null;
 
-        async function checkAuth() {
-            try {
-                const response = await fetch('/api/auth/check', {
-                    credentials: 'include'
-                });
-                if (!response.ok) {
-                    window.location.href = '/login.html';
-                    return;
-                }
-                
-                const data = await response.json();
-                if (!data.authenticated) {
-                    window.location.href = '/login.html';
-                    return;
-                }
-                
-                // Atualizar informações do usuário
-                const user = data.user;
-                currentUserId = user.id;
-                const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-                
-                // Atualizar sidebar
-                document.getElementById('userName').textContent = user.name;
-                document.getElementById('userInitials').textContent = initials;
-                document.getElementById('userRole').textContent = user.role === 'seller' ? 'Vendedor' : 'Administrador';
-                
-                // Ocultar menus para vendedores
-                if (user.role === 'seller') {
-                    document.querySelectorAll('.admin-only').forEach(el => {
-                        el.style.display = 'none';
-                    });
-                }
-                
-                // Inicializar socket com userId correto
-                initSocket();
-                
-            } catch (error) {
-                window.location.href = '/login.html';
-            }
-        }
-
         function initSocket() {
             socket = io();
             socket.emit('join-crm', currentUserId);
@@ -770,9 +898,8 @@
                 .then(() => window.location.href = '/login.html');
         }
         
-        // Chamar checkAuth antes de init
-        checkAuth().then(() => {
-            init();
+        // Inicializar quando a página carregar
+        init().then(() => {
             updateChatBadge(); // Carregar badge inicial
             setInterval(updateChatBadge, 30000); // Atualizar a cada 30 segundos
         });
@@ -791,6 +918,7 @@
     
     <!-- CRM Advanced Features -->
     <script src="/js/crm-kanban-advanced.js"></script>
-    
+        </div>
+    </div>
 </body>
 </html>
