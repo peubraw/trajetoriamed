@@ -206,6 +206,7 @@ class ChatService {
                 messageContent,
                 mediaUrl = null,
                 mediaMimetype = null,
+                fileName = null,
                 caption = null,
                 direction,
                 senderType,
@@ -217,12 +218,12 @@ class ChatService {
             const [result] = await db.query(
                 `INSERT INTO crm_chat_messages 
                 (user_id, lead_id, phone, message_id, message_type, message_content, 
-                media_url, media_mimetype, caption, direction, sender_type, sent_by, 
+                media_url, media_mimetype, file_name, caption, direction, sender_type, sent_by, 
                 status, metadata, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
                 [
                     userId, leadId, phone, messageId, messageType, messageContent,
-                    mediaUrl, mediaMimetype, caption, direction, senderType, sentBy,
+                    mediaUrl, mediaMimetype, fileName, caption, direction, senderType, sentBy,
                     status, metadata ? JSON.stringify(metadata) : null
                 ]
             );
@@ -255,7 +256,7 @@ class ChatService {
     /**
      * Enviar mensagem via WhatsApp
      */
-    async sendMessage(userId, phone, content, sentBy, messageType = 'text', mediaUrl = null) {
+    async sendMessage(userId, phone, content, sentBy, messageType = 'text', mediaUrl = null, mediaMimetype = null, fileName = null) {
         try {
             const metaWhatsAppService = require('./meta-whatsapp.service');
 
@@ -276,16 +277,27 @@ class ChatService {
                 messageType,
                 messageContent: content,
                 mediaUrl,
+                mediaMimetype,
+                fileName,
                 direction: 'outbound',
                 senderType: 'admin', // ou 'seller' baseado no role
                 sentBy,
                 status: 'pending'
             });
 
-            // Tentar enviar via API Meta primeiro
+            // Tentar enviar via API Meta
             let sent = false;
             try {
-                const metaResult = await metaWhatsAppService.sendTextMessage(phone, content);
+                let metaResult;
+                
+                // Enviar baseado no tipo de mensagem
+                if (messageType === 'text' || !mediaUrl) {
+                    metaResult = await metaWhatsAppService.sendTextMessage(phone, content);
+                } else {
+                    // Enviar mídia via Meta API
+                    metaResult = await metaWhatsAppService.sendMedia(phone, messageType, mediaUrl, content);
+                }
+                
                 if (metaResult && metaResult.messages) {
                     sent = true;
                     const messageId = metaResult.messages[0].id;

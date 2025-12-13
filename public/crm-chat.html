@@ -338,9 +338,12 @@
         .messages-container {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 20px;
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%23111B21" width="100" height="100"/></svg>');
             background-repeat: repeat;
+            height: calc(100vh - 200px); /* Altura fixa para scroll */
+            min-height: 400px;
         }
 
         .message {
@@ -397,6 +400,118 @@
 
         .message-status.read {
             color: #53BDEB;
+        }
+
+        /* Media Messages */
+        .message-media {
+            max-width: 100%;
+            margin-bottom: 4px;
+        }
+
+        .message-image {
+            max-width: 300px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: block;
+        }
+
+        .message-image:hover {
+            opacity: 0.9;
+        }
+
+        .message-video {
+            max-width: 300px;
+            border-radius: 8px;
+            display: block;
+        }
+
+        .message-audio {
+            width: 280px;
+            height: 42px;
+            border-radius: 21px;
+            outline: none;
+        }
+
+        .message-document {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .message-document:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .document-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            background: var(--whatsapp-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .document-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .document-name {
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .document-size {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* Image Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
+            background: none;
+            border: none;
         }
 
         /* Input Area */
@@ -907,7 +1022,8 @@
                     <button class="input-action-btn" title="Emoji">
                         <i class="far fa-smile"></i>
                     </button>
-                    <button class="input-action-btn" title="Anexar">
+                    <input type="file" id="fileInput" style="display: none;" accept="image/*,video/*,audio/*,application/pdf,.doc,.docx,.xls,.xlsx" onchange="handleFileSelect(event)">
+                    <button class="input-action-btn" title="Anexar arquivo" onclick="document.getElementById('fileInput').click()">
                         <i class="fas fa-paperclip"></i>
                     </button>
                     <div class="message-input-wrapper">
@@ -977,10 +1093,73 @@
                 const time = formatMessageTime(msg.created_at);
                 const statusIcon = getStatusIcon(msg.status);
                 
+                // Renderizar mídia baseado no tipo
+                let mediaHtml = '';
+                if (msg.media_url) {
+                    switch(msg.message_type) {
+                        case 'image':
+                            mediaHtml = `
+                                <div class="message-media">
+                                    <img src="${msg.media_url}" 
+                                         class="message-image" 
+                                         onclick="openLightbox('${msg.media_url}')"
+                                         alt="Imagem" />
+                                </div>
+                            `;
+                            break;
+                        case 'video':
+                            mediaHtml = `
+                                <div class="message-media">
+                                    <video class="message-video" controls>
+                                        <source src="${msg.media_url}" type="${msg.media_mimetype || 'video/mp4'}">
+                                        Seu navegador não suporta vídeos.
+                                    </video>
+                                </div>
+                            `;
+                            break;
+                        case 'audio':
+                            mediaHtml = `
+                                <div class="message-media">
+                                    <audio class="message-audio" controls>
+                                        <source src="${msg.media_url}" type="${msg.media_mimetype || 'audio/ogg'}">
+                                        Seu navegador não suporta áudios.
+                                    </audio>
+                                </div>
+                            `;
+                            break;
+                        case 'document':
+                            const fileName = msg.message_content.replace('📄 ', '') || 'Documento';
+                            mediaHtml = `
+                                <div class="message-document" onclick="window.open('${msg.media_url}', '_blank')">
+                                    <div class="document-icon">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </div>
+                                    <div class="document-info">
+                                        <div class="document-name">${fileName}</div>
+                                        <div class="document-size">Clique para abrir</div>
+                                    </div>
+                                </div>
+                            `;
+                            break;
+                        case 'sticker':
+                            mediaHtml = `
+                                <div class="message-media">
+                                    <img src="${msg.media_url}" 
+                                         class="message-image" 
+                                         style="max-width: 150px;"
+                                         alt="Figurinha" />
+                                </div>
+                            `;
+                            break;
+                    }
+                }
+                
                 return `
                     <div class="message ${msg.direction}">
                         <div class="message-bubble">
-                            <div class="message-content">${escapeHtml(msg.message_content)}</div>
+                            ${mediaHtml}
+                            ${msg.message_content && !mediaHtml ? `<div class="message-content">${escapeHtml(msg.message_content)}</div>` : ''}
+                            ${msg.caption && mediaHtml ? `<div class="message-content" style="margin-top: 8px;">${escapeHtml(msg.caption)}</div>` : ''}
                             <div class="message-footer">
                                 <span class="message-time">${time}</span>
                                 ${isOutbound ? `<span class="message-status ${msg.is_read ? 'read' : ''}">${statusIcon}</span>` : ''}
@@ -991,9 +1170,147 @@
             }).join('');
 
             // Scroll para o final
-            setTimeout(() => {
-                container.scrollTop = container.scrollHeight;
-            }, 100);
+            scrollToBottom();
+        }
+
+        // Scroll suave para o final
+        function scrollToBottom() {
+            const container = document.getElementById('messagesContainer');
+            if (container) {
+                setTimeout(() => {
+                    container.scrollTo({
+                        top: container.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 100);
+            }
+        }
+
+        // Abrir lightbox para imagem
+        function openLightbox(imageUrl) {
+            const lightbox = document.getElementById('imageLightbox');
+            const lightboxImg = document.getElementById('lightboxImage');
+            if (lightbox && lightboxImg) {
+                lightboxImg.src = imageUrl;
+                lightbox.classList.add('active');
+            }
+        }
+
+        // Fechar lightbox
+        function closeLightbox() {
+            const lightbox = document.getElementById('imageLightbox');
+            if (lightbox) {
+                lightbox.classList.remove('active');
+            }
+        }
+
+        // Manipular seleção de arquivo
+        async function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file || !currentConversation) return;
+
+            // Validar tamanho (16MB max para WhatsApp)
+            const maxSize = 16 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert('Arquivo muito grande! O tamanho máximo é 16MB.');
+                return;
+            }
+
+            // Determinar tipo de mídia
+            let mediaType = 'document';
+            if (file.type.startsWith('image/')) mediaType = 'image';
+            else if (file.type.startsWith('video/')) mediaType = 'video';
+            else if (file.type.startsWith('audio/')) mediaType = 'audio';
+
+            // Mostrar preview/confirmação
+            const fileName = file.name;
+            const confirmed = confirm(`Enviar ${mediaType === 'document' ? 'documento' : mediaType === 'image' ? 'imagem' : mediaType === 'video' ? 'vídeo' : 'áudio'}: ${fileName}?`);
+            
+            if (!confirmed) {
+                event.target.value = ''; // Limpar input
+                return;
+            }
+
+            // Enviar arquivo
+            await sendMediaMessage(file, mediaType);
+            
+            // Limpar input
+            event.target.value = '';
+        }
+
+        // Enviar mensagem com mídia
+        async function sendMediaMessage(file, mediaType) {
+            const sendButton = document.getElementById('sendButton');
+            sendButton.disabled = true;
+
+            try {
+                // Criar FormData
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('phone', currentConversation.phone);
+                formData.append('mediaType', mediaType);
+                
+                // Adicionar caption se houver texto no input
+                const messageInput = document.getElementById('messageInput');
+                const caption = messageInput.value.trim();
+                if (caption) {
+                    formData.append('caption', caption);
+                }
+
+                // Mostrar loading
+                const messagesContainer = document.getElementById('messagesContainer');
+                messagesContainer.insertAdjacentHTML('beforeend', `
+                    <div class="message outbound" id="uploadingMessage">
+                        <div class="message-bubble">
+                            <div class="message-content">
+                                <i class="fas fa-spinner fa-spin"></i> Enviando ${mediaType}...
+                            </div>
+                        </div>
+                    </div>
+                `);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                // Enviar para o servidor
+                const response = await fetch('/api/chat/send-media', {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Erro ao enviar mídia');
+                }
+
+                const data = await response.json();
+                
+                // Remover loading
+                const uploadingMsg = document.getElementById('uploadingMessage');
+                if (uploadingMsg) uploadingMsg.remove();
+                
+                // Adicionar mensagem à interface
+                addMessageToUI(data.message);
+                
+                // Limpar input de texto se havia caption
+                if (caption) {
+                    messageInput.value = '';
+                    messageInput.style.height = 'auto';
+                }
+                
+                // Recarregar conversas
+                loadConversations();
+
+            } catch (error) {
+                console.error('❌ Erro ao enviar mídia:', error);
+                
+                // Remover loading
+                const uploadingMsg = document.getElementById('uploadingMessage');
+                if (uploadingMsg) uploadingMsg.remove();
+                
+                alert(`Erro ao enviar arquivo: ${error.message}`);
+            } finally {
+                sendButton.disabled = false;
+            }
         }
 
         // Enviar mensagem
@@ -1326,5 +1643,11 @@
         checkAuth();
         loadUserInfo();
     </script>
+
+    <!-- Image Lightbox -->
+    <div id="imageLightbox" class="lightbox" onclick="closeLightbox()">
+        <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+        <img id="lightboxImage" src="" alt="Imagem ampliada" onclick="event.stopPropagation()">
+    </div>
 </body>
 </html>

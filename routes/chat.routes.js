@@ -1,7 +1,46 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const chatService = require('../services/chat.service');
 const { requireAuth } = require('../middleware/auth.middleware');
+
+// Configurar multer para upload de arquivos
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadDir = path.join(__dirname, '../public/uploads');
+        // Criar diretório se não existir
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        // Nome único: timestamp + nome original
+        const uniqueName = `${Date.now()}-${file.originalname}`;
+        cb(null, uniqueName);
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 16 * 1024 * 1024 // 16MB (limite WhatsApp)
+    },
+    fileFilter: function (req, file, cb) {
+        // Aceitar apenas tipos permitidos
+        const allowedTypes = /jpeg|jpg|png|gif|webp|mp4|avi|mov|mp3|wav|ogg|pdf|doc|docx|xls|xlsx|txt/;
+        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = allowedTypes.test(file.mimetype);
+
+        if (mimetype && extname) {
+            return cb(null, true);
+        } else {
+            cb(new Error('Tipo de arquivo não permitido'));
+        }
+    }
+});
 
 /**
  * GET /api/chat/conversations
@@ -217,6 +256,84 @@ router.get('/conversation/:phone', requireAuth, async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Erro ao buscar/criar conversa'
+        });
+    }
+});
+
+/**
+ * POST /api/chat/send-media
+ * Enviar mensagem com mídia (upload de arquivo)
+ */
+router.post('/send-media', requireAuth, upload.single('file'), async (req, res) => {
+    try {
+        const userId = req.session.userId;
+        const sentBy = req.session.userId;
+        const { phone, mediaType, caption = '' } = req.body;
+
+        if (!phone) {
+            return res.status(400).json({
+                success: false,
+                error: 'Telefone é obrigatório'
+            });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                error: 'Arquivo é obrigatório'
+            });
+        }
+
+        // URL do arquivo carregado
+        const mediaUrl = `/uploads/${req.file.filename}`;
+        const mediaMimetype = req.file.mimetype;
+        const fileName = req.file.originalname;
+
+        // Determinar tipo de mensagem baseado no MIME type
+        let messageType = 'document';
+        if (mediaMimetype.startsWith('image/')) messageType = 'image';
+        else if (mediaMimetype.startsWith('video/')) messageType = 'video';
+        else if (mediaMimetype.startsWith('audio/')) messageType = 'audio';
+
+        // Usar o mediaType fornecido se válido
+        if (mediaType && ['image', 'video', 'audio', 'document'].includes(mediaType)) {
+            messageType = mediaType;
+        }
+
+        // Conteúdo da mensagem (caption ou nome do arquivo)
+        const content = caption || fileName;
+
+        // Enviar mensagem
+        const message = await chatService.sendMessage(
+            userId,
+            phone,
+            content,
+            sentBy,
+            messageType,
+            mediaUrl,
+            mediaMimetype,
+            fileName
+        );
+
+        res.json({
+            success: true,
+            message
+        });
+    } catch (error) {
+        console.error('❌ Erro ao enviar mídia:', error);
+        
+        // Remover arquivo em caso de erro
+        if (req.file) {
+            try {
+                fs.unlinkSync(req.file.path);
+            } catch (unlinkError) {
+                console.error('❌ Erro ao remover arquivo:', unlinkError);
+            }
+        }
+        
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Erro ao enviar mídia'
         });
     }
 });

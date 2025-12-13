@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS crm_chat_messages (
     message_content TEXT NOT NULL COMMENT 'Conteúdo da mensagem',
     media_url VARCHAR(500) NULL COMMENT 'URL da mídia (se aplicável)',
     media_mimetype VARCHAR(100) NULL COMMENT 'Tipo MIME da mídia',
+    file_name VARCHAR(255) NULL COMMENT 'Nome original do arquivo',
     caption TEXT NULL COMMENT 'Legenda da mídia',
     
     -- Direção e sender
