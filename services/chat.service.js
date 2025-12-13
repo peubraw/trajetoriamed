@@ -173,7 +173,6 @@ class ChatService {
      */
     async sendMessage(userId, phone, content, sentBy, messageType = 'text', mediaUrl = null) {
         try {
-            const whatsappService = require('./whatsapp.service');
             const metaWhatsAppService = require('./meta-whatsapp.service');
 
             // Buscar ou criar conversa
@@ -202,60 +201,32 @@ class ChatService {
             // Tentar enviar via API Meta primeiro
             let sent = false;
             try {
-                const metaResult = await metaWhatsAppService.sendMessage(phone, content);
-                if (metaResult && metaResult.success) {
+                const metaResult = await metaWhatsAppService.sendTextMessage(phone, content);
+                if (metaResult && metaResult.messages) {
                     sent = true;
+                    const messageId = metaResult.messages[0].id;
                     // Atualizar status da mensagem
                     await db.query(
                         `UPDATE crm_chat_messages 
                         SET status = 'sent', message_id = ?, delivered_at = NOW()
                         WHERE id = ?`,
-                        [metaResult.messageId, savedMessage.id]
+                        [messageId, savedMessage.id]
                     );
                     savedMessage.status = 'sent';
-                    savedMessage.message_id = metaResult.messageId;
+                    savedMessage.message_id = messageId;
+                    console.log(`✅ Mensagem enviada via Meta API: ${messageId}`);
                 }
             } catch (metaError) {
-                console.error('⚠️ Meta API falhou:', metaError.message || metaError);
-                console.log('Tentando wppconnect...');
-            }
-
-            // Se Meta falhou, tentar wppconnect
-            if (!sent) {
-                const client = whatsappService.clients.get(userId);
-                if (client) {
-                    try {
-                        const formattedPhone = phone.includes('@c.us') ? phone : `${phone}@c.us`;
-                        
-                        if (messageType === 'text') {
-                            await client.sendText(formattedPhone, content);
-                        } else if (messageType === 'image' && mediaUrl) {
-                            await client.sendImage(formattedPhone, mediaUrl, 'image', content);
-                        }
-
-                        sent = true;
-                        await db.query(
-                            `UPDATE crm_chat_messages 
-                            SET status = 'sent', delivered_at = NOW()
-                            WHERE id = ?`,
-                            [savedMessage.id]
-                        );
-                        savedMessage.status = 'sent';
-                    } catch (wppError) {
-                        console.error('❌ Erro ao enviar via wppconnect:', wppError);
-                    }
-                }
-            }
-
-            // Se tudo falhou
-            if (!sent) {
+                console.error('❌ Erro Meta API:', metaError.response?.data || metaError.message);
+                // Marcar como falha
                 await db.query(
                     `UPDATE crm_chat_messages 
                     SET status = 'failed', error_message = ?
                     WHERE id = ?`,
-                    ['Nenhum serviço de WhatsApp disponível', savedMessage.id]
+                    [metaError.message || 'Erro ao enviar via Meta API', savedMessage.id]
                 );
                 savedMessage.status = 'failed';
+                throw metaError;
             }
 
             // Emitir via Socket.IO
