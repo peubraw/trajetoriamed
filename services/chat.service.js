@@ -177,14 +177,31 @@ class ChatService {
                 }
             }
 
-            const [messages] = await db.query(
-                `SELECT * FROM vw_chat_messages_full
-                WHERE phone = ? 
-                AND (user_id = ? OR sent_by = ?)
-                ORDER BY created_at DESC
-                LIMIT ? OFFSET ?`,
-                [phone, queryUserId, userId, limit, offset]
-            );
+            // Montar query baseado no tipo de usuário
+            let messages;
+            if (isAdmin) {
+                // Admin vê TODAS as mensagens do seu contexto (incluindo enviadas por vendedores)
+                [messages] = await db.query(
+                    `SELECT * FROM vw_chat_messages_full
+                    WHERE phone = ? 
+                    AND (user_id = ? OR sent_by IN (
+                        SELECT id FROM users WHERE parent_user_id = ? OR id = ?
+                    ))
+                    ORDER BY created_at DESC
+                    LIMIT ? OFFSET ?`,
+                    [phone, userId, userId, userId, limit, offset]
+                );
+            } else {
+                // Vendedor vê mensagens do admin e dele mesmo
+                [messages] = await db.query(
+                    `SELECT * FROM vw_chat_messages_full
+                    WHERE phone = ? 
+                    AND (user_id = ? OR sent_by = ?)
+                    ORDER BY created_at DESC
+                    LIMIT ? OFFSET ?`,
+                    [phone, queryUserId, userId, limit, offset]
+                );
+            }
 
             return messages.reverse(); // Retornar em ordem cronológica
         } catch (error) {
