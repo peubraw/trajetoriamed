@@ -139,7 +139,7 @@ class ChatService {
     /**
      * Buscar mensagens de uma conversa
      */
-    async getMessages(userId, phone, limit = 100, offset = 0) {
+    async getMessages(userId, phone, limit = 500, offset = 0) {
         try {
             // Verificar se o usuário é admin ou vendedor
             const authService = require('./auth.service');
