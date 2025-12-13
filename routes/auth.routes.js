@@ -133,4 +133,26 @@ router.get('/check', async (req, res) => {
     }
 });
 
+// Obter informações do usuário atual (alias para /check)
+router.get('/me', async (req, res) => {
+    console.log('Get me - Session:', { sessionID: req.sessionID, userId: req.session.userId });
+    
+    if (!req.session.userId) {
+        return res.status(401).json({ authenticated: false });
+    }
+
+    try {
+        const [users] = await db.execute('SELECT id, name, email, role, subscription_status, trial_end_date FROM users WHERE id = ?', [req.session.userId]);
+        
+        if (users.length === 0) {
+            return res.status(401).json({ authenticated: false });
+        }
+
+        res.json({ authenticated: true, user: users[0] });
+    } catch (error) {
+        console.error('Erro ao obter usuário:', error);
+        res.status(500).json({ error: 'Erro ao obter informações do usuário' });
+    }
+});
+
 module.exports = router;
