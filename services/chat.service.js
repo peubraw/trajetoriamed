@@ -9,17 +9,25 @@ class ChatService {
             // Verificar se o usuário é admin ou vendedor
             const authService = require('./auth.service');
             const isAdmin = await authService.isAdmin(userId);
+            const user = await authService.getUserById(userId);
 
             let query = `
                 SELECT * FROM vw_conversations_full
-                WHERE user_id = ?
+                WHERE 1=1
             `;
-            const params = [userId];
+            const params = [];
 
-            // Se for vendedor, filtrar apenas leads atribuídos a ele
-            if (!isAdmin) {
-                query += ` AND (assigned_to = ? OR assigned_to IS NULL)`;
+            // Se for admin, buscar conversas da conta dele
+            if (isAdmin) {
+                query += ` AND user_id = ?`;
                 params.push(userId);
+            } 
+            // Se for vendedor, buscar conversas da conta do admin pai, mas filtrar por assigned_to
+            else {
+                // Buscar conversas da conta do admin (parent_user_id ou user_id 1)
+                const adminUserId = user.parent_user_id || 1;
+                query += ` AND user_id = ? AND assigned_to = ?`;
+                params.push(adminUserId, userId);
             }
 
             // Filtros opcionais
@@ -40,7 +48,10 @@ class ChatService {
 
             query += ` ORDER BY last_message_at DESC`;
 
+            console.log('🔍 Query conversas:', { query, params, isAdmin, userId });
+
             const [conversations] = await db.query(query, params);
+            console.log(`📋 Conversas encontradas: ${conversations.length}`);
             return conversations;
         } catch (error) {
             console.error('❌ Erro ao buscar conversas:', error);
@@ -133,15 +144,22 @@ class ChatService {
             // Verificar se o usuário é admin ou vendedor
             const authService = require('./auth.service');
             const isAdmin = await authService.isAdmin(userId);
+            const user = await authService.getUserById(userId);
 
+            let queryUserId = userId;
+            
             // Verificar permissão: admin vê tudo, vendedor só vê seus leads
             if (!isAdmin) {
+                // Buscar no contexto do admin pai
+                const adminUserId = user.parent_user_id || 1;
+                queryUserId = adminUserId;
+
                 // Verificar se o lead está atribuído ao vendedor
                 const [leads] = await db.query(
                     `SELECT id FROM crm_leads 
                      WHERE user_id = ? AND phone = ? 
-                     AND (assigned_to = ? OR assigned_to IS NULL)`,
-                    [userId, phone, userId]
+                     AND assigned_to = ?`,
+                    [adminUserId, phone, userId]
                 );
 
                 if (leads.length === 0) {
@@ -149,8 +167,8 @@ class ChatService {
                     const [convs] = await db.query(
                         `SELECT id FROM crm_conversations 
                          WHERE user_id = ? AND phone = ? 
-                         AND (assigned_to = ? OR assigned_to IS NULL)`,
-                        [userId, phone, userId]
+                         AND assigned_to = ?`,
+                        [adminUserId, phone, userId]
                     );
 
                     if (convs.length === 0) {
@@ -164,7 +182,7 @@ class ChatService {
                 WHERE user_id = ? AND phone = ?
                 ORDER BY created_at DESC
                 LIMIT ? OFFSET ?`,
-                [userId, phone, limit, offset]
+                [queryUserId, phone, limit, offset]
             );
 
             return messages.reverse(); // Retornar em ordem cronológica
