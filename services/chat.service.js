@@ -419,7 +419,19 @@ class ChatService {
 
             // Emitir via Socket.IO para usuários online
             if (global.io) {
+                // Emitir para o admin/parent
                 global.io.to(`user-${userId}`).emit('new-message', savedMessage);
+                
+                // Se a conversa tem assigned_to, emitir também para o vendedor
+                const [conv] = await db.query(
+                    'SELECT assigned_to FROM crm_conversations WHERE user_id = ? AND phone = ?',
+                    [userId, phone]
+                );
+                
+                if (conv.length > 0 && conv[0].assigned_to) {
+                    global.io.to(`user-${conv[0].assigned_to}`).emit('new-message', savedMessage);
+                    console.log(`📤 Mensagem emitida para vendedor ID ${conv[0].assigned_to}`);
+                }
                 
                 // Notificação de nova mensagem
                 global.io.to(`user-${userId}`).emit('new-message-notification', {
@@ -428,6 +440,15 @@ class ChatService {
                     leadId,
                     timestamp: new Date()
                 });
+                
+                if (conv.length > 0 && conv[0].assigned_to) {
+                    global.io.to(`user-${conv[0].assigned_to}`).emit('new-message-notification', {
+                        phone,
+                        content: content.substring(0, 100),
+                        leadId,
+                        timestamp: new Date()
+                    });
+                }
             }
 
             return savedMessage;
