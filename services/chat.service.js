@@ -53,16 +53,6 @@ class ChatService {
      */
     async getOrCreateConversation(userId, phone, leadId = null) {
         try {
-            // Verificar se já existe
-            const [existing] = await db.query(
-                'SELECT * FROM crm_conversations WHERE user_id = ? AND phone = ?',
-                [userId, phone]
-            );
-
-            if (existing.length > 0) {
-                return existing[0];
-            }
-
             // Buscar informações do lead se existir
             let contactName = null;
             let assignedTo = null;
@@ -76,6 +66,43 @@ class ChatService {
                     contactName = lead[0].name;
                     assignedTo = lead[0].assigned_to;
                 }
+            } else {
+                // Tentar buscar lead pelo telefone
+                const [leads] = await db.query(
+                    'SELECT id, name, assigned_to FROM crm_leads WHERE user_id = ? AND phone = ?',
+                    [userId, phone]
+                );
+                if (leads.length > 0) {
+                    leadId = leads[0].id;
+                    contactName = leads[0].name;
+                    assignedTo = leads[0].assigned_to;
+                }
+            }
+
+            // Verificar se já existe
+            const [existing] = await db.query(
+                'SELECT * FROM crm_conversations WHERE user_id = ? AND phone = ?',
+                [userId, phone]
+            );
+
+            if (existing.length > 0) {
+                // Sincronizar assigned_to com o lead
+                if (assignedTo !== existing[0].assigned_to || contactName !== existing[0].contact_name) {
+                    await db.query(
+                        `UPDATE crm_conversations 
+                         SET assigned_to = ?, contact_name = ?, lead_id = ?
+                         WHERE id = ?`,
+                        [assignedTo, contactName, leadId, existing[0].id]
+                    );
+                    console.log(`📋 Conversa ${existing[0].id} sincronizada: assigned_to=${assignedTo}, lead_id=${leadId}`);
+                }
+                
+                // Retornar conversa atualizada
+                const [updated] = await db.query(
+                    'SELECT * FROM crm_conversations WHERE id = ?',
+                    [existing[0].id]
+                );
+                return updated[0];
             }
 
             // Criar nova conversa
