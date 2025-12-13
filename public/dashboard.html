@@ -3,474 +3,796 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - TrajetóriaMed</title>
+    <title>Dashboard - TrajetóriaMed CRM</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         
         * {
             font-family: 'Inter', sans-serif;
         }
-        
-        .sidebar-gradient {
-            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
         }
-        
-        .nav-item {
-            transition: all 0.2s ease;
-            border-left: 3px solid transparent;
+
+        .dashboard-container {
+            background: #f8fafc;
+            min-height: 100vh;
         }
-        
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-left-color: #ffffff;
+
+        .header-bar {
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-        
-        .nav-item.active {
-            background: rgba(255, 255, 255, 0.15);
-            border-left-color: #ffffff;
-        }
-        
+
         .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
+            border: 1px solid #e2e8f0;
         }
-        
+
         .stat-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
         }
-        
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-top: 12px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
         .badge {
             display: inline-flex;
             align-items: center;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
             font-weight: 600;
         }
-        
-        .badge-success {
-            background: #d1fae5;
-            color: #065f46;
+
+        .badge-up {
+            background: #dcfce7;
+            color: #166534;
         }
-        
-        .badge-warning {
-            background: #fef3c7;
-            color: #92400e;
+
+        .badge-down {
+            background: #fee2e2;
+            color: #991b1b;
         }
-        
-        .badge-info {
-            background: #dbeafe;
-            color: #1e40af;
+
+        .badge-neutral {
+            background: #f1f5f9;
+            color: #475569;
         }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+        .nav-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
             transition: all 0.3s ease;
         }
-        
-        .btn-primary:hover {
+
+        .nav-btn:hover {
+            background: #667eea;
+            color: white;
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
         }
-        
-        .content-container {
-            background: #f7f9fc;
+
+        .ranking-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        .ranking-table thead th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .ranking-table tbody tr {
+            background: white;
+            transition: all 0.2s ease;
+        }
+
+        .ranking-table tbody tr:hover {
+            background: #f8fafc;
+            transform: translateX(4px);
+        }
+
+        .ranking-table tbody td {
+            padding: 16px;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .ranking-table tbody td:first-child {
+            border-left: 1px solid #e2e8f0;
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+        }
+
+        .ranking-table tbody td:last-child {
+            border-right: 1px solid #e2e8f0;
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .rank-medal {
+            font-size: 24px;
+            display: inline-block;
+            width: 32px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            transition: width 0.6s ease;
+        }
+
+        .metric-positive {
+            color: #16a34a;
+        }
+
+        .metric-negative {
+            color: #dc2626;
+        }
+
+        .loading-spinner {
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 20px;
         }
     </style>
 </head>
-<body class="content-container">
-    
-    <div class="flex h-screen overflow-hidden">
-        
-        <!-- Sidebar -->
-        <aside class="sidebar-gradient w-64 flex-shrink-0 hidden md:flex flex-col shadow-2xl">
-            
-            <!-- Logo -->
-            <div class="p-6 border-b border-white border-opacity-10">
-                <div class="flex items-center">
-                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                        <i class="fas fa-graduation-cap text-purple-600 text-xl"></i>
-                    </div>
-                    <div class="ml-3">
-                        <h1 class="text-white font-bold text-lg">TrajetóriaMed</h1>
-                        <p class="text-white text-opacity-60 text-xs">Sistema CRM</p>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="header-bar px-8 py-5">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <i class="fas fa-chart-line text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">Dashboard CRM</h1>
+                            <p class="text-sm text-gray-500">Análise de Vendas e Performance</p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- Navigation -->
-            <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto" id="mainNavigation">
-                <a href="/dashboard.html" class="nav-item active flex items-center px-4 py-3 text-white rounded-lg">
-                    <i class="fas fa-home w-5"></i>
-                    <span class="ml-3">Dashboard</span>
-                </a>
-                
-                <a href="/crm-kanban.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
-                    <i class="fas fa-columns w-5"></i>
-                    <span class="ml-3">CRM Kanban</span>
-                </a>
-                
-                <a href="/whatsapp.html" class="nav-item admin-only flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
-                    <i class="fab fa-whatsapp w-5"></i>
-                    <span class="ml-3">WhatsApp</span>
-                </a>
-                
-                <a href="/bot-config.html" class="nav-item admin-only flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
-                    <i class="fas fa-robot w-5"></i>
-                    <span class="ml-3">Configurar Bot</span>
-                </a>
-                
-                <a href="/webhooks.html" class="nav-item admin-only flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
-                    <i class="fas fa-link w-5"></i>
-                    <span class="ml-3">Webhooks</span>
-                </a>
-                
-                <div class="pt-6 mt-6 border-t border-white border-opacity-10 admin-only">
-                    <a href="/settings.html" class="nav-item flex items-center px-4 py-3 text-white text-opacity-80 rounded-lg">
-                        <i class="fas fa-cog w-5"></i>
-                        <span class="ml-3">Configurações</span>
-                    </a>
-                </div>
-            </nav>
-            
-            <!-- User Profile -->
-            <div class="p-4 border-t border-white border-opacity-10">
-                <div class="flex items-center px-4 py-3 bg-white bg-opacity-10 rounded-lg">
-                    <div class="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-white font-semibold">
-                        <span id="userInitials">LB</span>
-                    </div>
-                    <div class="ml-3 flex-1 min-w-0">
-                        <p class="text-sm font-medium text-white truncate" id="userName">Leandro Berti</p>
-                        <p class="text-xs text-white text-opacity-60 truncate" id="userEmail">leandro.berti@gmail.com</p>
-                    </div>
-                    <button onclick="logout()" class="text-white text-opacity-60 hover:text-opacity-100">
-                        <i class="fas fa-sign-out-alt"></i>
+                <div class="flex items-center gap-3">
+                    <button onclick="window.location.href='crm-kanban.html'" class="nav-btn">
+                        <i class="fas fa-columns mr-2"></i> Kanban
+                    </button>
+                    <button onclick="window.location.href='configurar-bot.html'" class="nav-btn">
+                        <i class="fas fa-cog mr-2"></i> Configurações
+                    </button>
+                    <button onclick="logout()" class="nav-btn">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Sair
                     </button>
                 </div>
             </div>
-            
-        </aside>
-        
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            
-            <!-- Top Bar -->
-            <header class="bg-white border-b border-gray-200 px-8 py-4 shadow-sm">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <button class="md:hidden p-2 text-gray-400 hover:text-gray-600">
-                            <i class="fas fa-bars text-xl"></i>
-                        </button>
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-800">Leads</h1>
-                            <p class="text-sm text-gray-500 mt-1">Gerencie seus contatos e oportunidades</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center space-x-3">
-                        <!-- Search -->
-                        <div class="hidden md:flex items-center bg-gray-100 rounded-lg px-4 py-2">
-                            <i class="fas fa-search text-gray-400 text-sm"></i>
-                            <input type="text" placeholder="Buscar..." class="ml-2 bg-transparent outline-none text-sm text-gray-700 w-64">
-                        </div>
-                        
-                        <!-- Notifications -->
-                        <button class="relative p-2.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition">
-                            <i class="fas fa-bell text-lg"></i>
-                            <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
-                        </button>
-                        
-                        <!-- User Menu -->
-                        <div class="flex items-center space-x-3 pl-3 border-l border-gray-200">
-                            <div class="text-right hidden md:block">
-                                <p class="text-sm font-semibold text-gray-800" id="topUserName">Leandro Berti</p>
-                                <p class="text-xs text-gray-500" id="userRoleLabel">Administrador</p>
-                            </div>
-                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white font-semibold shadow-lg">
-                                <span id="userInitials">LB</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-            
-            <!-- Content Area -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto content-container p-8">
-                
-                <!-- Action Bar -->
-                <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-                    <div class="flex items-center justify-between flex-wrap gap-4">
-                        <div class="flex items-center space-x-3">
-                            <button class="btn-primary text-white px-6 py-2.5 rounded-lg font-semibold flex items-center shadow-lg">
-                                <i class="fas fa-plus mr-2"></i>
-                                Adicionar Lead
-                            </button>
-                            <button class="bg-white border-2 border-gray-200 text-gray-700 px-5 py-2.5 rounded-lg font-medium hover:border-purple-300 hover:text-purple-600 transition">
-                                <i class="fas fa-check-circle mr-2"></i>
-                                Verificar emails
-                            </button>
-                            <button class="bg-white border-2 border-gray-200 text-gray-700 px-5 py-2.5 rounded-lg font-medium hover:border-purple-300 hover:text-purple-600 transition">
-                                <i class="fas fa-paper-plane mr-2"></i>
-                                Enviar campanha
-                            </button>
-                        </div>
-                        
-                        <div class="flex items-center space-x-2">
-                            <button class="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition">
-                                <i class="fas fa-filter"></i>
-                            </button>
-                            <button class="p-2.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    
-                    <!-- Total Leads -->
-                    <div class="stat-card bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                                <i class="fas fa-users text-white text-xl"></i>
-                            </div>
-                            <span class="badge badge-info">
-                                <i class="fas fa-arrow-up text-xs mr-1"></i> 12%
-                            </span>
-                        </div>
-                        <h3 class="text-gray-500 text-sm font-medium">Total de Leads</h3>
-                        <p class="text-3xl font-bold text-gray-800 mt-2" id="totalLeads">0</p>
-                        <p class="text-xs text-gray-400 mt-2">vs. mês anterior</p>
-                    </div>
-                    
-                    <!-- Active Conversations -->
-                    <div class="stat-card bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
-                                <i class="fas fa-comments text-white text-xl"></i>
-                            </div>
-                            <span class="badge badge-success">
-                                <i class="fas fa-arrow-up text-xs mr-1"></i> 8%
-                            </span>
-                        </div>
-                        <h3 class="text-gray-500 text-sm font-medium">Conversas Ativas</h3>
-                        <p class="text-3xl font-bold text-gray-800 mt-2" id="activeConversations">0</p>
-                        <p class="text-xs text-gray-400 mt-2">Em andamento</p>
-                    </div>
-                    
-                    <!-- Conversion Rate -->
-                    <div class="stat-card bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl flex items-center justify-center shadow-lg">
-                                <i class="fas fa-chart-line text-white text-xl"></i>
-                            </div>
-                            <span class="badge badge-warning">
-                                <i class="fas fa-arrow-down text-xs mr-1"></i> 3%
-                            </span>
-                        </div>
-                        <h3 class="text-gray-500 text-sm font-medium">Taxa de Conversão</h3>
-                        <p class="text-3xl font-bold text-gray-800 mt-2" id="conversionRate">0%</p>
-                        <p class="text-xs text-gray-400 mt-2">Últimos 30 dias</p>
-                    </div>
-                    
-                    <!-- WhatsApp Status -->
-                    <div class="stat-card bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                                <i class="fab fa-whatsapp text-white text-xl"></i>
-                            </div>
-                            <span class="badge badge-success" id="whatsappBadge">
-                                <i class="fas fa-circle text-xs mr-1"></i> Online
-                            </span>
-                        </div>
-                        <h3 class="text-gray-500 text-sm font-medium">Status WhatsApp</h3>
-                        <p class="text-xl font-semibold text-gray-800 mt-2" id="whatsappStatus">Meta API</p>
-                        <p class="text-xs text-gray-400 mt-2">Conectado</p>
-                    </div>
-                    
-                </div>
-                
-                <!-- Leads Table -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-                    <!-- Table Header -->
-                    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-800">Lista de Leads</h3>
-                            <p class="text-sm text-gray-500 mt-1">0 prospects no total</p>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <button class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition">
-                                <i class="fas fa-download mr-2"></i>Exportar
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Empty State -->
-                    <div class="p-16 text-center">
-                        <div class="inline-flex items-center justify-center w-24 h-24 bg-gray-100 rounded-full mb-6">
-                            <i class="fas fa-users text-gray-400 text-4xl"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Esta lista de leads está vazia</h3>
-                        <p class="text-gray-500 mb-8 max-w-md mx-auto">Explore milhões de leads em nossa base de dados ou faça upload da sua própria lista</p>
-                        <div class="flex items-center justify-center space-x-4">
-                            <button class="btn-primary text-white px-6 py-3 rounded-lg font-semibold shadow-lg">
-                                <i class="fas fa-search mr-2"></i>
-                                Encontrar novos leads
-                            </button>
-                            <button class="bg-white border-2 border-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:border-purple-300 hover:text-purple-600 transition">
-                                <i class="fas fa-upload mr-2"></i>
-                                Upload de lista
-                            </button>
-                        </div>
-                        <a href="#" class="inline-block mt-6 text-purple-600 hover:text-purple-700 text-sm font-medium">
-                            Ver todas as ferramentas de prospecção
-                        </a>
-                    </div>
-                </div>
-                
-            </main>
-            
         </div>
-        
+
+        <!-- Main Content -->
+        <div class="px-8 py-6">
+            
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Faturamento Realizado -->
+                <div class="stat-card">
+                    <div class="flex items-start justify-between">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                            <i class="fas fa-dollar-sign text-white"></i>
+                        </div>
+                        <span class="badge badge-neutral" id="revenueBadge">--</span>
+                    </div>
+                    <div class="stat-value text-green-600" id="revenue">R$ 0,00</div>
+                    <div class="stat-label">Faturamento Realizado</div>
+                    <div class="text-xs text-gray-400 mt-2">Vendas confirmadas este mês</div>
+                </div>
+
+                <!-- Pipeline Ponderado -->
+                <div class="stat-card">
+                    <div class="flex items-start justify-between">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                            <i class="fas fa-chart-line text-white"></i>
+                        </div>
+                        <span class="badge badge-neutral" id="pipelineBadge">--</span>
+                    </div>
+                    <div class="stat-value text-blue-600" id="pipeline">R$ 0,00</div>
+                    <div class="stat-label">Pipeline Ponderado</div>
+                    <div class="text-xs text-gray-400 mt-2">Previsão de fechamento</div>
+                </div>
+
+                <!-- Aguardando Pagamento -->
+                <div class="stat-card">
+                    <div class="flex items-start justify-between">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                            <i class="fas fa-clock text-white"></i>
+                        </div>
+                        <span class="badge badge-neutral" id="waitingCount">0 leads</span>
+                    </div>
+                    <div class="stat-value text-amber-600" id="waiting">R$ 0,00</div>
+                    <div class="stat-label">Aguardando Pagamento</div>
+                    <div class="text-xs text-gray-400 mt-2">Checkouts iniciados</div>
+                </div>
+
+                <!-- Dinheiro na Mesa -->
+                <div class="stat-card">
+                    <div class="flex items-start justify-between">
+                        <div class="stat-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+                            <i class="fas fa-exclamation-triangle text-white"></i>
+                        </div>
+                        <span class="badge badge-neutral" id="lostCount">0 leads</span>
+                    </div>
+                    <div class="stat-value text-red-600" id="lost">R$ 0,00</div>
+                    <div class="stat-label">Dinheiro na Mesa</div>
+                    <div class="text-xs text-gray-400 mt-2">Leads perdidos</div>
+                </div>
+            </div>
+
+            <!-- Métricas Operacionais -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="stat-card">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                            <i class="fas fa-users text-purple-600"></i>
+                        </div>
+                        <div class="text-xs text-gray-500 font-semibold">TOTAL LEADS</div>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-800" id="totalLeads">0</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                            <i class="fas fa-check-circle text-green-600"></i>
+                        </div>
+                        <div class="text-xs text-gray-500 font-semibold">TAXA CONVERSÃO</div>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-800" id="conversionRate">0%</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                            <i class="fas fa-comment-dots text-blue-600"></i>
+                        </div>
+                        <div class="text-xs text-gray-500 font-semibold">CONVERSAS ATIVAS</div>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-800" id="activeChats">0</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                            <i class="fas fa-fire text-amber-600"></i>
+                        </div>
+                        <div class="text-xs text-gray-500 font-semibold">LEADS QUENTES</div>
+                    </div>
+                    <div class="text-2xl font-bold text-gray-800" id="hotLeads">0</div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- Pipeline por Etapa -->
+                <div class="chart-card">
+                    <h3 class="section-title">Pipeline por Etapa</h3>
+                    <canvas id="pipelineChart" height="250"></canvas>
+                </div>
+
+                <!-- Motivos de Perda -->
+                <div class="chart-card">
+                    <h3 class="section-title">Motivos de Perda</h3>
+                    <canvas id="lostReasonsChart" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Leads por Canal -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="chart-card">
+                    <h3 class="section-title">Leads por Canal de Aquisição</h3>
+                    <canvas id="channelChart" height="250"></canvas>
+                </div>
+
+                <!-- Temperatura dos Leads -->
+                <div class="chart-card">
+                    <h3 class="section-title">Temperatura dos Leads</h3>
+                    <canvas id="temperatureChart" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Ranking de Vendedores -->
+            <div class="chart-card mb-8">
+                <h3 class="section-title">🏆 Ranking de Vendedores</h3>
+                <div class="overflow-x-auto">
+                    <table class="ranking-table">
+                        <thead>
+                            <tr>
+                                <th>Posição</th>
+                                <th>Vendedor</th>
+                                <th>Leads</th>
+                                <th>Taxa de Conversão</th>
+                                <th>Faturamento</th>
+                                <th>Comissão (10%)</th>
+                                <th>Performance</th>
+                                <th>Badges</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sellersRanking">
+                            <tr>
+                                <td colspan="8" class="text-center text-gray-400 py-8">
+                                    <div class="loading-spinner"></div>
+                                    Carregando dados...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
     </div>
-    
+
     <script>
-        // Check authentication
-        async function checkAuth() {
+        let pipelineChart, lostReasonsChart, channelChart, temperatureChart;
+
+        // Carregar dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+            // Atualizar a cada 30 segundos
+            setInterval(loadDashboard, 30000);
+        });
+
+        async function loadDashboard() {
             try {
-                const response = await fetch('/api/auth/check', {
-                    credentials: 'include'
-                });
-                if (!response.ok) {
-                    window.location.href = '/login.html';
-                    return;
-                }
-                
-                const data = await response.json();
-                if (!data.authenticated) {
-                    window.location.href = '/login.html';
-                    return;
-                }
-                
-                // Atualizar informações do usuário
-                const user = data.user;
-                const initials = user.name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-                
-                // Atualizar sidebar
-                document.getElementById('userName').textContent = user.name;
-                document.getElementById('userEmail').textContent = user.email;
-                document.getElementById('userInitials').textContent = initials;
-                
-                // Atualizar top bar
-                document.getElementById('topUserName').textContent = user.name;
-                document.getElementById('userRoleLabel').textContent = user.role === 'seller' ? 'Vendedor' : 'Administrador';
-                
-                // Ocultar menus para vendedores
-                if (user.role === 'seller') {
-                    document.querySelectorAll('.admin-only').forEach(el => {
-                        el.style.display = 'none';
-                    });
-                }
-                
+                await Promise.all([
+                    loadKPIs(),
+                    loadPipeline(),
+                    loadLostReasons(),
+                    loadSellers(),
+                    loadOperationalMetrics()
+                ]);
             } catch (error) {
-                window.location.href = '/login.html';
+                console.error('Erro ao carregar dashboard:', error);
             }
         }
-        
-        // Logout
-        function logout() {
-            fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
-                .then(() => window.location.href = '/login.html');
-        }
-        
-        // Load Dashboard Data
-        async function loadDashboardData() {
-            try {
-                const response = await fetch('/api/dashboard/stats', {
-                    credentials: 'include'
-                });
-                const data = await response.json();
+
+        async function loadKPIs() {
+            const response = await fetch('/api/crm/dashboard/stats', { credentials: 'include' });
+            const data = await response.json();
+
+            if (data.success) {
+                const stats = data.stats;
                 
-                document.getElementById('totalLeads').textContent = data.totalLeads || 0;
-                document.getElementById('activeConversations').textContent = data.activeConversations || 0;
-                document.getElementById('conversionRate').textContent = (data.conversionRate || 0) + '%';
-                
-                // Charts
-                createLeadsChart(data.leadsPerDay || []);
-                createPipelineChart(data.pipeline || []);
-                
-            } catch (error) {
-                console.error('Error loading dashboard:', error);
+                // KPIs principais
+                document.getElementById('revenue').textContent = formatCurrency(stats.revenue_realized);
+                document.getElementById('pipeline').textContent = formatCurrency(stats.pipeline_weighted);
+                document.getElementById('waiting').textContent = formatCurrency(stats.awaiting_payment);
+                document.getElementById('lost').textContent = formatCurrency(stats.money_lost);
+
+                // Badges
+                updateBadge('revenueBadge', stats.revenue_growth || 0);
+                updateBadge('pipelineBadge', stats.pipeline_growth || 0);
             }
         }
-        
-        // Create Leads Chart
-        function createLeadsChart(data) {
-            const ctx = document.getElementById('leadsChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
+
+        async function loadOperationalMetrics() {
+            const response = await fetch('/api/crm/leads', { credentials: 'include' });
+            const data = await response.json();
+
+            if (data.success) {
+                const leads = data.leads;
+                const total = leads.length;
+                const converted = leads.filter(l => l.stage_is_success).length;
+                const active = leads.filter(l => l.bot_active).length;
+                const hot = leads.filter(l => l.temperature === 'hot').length;
+
+                document.getElementById('totalLeads').textContent = total;
+                document.getElementById('conversionRate').textContent = 
+                    total > 0 ? ((converted / total) * 100).toFixed(1) + '%' : '0%';
+                document.getElementById('activeChats').textContent = active;
+                document.getElementById('hotLeads').textContent = hot;
+
+                // Gráfico de canais
+                const channels = {};
+                leads.forEach(lead => {
+                    const channel = lead.channel || 'manual';
+                    channels[channel] = (channels[channel] || 0) + 1;
+                });
+                createChannelChart(channels);
+
+                // Gráfico de temperatura
+                const temps = {
+                    cold: leads.filter(l => l.temperature === 'cold').length,
+                    warm: leads.filter(l => l.temperature === 'warm').length,
+                    hot: leads.filter(l => l.temperature === 'hot').length
+                };
+                createTemperatureChart(temps);
+
+                // Contadores
+                const waitingCount = leads.filter(l => l.stage_name && l.stage_name.includes('Aguardando')).length;
+                const lostCount = leads.filter(l => l.stage_is_lost).length;
+                document.getElementById('waitingCount').textContent = `${waitingCount} leads`;
+                document.getElementById('lostCount').textContent = `${lostCount} leads`;
+            }
+        }
+
+        async function loadPipeline() {
+            const response = await fetch('/api/crm/leads', { credentials: 'include' });
+            const data = await response.json();
+
+            if (data.success) {
+                const leads = data.leads;
+                const stages = {};
+
+                leads.forEach(lead => {
+                    const stageName = lead.stage_name || 'Sem Etapa';
+                    if (!stages[stageName]) {
+                        stages[stageName] = 0;
+                    }
+                    stages[stageName] += parseFloat(lead.potential_value || 0);
+                });
+
+                createPipelineChart(stages);
+            }
+        }
+
+        async function loadLostReasons() {
+            const response = await fetch('/api/crm/dashboard/lost-reasons', { credentials: 'include' });
+            const data = await response.json();
+
+            if (data.success) {
+                createLostReasonsChart(data.reasons);
+            }
+        }
+
+        async function loadSellers() {
+            const response = await fetch('/api/crm/dashboard/sellers', { credentials: 'include' });
+            const data = await response.json();
+
+            if (data.success) {
+                renderSellersRanking(data.sellers);
+            }
+        }
+
+        function createPipelineChart(stages) {
+            const ctx = document.getElementById('pipelineChart');
+            if (pipelineChart) pipelineChart.destroy();
+
+            const labels = Object.keys(stages);
+            const values = Object.values(stages);
+
+            pipelineChart = new Chart(ctx, {
+                type: 'bar',
                 data: {
-                    labels: data.map(d => d.date),
+                    labels: labels,
                     datasets: [{
-                        label: 'Novos Leads',
-                        data: data.map(d => d.count),
-                        borderColor: '#fbbf24',
-                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
-                        tension: 0.4,
-                        fill: true
+                        label: 'Valor em Pipeline (R$)',
+                        data: values,
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2,
+                        borderRadius: 8
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: false
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => 'R$ ' + context.parsed.y.toLocaleString('pt-BR', {minimumFractionDigits: 2})
+                            }
                         }
                     },
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            ticks: {
+                                callback: (value) => 'R$ ' + value.toLocaleString('pt-BR')
+                            }
                         }
                     }
                 }
             });
         }
-        
-        // Create Pipeline Chart
-        function createPipelineChart(data) {
-            const ctx = document.getElementById('pipelineChart').getContext('2d');
-            new Chart(ctx, {
+
+        function createLostReasonsChart(reasons) {
+            const ctx = document.getElementById('lostReasonsChart');
+            if (lostReasonsChart) lostReasonsChart.destroy();
+
+            if (!reasons || reasons.length === 0) {
+                lostReasonsChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Sem perdas'],
+                        datasets: [{
+                            data: [1],
+                            backgroundColor: ['#e2e8f0']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' }
+                        }
+                    }
+                });
+                return;
+            }
+
+            const labels = reasons.map(r => r.reason || 'Não informado');
+            const values = reasons.map(r => r.count);
+            const colors = ['#ef4444', '#f59e0b', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899'];
+
+            lostReasonsChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: data.map(d => d.stage),
+                    labels: labels,
                     datasets: [{
-                        data: data.map(d => d.count),
-                        backgroundColor: [
-                            '#3b82f6',
-                            '#10b981',
-                            '#fbbf24',
-                            '#ef4444',
-                            '#8b5cf6'
-                        ]
+                        data: values,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: { size: 12 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const label = context.label || '';
+                                    const value = context.parsed || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percent = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value} (${percent}%)`;
+                                }
+                            }
+                        }
+                    }
                 }
             });
         }
-        
-        // Initialize
-        checkAuth();
-        loadDashboardData();
+
+        function createChannelChart(channels) {
+            const ctx = document.getElementById('channelChart');
+            if (channelChart) channelChart.destroy();
+
+            const channelNames = {
+                whatsapp: 'WhatsApp',
+                instagram: 'Instagram',
+                facebook: 'Facebook',
+                website: 'Website',
+                manual: 'Manual'
+            };
+
+            const labels = Object.keys(channels).map(k => channelNames[k] || k);
+            const values = Object.values(channels);
+            const colors = ['#25D366', '#E4405F', '#1877F2', '#667eea', '#64748b'];
+
+            channelChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: { size: 12 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createTemperatureChart(temps) {
+            const ctx = document.getElementById('temperatureChart');
+            if (temperatureChart) temperatureChart.destroy();
+
+            temperatureChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Frios', 'Mornos', 'Quentes'],
+                    datasets: [{
+                        label: 'Quantidade de Leads',
+                        data: [temps.cold, temps.warm, temps.hot],
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#ef4444'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        function renderSellersRanking(sellers) {
+            const tbody = document.getElementById('sellersRanking');
+
+            if (!sellers || sellers.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center text-gray-400 py-8">
+                            Nenhum vendedor com leads atribuídos
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            const maxRevenue = Math.max(...sellers.map(s => parseFloat(s.total_revenue || 0)));
+            const maxConversion = Math.max(...sellers.map(s => parseFloat(s.conversion_rate || 0)));
+
+            tbody.innerHTML = sellers.map((seller, index) => {
+                const rank = index + 1;
+                const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+                const conversion = parseFloat(seller.conversion_rate || 0);
+                const revenue = parseFloat(seller.total_revenue || 0);
+                const commission = revenue * 0.1;
+
+                let badges = [];
+                if (revenue === maxRevenue && revenue > 0) {
+                    badges.push('<span class="badge" style="background: #fef3c7; color: #92400e;">👑 Alpha</span>');
+                }
+                if (conversion === maxConversion && conversion > 0) {
+                    badges.push('<span class="badge" style="background: #dbeafe; color: #1e40af;">🎯 Sniper</span>');
+                }
+
+                return `
+                    <tr>
+                        <td>
+                            <span class="rank-medal">${medal}</span>
+                        </td>
+                        <td class="font-semibold text-gray-800">${seller.name || 'Não atribuído'}</td>
+                        <td>${seller.total_leads || 0} leads</td>
+                        <td>
+                            <div class="flex items-center gap-2">
+                                <span class="font-semibold ${conversion >= 50 ? 'metric-positive' : ''}">${conversion.toFixed(1)}%</span>
+                                <div class="progress-bar" style="width: 100px;">
+                                    <div class="progress-fill" style="width: ${Math.min(conversion, 100)}%;"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="font-bold metric-positive">${formatCurrency(revenue)}</td>
+                        <td class="font-semibold text-purple-600">${formatCurrency(commission)}</td>
+                        <td>
+                            <div class="progress-bar" style="width: 80px;">
+                                <div class="progress-fill" style="width: ${Math.min((revenue / (maxRevenue || 1)) * 100, 100)}%;"></div>
+                            </div>
+                        </td>
+                        <td>${badges.join(' ')}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateBadge(id, value) {
+            const badge = document.getElementById(id);
+            const numValue = parseFloat(value);
+            
+            if (numValue > 0) {
+                badge.className = 'badge badge-up';
+                badge.innerHTML = `<i class="fas fa-arrow-up mr-1"></i> +${numValue.toFixed(1)}%`;
+            } else if (numValue < 0) {
+                badge.className = 'badge badge-down';
+                badge.innerHTML = `<i class="fas fa-arrow-down mr-1"></i> ${numValue.toFixed(1)}%`;
+            } else {
+                badge.className = 'badge badge-neutral';
+                badge.textContent = '--';
+            }
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(value || 0);
+        }
+
+        function logout() {
+            fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+                .then(() => window.location.href = '/login.html');
+        }
     </script>
-    
 </body>
 </html>
