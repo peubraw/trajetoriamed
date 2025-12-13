@@ -125,6 +125,8 @@
         body {
             background: var(--bg-primary);
             color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
         }
 
         /* Layout WhatsApp Style */
@@ -133,6 +135,7 @@
             grid-template-columns: 380px 1fr;
             height: 100vh;
             background: var(--bg-primary);
+            overflow: hidden;
         }
 
         /* Sidebar - Lista de conversas */
@@ -278,6 +281,8 @@
             flex-direction: column;
             background: var(--bg-primary);
             position: relative;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .chat-area.no-chat {
@@ -297,6 +302,7 @@
             align-items: center;
             justify-content: space-between;
             border-bottom: 1px solid var(--divider);
+            flex-shrink: 0;
         }
 
         .chat-header-left {
@@ -342,8 +348,6 @@
             padding: 20px;
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%23111B21" width="100" height="100"/></svg>');
             background-repeat: repeat;
-            height: calc(100vh - 200px); /* Altura fixa para scroll */
-            min-height: 400px;
         }
 
         .message {
@@ -522,6 +526,7 @@
             align-items: center;
             gap: 10px;
             border-top: 1px solid var(--divider);
+            flex-shrink: 0;
         }
 
         .input-action-btn {
